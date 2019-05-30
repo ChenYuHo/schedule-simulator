@@ -1,40 +1,44 @@
 import simpy
+import core
 from collections import deque
+from threading import Lock
+
+"""
+This module provides multiple low level schedulers that can be used to prioritize any tasks or jobs in a certain way.
+Each processing unit must have a unique scheduler in which it uses to choose which task to work on.
+You should not deal with any of the schedulers methods directly. Instead you simply pass an instance of it the processing
+unit and it will handle the rest.
+"""
 
 
 class FIFOScheduler:
-    def __init__(self, env: simpy.Environment):
-        self.env = env
-        self.queue = deque()
-        self.state = "IDLE"
-        # Usage structure is a dictionary of dictionaries. Each layer's index is the first key.
-        # The second key is the time. and the value is the tensor index
-        self.usage = dict()
+    def __init__(self, **kwargs):
+        self._queue = deque()
+        self._lock = Lock()
 
-    def schedule(self, tensor):
-        self.queue.append(tensor)
+    def count(self):
+        self._lock.acquire()
+        a = len(self._queue)
+        self._lock.release()
+        return a
 
-    def main_process(self):
-        print("Starting {} main process".format(type(self).__name__))
-        self.usage.clear()
-        self.state = "RUNNING"
-        while self.state != "CLOSED":
-            if len(self.queue) > 0:
-                tensor = self.queue[0]
-                yield self.env.timeout(1)
-            else:
-                yield self.env.timeout(1)
-                continue
-            tensor.size -= 1  # Should be replaced later by bandwidth term
-            if tensor.size <= 0:
-                self.queue.popleft()
-            # Write stats
-            if tensor.layer.index not in self.usage:
-                self.usage[tensor.layer.index] = dict()
-            self.usage[tensor.layer.index][self.env.now-1] = tensor.index
+    def queue(self, job, **kwargs):
+        self._lock.acquire()
+        self._queue.append(job)
+        self._lock.release()
 
-    def close(self):
-        self.state = "CLOSED"
+    def request(self, **kwargs):
+        self._lock.acquire()
+        job = None
+        if len(self._queue) > 0:
+            job = self._queue[0]
+        self._lock.release()
+        return job
+
+    def remove(self, job, **kwargs):
+        self._lock.acquire()
+        self._queue.remove(job)
+        self._lock.release()
 
 
 class PreemptiveScheduler:
