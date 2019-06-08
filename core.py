@@ -105,13 +105,12 @@ if __name__ == '__main__':
     gpu = ProcessingUnit(env, rate=1, name="GPU:1", sim_printer=SimPrinter(verbosity=0).print)
     gpu.mount_scheduler(schedulers.FIFOScheduler())
     gpu_process = env.process(gpu.main_process())
+    gpu.queue(Job(env,units=3,L=1))
+    gpu.queue(Job(env,units=5,L=2))
     for i in range(10):
         job = Job(env,units=random.randint(0,10), name=i, tag="Coco")
         gpu.queue(job)
         job = Job(env, units=random.randint(0, 10), name=i)
         gpu.queue(job)
-    env.run(until=500)
-    print(generate_report(gpu, start=0,time_grouping=1, row_labels=["name","tag"]))
-    # for item in gpu.utilization.items():
-    #     s = [str(x) for x in item[1]['jobs']]
-    #     print("t:{:<4}] Utilization: {:6}% Jobs: {}".format(item[0],item[1]['%']*100, s))
+    env.run(until=300)
+    print(generate_report(gpu, start=0,time_grouping=50,row_labels=["L"], cell_labels="count"))
