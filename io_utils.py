@@ -12,8 +12,10 @@ def generate_report(processing_unit, start=0, end=None,
                     time_grouping=1, show_scaled_time=False,
                     row_labels=None, cell_labels=None,
                     show_column_labels=True, show_row_utilization=True, show_header=True,
-                    long_value_handling="trim"):
+                    long_value_handling="trim", cell_width=5, group_name_width=20):
     """
+    The current implementation is a little messy and inefficient just to get quick insight.
+    It should be refined and more structured later.
     :param processing_unit: The unit to generate the report on. Will accept a list of units in a later implementation
     :param start: From which time step should we generate the report (Inclusive)
     :param end: To which time step (Inclusive)
@@ -28,13 +30,10 @@ def generate_report(processing_unit, start=0, end=None,
     :param show_column_labels: Whether to show column labels (time steps) or not
     :param show_row_utilization: Whether to print utilization percentage for every row (group)
     :param show_header: Whether to print a header with the unit name and the average utilization of the resource
-    :param long_value_handling: "trim", "wrap", "push"
-
-    The current implementation is messy and inefficient just to get quick insight.
-    It should be refined and more structured later.
+    :param long_value_handling: "trim", "wrap", "push". (Not implemented yet)
+    :param cell_width: Specifies the width of each cell in the table
+    :param group_name_width: Specifies the width of the first column in the table which contains the group name.
     """
-    cell_width = 5
-    row_header_width = 20
     report = []
     duration = (processing_unit.env.now if end is None else end) - start
     if not time_grouping:
@@ -75,7 +74,7 @@ def generate_report(processing_unit, start=0, end=None,
         else:
             for i, key in enumerate(row_labels):
                 group_name += "{}:{} ".format(key, group[i])
-        group_name = "{{:{}}}".format(row_header_width).format(group_name)
+        group_name = "{{:{}}}".format(group_name_width).format(group_name)
         # Generate row body
         row_units = 0
         cells = list()
@@ -133,10 +132,10 @@ def generate_report(processing_unit, start=0, end=None,
     # Generate column labels
     if show_column_labels:
         if show_row_utilization:
-            format = "|{{:{}}}|{{:{}}}|{{:{}}}|".format(row_header_width, 7, len(rows[0])-row_header_width-11)
+            format = "|{{:{}}}|{{:{}}}|{{:{}}}|".format(group_name_width, 7, len(rows[0])-group_name_width-11)
             report.append(format.format("Group", "Util", "Time"))
         else:
-            format = "|{{:{}}}|{{:{}}}|".format(row_header_width, len(rows[0]) - row_header_width - 3)
+            format = "|{{:{}}}|{{:{}}}|".format(group_name_width, len(rows[0]) - group_name_width - 3)
             report.append(format.format("Group", "Time"))
         time_labels = ""
         for i in grouped_time_steps:

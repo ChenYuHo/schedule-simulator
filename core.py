@@ -5,8 +5,29 @@ import schedulers
 import math
 
 
+class Distribution:
+    """
+    A class that is interchangeable with a number.
+    It can define a constant, a uniform distribution, a normal distribution, any other distribution I need.
+    Can be used for any numeric property to express some randomness.
+    (Not implemented yet)
+    """
+    def __init__(self):
+        pass
+
+
 class Job(simpy.Event):
-    def __init__(self, env, units, **extras):
+    """
+    A simpy event that is used to simulate any kind of job that is fed into a processing unit
+    """
+    def __init__(self, env: simpy.Environment, units, result=None, **extras):
+        """
+        :param env: The simpy environment used in this simulation. Used to be able to block and wait for this event
+        :param units: The amount of work needed. Depends on the nature of the processing unit.
+        Can be used to describe sizes (KB, MB...), time (seconds, hours...) and any other unit..
+        :param result: The result object that can be used to chain jobs.
+        :param extras: Custom attributes that help identify this job or its behavior.
+        """
         super().__init__(env)
         self.env = env
         self.units = units
@@ -26,28 +47,44 @@ class ProcessingUnit:
     (ie. CPU, GPU, Aggregator, Network link ...etc)
     Needs a scheduler to operate.
     """
-    def __init__(self, env: simpy.Environment, rate=1, name=None, out_pipe=None, sim_printer=None):
+    def __init__(self, env: simpy.Environment, scheduler, rate=1, name=None, out_pipe=None, sim_printer=None):
+        """
+        :param env: The simpy environment used in this simulation.
+        :param rate: The rate at which the unit consumes job units
+        :param name: An arbitrary name for this unit. (Maybe removed later and replaced by an extras field)
+        :param out_pipe: An optional output queue. Used for pipelining units.
+        :param sim_printer: The print function that will be used to print the output of this unit
+        """
         self.name = name
         self.rate = rate
         self.env = env
-        self.scheduler = None
+        self.scheduler = scheduler
         self.out_pipe = out_pipe
         self.processing = False
         self._sim_printer = sim_printer
+        # The utilization structure:
+        # Key: time step
+        # Value: list of (job, processed units) tuples that were done in that time step
         self.utilization = dict()
 
-    def mount_scheduler(self, scheduler):
-        self.scheduler = scheduler
-
     def queue(self, job):
+        """
+        Simply calls the scheduler queue function.
+        Must have attached a valid scheduler before calling this function.
+        :param job: the job to queue.
+        """
         try:
             self.scheduler.queue(job)
         except AttributeError as e:
-            print("[Error] Please make sure that you have mounted a valid scheduler on {}".format(self))
+            print("[Error] Please make sure that you have provided a valid scheduler on {}".format(self))
             raise e
         self._print("Queued job {}".format(job), 2)
 
     def main_process(self):
+        """
+        The main process of this processing unit. Constantly requests jobs from the scheduler and proceeds to consume
+        them according to its processing rate. The process continues indefinitely until it is interrupted.
+        """
         self._print("Starting main process with processing rate: {}".format(self.rate), 1)
         try:
             while True:
@@ -102,15 +139,11 @@ if __name__ == '__main__':
     from io_utils import SimPrinter, generate_report
     import random
     env = simpy.Environment()
-    gpu = ProcessingUnit(env, rate=1, name="GPU:1", sim_printer=SimPrinter(verbosity=0).print)
-    gpu.mount_scheduler(schedulers.FIFOScheduler())
+    gpu = ProcessingUnit(env, schedulers.FIFOScheduler(),
+                         rate=1, name="GPU:1", sim_printer=SimPrinter(verbosity=0).print)
     gpu_process = env.process(gpu.main_process())
-    gpu.queue(Job(env,units=3,L=1))
-    gpu.queue(Job(env,units=5,L=2))
     for i in range(10):
-        job = Job(env,units=random.randint(0,10), name=i, tag="Coco")
+        job = Job(env, units=random.randint(1, 10), custom_attr_1=i, custom_attr_2=i % 3)
         gpu.queue(job)
-        job = Job(env, units=random.randint(0, 10), name=i)
-        gpu.queue(job)
-    env.run(until=300)
-    print(generate_report(gpu, start=0,time_grouping=50,row_labels=["L"], cell_labels="count"))
+    env.run(until=100)
+    print(generate_report(gpu, start=0, time_grouping=1, row_labels=["custom_attr_1"]))
