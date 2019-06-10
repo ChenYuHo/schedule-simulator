@@ -1,4 +1,5 @@
 import simpy
+from simpy import Interrupt
 from collections import deque
 import copy
 import schedulers
@@ -33,6 +34,7 @@ class Job(simpy.Event):
         self.units = units
         self.remaining_units = units
         self.extras = extras
+        self.result = result
 
     def __str__(self):
         s = "Units: {:2}/{:<2} ".format(self.units - self.remaining_units, self.units)
@@ -110,15 +112,17 @@ class ProcessingUnit:
                     utilization_list.append(current_job)
                 if len(utilization_list) > 0:
                     self.utilization[self.env.now] = utilization_list
-                # Step
-                yield self.env.timeout(1)
                 # Finalize finished jobs
+                # We do this before waiting to allow processes that are waiting for the job to be notified instantly
+                # in the next time step. Otherwise, the processes will always be delayed 1 time step
                 for job,_ in will_finish_jobs:
                     job.succeed()  # Fire job finished event
-                    if self.out_pipe is not None:
-                        self.out_pipe.queue(job)
+                    if self.out_pipe is not None and job.result is not None:
+                        self.out_pipe.queue(job.result)
                     self._print("Finished job {}".format(job), 2)
-        except InterruptedError:
+                # Step
+                yield self.env.timeout(1)
+        except Interrupt:
             self._print("Closed main process.", 1)
         except AttributeError as e:
             print("[Error] Please make sure that you have mounted a valid scheduler on {}".format(self))

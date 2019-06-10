@@ -5,7 +5,7 @@ class SimPrinter:
 
     def print(self, env, source, msg, verbosity):
         if self.verbosity >= verbosity:
-            print("t:{:<4}] {}] {}".format(env.now, source, msg))
+            print("t:{:<4}] {:<10}] {}".format(env.now, str(source), msg))
 
 
 def generate_report(processing_unit, start=0, end=None,
