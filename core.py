@@ -21,7 +21,7 @@ class Job(simpy.Event):
     """
     A simpy event that is used to simulate any kind of job that is fed into a processing unit
     """
-    def __init__(self, env: simpy.Environment, units, result=None, **extras):
+    def __init__(self, env: simpy.Environment, units, source=None, result=None, **extras):
         """
         :param env: The simpy environment used in this simulation. Used to be able to block and wait for this event
         :param units: The amount of work needed. Depends on the nature of the processing unit.
@@ -32,6 +32,7 @@ class Job(simpy.Event):
         super().__init__(env)
         self.env = env
         self.units = units
+        self.source = source
         self.remaining_units = units
         self.extras = extras
         self.result = result

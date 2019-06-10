@@ -67,7 +67,7 @@ def forward_pass(dag: DAG, env: simpy.Environment, computation_queue, communicat
         # Create job
         extras = {**layer.extras, **job_extras}  # add layer extras to custom extras passed to the function
         extras["type"] = "forward_pass"
-        job = Job(env, layer.forward_pass_units, **extras)
+        job = Job(env, layer.forward_pass_units, source=layer, **extras)
         forward_pass_output[layer] = job
         # Queue job
         computation_queue.queue(job)
@@ -93,7 +93,9 @@ def backward_pass(dag: DAG, env: simpy.Environment, computation_queue, communica
     layer
     """
     backward_pass_output = dict()
-    for layer in dag.topological_order:
+    reversed_topological_order = dag.topological_order.copy()
+    reversed_topological_order.reverse()
+    for layer in reversed_topological_order:
         # Wait for all dependencies to finish
         if dependent_layer_jobs is not None:
             deps = [layer]  # Must include the layer itself
@@ -105,8 +107,8 @@ def backward_pass(dag: DAG, env: simpy.Environment, computation_queue, communica
         comm_extras = comp_extras.copy()
         comp_extras["type"] = "backward_pass"
         comm_extras["type"] = "parameter_communication"
-        comp_job = Job(env, layer.backward_pass_units, **comp_extras)
-        comm_job = Job(env, layer.tensor_size, **comm_extras)
+        comp_job = Job(env, layer.backward_pass_units, source=layer, **comp_extras)
+        comm_job = Job(env, layer.tensor_size, source=layer, **comm_extras)
         backward_pass_output[layer] = AllOf(env, [comm_job, comp_job])
         # We only wait for the computational job.
         computation_queue.queue(comp_job)
@@ -122,17 +124,17 @@ if __name__ == "__main__":
     """
     from DAGs import HomogeneousLayerDAG
     from core import ProcessingUnit
-    from schedulers import FIFOScheduler
+    from schedulers import FIFOScheduler, TopologicalPriorityScheduler
     from io_utils import SimPrinter, generate_report
 
     env = simpy.Environment()
     sim_printer = SimPrinter(verbosity=1).print
-    dag = HomogeneousLayerDAG(5, 8)
+    dag = HomogeneousLayerDAG(5, 4)
 
-    gpu = ProcessingUnit(env=env, scheduler=FIFOScheduler(), rate=4, name="GPU", sim_printer=sim_printer)
+    gpu = ProcessingUnit(env=env, scheduler=FIFOScheduler(), rate=2, name="GPU", sim_printer=sim_printer)
     gpu_process = env.process(gpu.main_process())
 
-    network = ProcessingUnit(env=env, scheduler=FIFOScheduler(), rate=1, name="Network", sim_printer=sim_printer)
+    network = ProcessingUnit(env=env, scheduler=TopologicalPriorityScheduler(), rate=1, name="Network", sim_printer=sim_printer)
     network_process = env.process(network.main_process())
 
     training_process = env.process(train(dag=dag, env=env, n_of_batches=1, batch_size=3,
