@@ -32,6 +32,9 @@ class Scheduler(ABC):
     def remove(self, job, **kwargs):
         pass
 
+    def __str__(self):
+        return type(self).__name__
+
 
 class FIFOScheduler(Scheduler):
     def __init__(self, **kwargs):
@@ -112,6 +115,9 @@ class TopologicalPriorityScheduler(Scheduler):
                 self._queue.pop(i)
                 break
         self._lock.release()
+
+    def __str__(self):
+        return "{}:{}".format(super().__str__(), "Preemptive" if self.preemptive else "Non-preemptive")
 
 
 class TICScheduler:

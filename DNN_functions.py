@@ -32,11 +32,12 @@ def train(dag: DAG, env: simpy.Environment, n_of_batches, batch_size, computatio
                                                                       communication_queue=communication_queue,
                                                                       dependent_layer_jobs=last_backward_pass_output,
                                                                       **extras))
+            send_gradients = sample == batch_size-1  # Only send gradients on the last backward pass in the batch
             last_backward_pass_output = yield env.process(backward_pass(dag=dag, env=env,
                                                                         computation_queue=computation_queue,
                                                                         communication_queue=communication_queue,
                                                                         dependent_layer_jobs=last_forward_pass_output,
-                                                                        **extras))
+                                                                        send_gradients=send_gradients, **extras))
     # Finish any impending processes
     for process in last_backward_pass_output.values():
         yield process
@@ -74,14 +75,17 @@ def forward_pass(dag: DAG, env: simpy.Environment, computation_queue, communicat
         # Waiting for the job before queueing the next makes sense because the next job depends on this one.
         # A problem arises however when the processing rate can accommodate more than a job at a time step.
         # Since the next job won't be queued until the next time step, we will not be able to utilize the processing
-        # unit fully. To solve this we must peek into the processing unit to learn how many jobs can it execute in the
-        # next time step. (Not yet solved)
+        # unit fully. To solve this we have a couple of options:
+        # - (X) Peek into the processing unit to learn how many jobs it can execute in the next time step.
+        # - Always make job units divisible by the rate
+        # - Implement job chaining where dependent jobs are linked together through the job result field
+        # - Add a dependencies field to the Job class and force schedulers to respect those dependencies.
         yield job
     return forward_pass_output
 
 
 def backward_pass(dag: DAG, env: simpy.Environment, computation_queue, communication_queue, dependent_layer_jobs=None,
-                  **job_extras):
+                  send_gradients=False, **job_extras):
     """
     :param dag: The architecture to use
     :param env: The simpy environment used in this simulation.
@@ -89,6 +93,8 @@ def backward_pass(dag: DAG, env: simpy.Environment, computation_queue, communica
     :param communication_queue: Used to queue communication jobs
     :param dependent_layer_jobs: A dict with key: layer and value: event to wait for before being able to do a
     backward pass on that layer. If none then we simply do not wait.
+    :param send_gradients: Whether we should queue gradients as they are produced to the communication_queue. Should
+    only be set to true at the last backward_pass in a batch
     :return: A dict with key: layer and value: event to wait for before being able to do a forward pass on that
     layer
     """
@@ -106,50 +112,60 @@ def backward_pass(dag: DAG, env: simpy.Environment, computation_queue, communica
         comp_extras = {**layer.extras, **job_extras}  # add layer extras to custom extras passed to the function
         comm_extras = comp_extras.copy()
         comp_extras["type"] = "backward_pass"
-        comm_extras["type"] = "parameter_communication"
         comp_job = Job(env, layer.backward_pass_units, source=layer, **comp_extras)
-        comm_job = Job(env, layer.tensor_size, source=layer, **comm_extras)
-        backward_pass_output[layer] = AllOf(env, [comm_job, comp_job])
+        if send_gradients:
+            comm_extras["type"] = "parameter_communication"
+            comm_job = Job(env, layer.tensor_size, source=layer, **comm_extras)
+            backward_pass_output[layer] = AllOf(env, [comm_job, comp_job])
+        else:
+            backward_pass_output[layer] = comp_job
         # We only wait for the computational job.
         computation_queue.queue(comp_job)
         # Same problem of waiting as mentioned in the comments in forward pass function
         yield comp_job
-        communication_queue.queue(comm_job)
+        if send_gradients:
+            communication_queue.queue(comm_job)
     return backward_pass_output
 
 
 if __name__ == "__main__":
     """
-    An example usage
+    An example usage where different schedulers are compared
     """
-    from DAGs import HomogeneousLayerDAG
+    from DAGs import HomogeneousLinearDAG
     from core import ProcessingUnit
     from schedulers import FIFOScheduler, TopologicalPriorityScheduler
     from io_utils import SimPrinter, generate_report
+    schedulers = [FIFOScheduler(),TopologicalPriorityScheduler(preemptive=False),
+                  TopologicalPriorityScheduler(preemptive=True)]
+    with open("DNN_functions_example_report.txt", "w") as file:
+        for scheduler in schedulers:
+            env = simpy.Environment()
+            sim_printer = SimPrinter(verbosity=0).print
+            dag = HomogeneousLinearDAG(n_of_layers=6, layer_size=8)
 
-    env = simpy.Environment()
-    sim_printer = SimPrinter(verbosity=1).print
-    dag = HomogeneousLayerDAG(5, 4)
+            gpu = ProcessingUnit(env=env, scheduler=FIFOScheduler(), rate=2, name="GPU", sim_printer=None)
+            gpu_process = env.process(gpu.main_process())
 
-    gpu = ProcessingUnit(env=env, scheduler=FIFOScheduler(), rate=2, name="GPU", sim_printer=sim_printer)
-    gpu_process = env.process(gpu.main_process())
+            network = ProcessingUnit(env=env, scheduler=scheduler, rate=1, name="Network", sim_printer=None)
+            network_process = env.process(network.main_process())
 
-    network = ProcessingUnit(env=env, scheduler=TopologicalPriorityScheduler(), rate=1, name="Network", sim_printer=sim_printer)
-    network_process = env.process(network.main_process())
+            training_process = env.process(train(dag=dag, env=env, n_of_batches=10, batch_size=4,
+                                                 computation_queue=gpu, communication_queue=network))
 
-    training_process = env.process(train(dag=dag, env=env, n_of_batches=1, batch_size=3,
-                                         computation_queue=gpu, communication_queue=network))
-
-    def close():
-        yield training_process
-        print("Finishing simulation..")
-        gpu_process.interrupt()
-        network_process.interrupt()
-
-    closing_process = env.process(close())
-    print("Starting simulation..")
-    env.run()
-    print(generate_report(gpu, time_grouping=1, row_labels=["type"], cell_labels=["index"],
-                          group_name_width=30, cell_width=3))
-    print(generate_report(network, time_grouping=1, row_labels=["type"], cell_labels=["index"],
-                          group_name_width=30, cell_width=3, show_column_labels=False))
+            def close():
+                yield training_process
+                print("Finishing simulation..")
+                gpu_process.interrupt()
+                network_process.interrupt()
+            closing_process = env.process(close())
+            print("Starting simulation..")
+            env.run()
+            units = [gpu, network]
+            for unit in units:
+                report = generate_report(unit, time_grouping=1, row_labels=["type"], cell_labels=["index"],
+                                         group_name_width=30, cell_width=4)
+                print(report)
+                print("")
+                file.write(report)
+                file.write("\n\n\n")

@@ -162,7 +162,7 @@ class DAG:
     """Should add some functions to make it easy to join different DAGs together"""
 
 
-class HomogeneousLayerDAG(DAG):
+class HomogeneousLinearDAG(DAG):
     """
     A DAG that consists of a linear graph of identical layers which all contain trainable parameters.
     Used for quick verification.
@@ -175,6 +175,11 @@ class HomogeneousLayerDAG(DAG):
             prev.output_layers = [new]
             prev = new
         super().__init__([root])
+
+class RandomDAG(DAG):
+    """
+    A DAG that consists of a random number of layers, with a random size, and in a random configuration.
+    """
 
 
 def xml_to_dag(path_to_file):
@@ -189,7 +194,7 @@ if __name__ == "__main__":
     """
     An example usage
     """
-    DAG = HomogeneousLayerDAG(5, 4)
+    DAG = HomogeneousLinearDAG(5, 4)
     def p(node):
         print(node.extras['index'])
     DAG.traverse_DFS(p, order="pre-order")

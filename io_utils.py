@@ -11,7 +11,7 @@ class SimPrinter:
 def generate_report(processing_unit, start=0, end=None,
                     time_grouping=1, show_scaled_time=False,
                     row_labels=None, cell_labels=None,
-                    show_column_labels=True, show_row_utilization=True, show_header=True,
+                    show_column_labels=True, show_row_utilization=True, show_header=True, suppress_body=False,
                     long_value_handling="trim", cell_width=5, group_name_width=20):
     """
     The current implementation is a little messy and inefficient just to get quick insight.
@@ -30,6 +30,8 @@ def generate_report(processing_unit, start=0, end=None,
     :param show_column_labels: Whether to show column labels (time steps) or not
     :param show_row_utilization: Whether to print utilization percentage for every row (group)
     :param show_header: Whether to print a header with the unit name and the average utilization of the resource
+    :param suppress_body: Whether to omit adding the body to the report. It will still be calculated which adds
+    unnecessary cost to report generation. Should be changed later.
     :param long_value_handling: "trim", "wrap", "push". (Not implemented yet)
     :param cell_width: Specifies the width of each cell in the table
     :param group_name_width: Specifies the width of the first column in the table which contains the group name.
@@ -125,24 +127,29 @@ def generate_report(processing_unit, start=0, end=None,
             rows.append("|{}|{}|".format(group_name, '|'.join(cells)))
     # Generate header
     if show_header:
-        header = "{:10} Rate: {:<5} Util: {:<3.2f}%".format(str(processing_unit), processing_unit.rate, total_util*100)
-        report.append("-"*len(rows[0]))
+        header = "{:10} Rate: {:<5} Util: {:>6.2f}% {:5}Scheduler: {:<10}".format(str(processing_unit),
+                                                                                  processing_unit.rate,
+                                                                                  total_util*100, "",
+                                                                                  str(processing_unit.scheduler))
+        sep = "-"*max(len(rows[0]), len(header))
+        report.append(sep)
         report.append(header)
-        report.append("-" * len(rows[0]))
-    # Generate column labels
-    if show_column_labels:
-        if show_row_utilization:
-            format = "|{{:{}}}|{{:{}}}|{{:{}}}|".format(group_name_width, 7, len(rows[0])-group_name_width-11)
-            report.append(format.format("Group", "Util", "Time"))
-        else:
-            format = "|{{:{}}}|{{:{}}}|".format(group_name_width, len(rows[0]) - group_name_width - 3)
-            report.append(format.format("Group", "Time"))
-        time_labels = ""
-        for i in grouped_time_steps:
-            time_labels += "{{:<{}}}|".format(cell_width).format(i if show_scaled_time else i*time_grouping)
-        if show_row_utilization:
-            report.append(format[:-1].format("","",time_labels))
-        else:
-            report.append(format[:-1].format("", time_labels))
-    report.extend(rows)
+        report.append(sep)
+    if not suppress_body:
+        # Generate column labels
+        if show_column_labels:
+            if show_row_utilization:
+                format = "|{{:{}}}|{{:{}}}|{{:{}}}|".format(group_name_width, 7, len(rows[0])-group_name_width-11)
+                report.append(format.format("Group", "Util", "Time"))
+            else:
+                format = "|{{:{}}}|{{:{}}}|".format(group_name_width, len(rows[0]) - group_name_width - 3)
+                report.append(format.format("Group", "Time"))
+            time_labels = ""
+            for i in grouped_time_steps:
+                time_labels += "{{:<{}}}|".format(cell_width).format(i if show_scaled_time else i*time_grouping)
+            if show_row_utilization:
+                report.append(format[:-1].format("","",time_labels))
+            else:
+                report.append(format[:-1].format("", time_labels))
+        report.extend(rows)
     return '\n'.join(report)
