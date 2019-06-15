@@ -141,8 +141,35 @@ class ProcessingUnit:
             print("[Error] Please make sure that you have mounted a valid scheduler on {}".format(self))
             raise e
 
-    def get_utilization(self, start, end, group=None):
-        pass
+    def get_utilization(self, start=None, end=None, extras=None):
+        """
+        A function for returning the utilization percentage of a single group
+        :param start: The utilization period start. If None then 0 is used.
+        :param end: The utilization period end. If None then the last time step in the environment is used.
+        :param extras: An extras dictionary that will be used to match each job's extras dictionary.
+        Only if all the key,value pairs in this dict are present in the job.extras dict will the function include it
+        :return: A 0-1 floating point value representing the utilization percentage
+        """
+        if start is None:
+            start = 0
+        if end is None:
+            end = self.env.now
+        total_used_units = 0
+        duration = end - start + 1
+        total_rate_units = self.rate * duration
+        for t in self.utilization.keys():
+            if t < start or t > end:
+                continue
+            for job, processed_units in self.utilization[t]:
+                include = True
+                if extras is not None:
+                    for key in extras.keys():
+                        if key not in job.extras or job.extras[key] != extras[key]:
+                            include = False
+                            break
+                if include:
+                    total_used_units += processed_units
+        return total_used_units / total_rate_units
 
     def _print(self, msg, verbosity):
         if self._sim_printer:
