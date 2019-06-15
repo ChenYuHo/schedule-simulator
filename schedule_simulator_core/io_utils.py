@@ -16,6 +16,8 @@ def generate_report(processing_unit, start=0, end=None,
     """
     The current implementation is a little messy and inefficient just to get quick insight.
     It should be refined and more structured later.
+    Also note that this function does not use the get_utilization method. Instead it implements its own so that the
+    utilization is calculated alongside the generation of the report.
     :param processing_unit: The unit to generate the report on. Will accept a list of units in a later implementation
     :param start: From which time step should we generate the report (Inclusive)
     :param end: To which time step (Inclusive)

@@ -3,31 +3,30 @@ from simpy import Interrupt
 from schedule_simulator_core import schedulers
 
 
-# class Distribution:
-#     """
-#     (Not needed anymore ??)
-#     It can define a constant, or any distribution
-#     Can be used for any numeric property to express some randomness.
-#     """
-#     def __init__(self, distribution, integer=True, *args):
-#         """
-#         :param distribution: The distribution function.
-#         See https://docs.scipy.org/doc/numpy/reference/routines.random.html#distributions for all distributions
-#         If set to none then the args field is returned (Constant).
-#         :param args: The arguments needed for the distribution or the value of the constant.
-#         """
-#         self.distribution = distribution
-#         self.args = args
-#         self.integer = integer
-#
-#     def __next__(self):
-#         if self.distribution is None:
-#             return self.args
-#         else:
-#             return self.distribution(*self.args)
-#
-#     def value(self):
-#         return self.__next__()
+class Distribution:
+    """
+    It can define a constant, or any distribution
+    Can be used for any numeric property to express some randomness.
+    """
+    def __init__(self, distribution, integer=True, *args):
+        """
+        :param distribution: The distribution function.
+        See https://docs.scipy.org/doc/numpy/reference/routines.random.html#distributions for all distributions
+        If set to none then the args field is returned (Constant).
+        :param args: The arguments needed for the distribution or the value of the constant.
+        """
+        self.distribution = distribution
+        self.args = args
+        self.integer = integer
+
+    def __next__(self):
+        if self.distribution is None:
+            return self.args
+        else:
+            return self.distribution(*self.args)
+
+    def generate_value(self):
+        return self.__next__()
 
 
 class Job(simpy.Event):
@@ -141,6 +140,9 @@ class ProcessingUnit:
         except AttributeError as e:
             print("[Error] Please make sure that you have mounted a valid scheduler on {}".format(self))
             raise e
+
+    def get_utilization(self, start, end, group=None):
+        pass
 
     def _print(self, msg, verbosity):
         if self._sim_printer:

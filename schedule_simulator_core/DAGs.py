@@ -49,6 +49,36 @@ class Layer:
         self.backward_dependencies = backward_dependencies
 
 
+class LayerFactory:
+    """
+    A class that is used to generate layers. Mainly used with distributions to allow for some randomness when building
+    a dag.
+    """
+    def __init__(self, layer_size, forward_pass_units=None, backward_pass_units=None, communication_units=None,
+                 is_trainable=True, indexing_offset=0, **extras):
+        self.layer_size = layer_size
+        self.forward_pass_units = forward_pass_units
+        self.backward_pass_units = backward_pass_units
+        self.communication_units = communication_units
+        self.is_trainable = is_trainable
+        self.indexing_offset = indexing_offset
+        self.extras = extras
+        self.count = 0
+
+    def create_layer(self):
+        attributes = list()
+        for attr in [self.layer_size, self.is_trainable, self.forward_pass_units, self.communication_units,
+                     self.communication_units]:
+            try:
+                attributes.append(attr.generate_value())
+            except AttributeError:
+                attributes.append(attr)
+        extras = self.extras.copy()
+        extras['index'] = self.count + self.indexing_offset
+        self.count += 1
+        return Layer(*attributes, **extras)
+
+
 class DAG:
     """
     It is a generic class that can describe any DNN architecture.
@@ -117,7 +147,6 @@ class DAG:
         for root in self.dag_input_layers:
             traverse(root=root,visited=visited)
 
-
     def extract_dependencies(self):
         """
         Uses a DFS O(n) to extract all dependencies between layers in the DAG.
@@ -169,25 +198,37 @@ class DAG:
     """Should add some functions to make it easy to join different DAGs together"""
 
 
-class HomogeneousLinearDAG(DAG):
+class LinearDag(DAG):
     """
-    A DAG that consists of a linear graph of identical layers which all contain trainable parameters.
-    Used for quick verification.
+    A general linear DAG built using a layer factory
     """
-    def __init__(self, n_of_layers, layer_size, is_trainable=True, indexing_offset=0):
-        root = Layer(layer_size, is_trainable=is_trainable, index=indexing_offset)
+    def __init__(self, n_of_layers, layer_factory: LayerFactory):
+        self.layer_factory = layer_factory
+        root = self.layer_factory.create_layer()
         prev = root
-        for i in range(indexing_offset + 1, indexing_offset + n_of_layers):
-            new = Layer(layer_size, is_trainable=True, input_layers=[prev], index=i)
+        for i in range(n_of_layers):
+            new = self.layer_factory.create_layer()
             prev.output_layers = [new]
             prev = new
         super().__init__([root])
 
 
+class HomogeneousLinearDAG(LinearDag):
+    """
+    A DAG that consists of a linear graph of identical layers which all contain trainable parameters.
+    Used for quick verification.
+    """
+    def __init__(self, n_of_layers, layer_size, is_trainable=True, indexing_offset=0):
+        layer_factory = LayerFactory(layer_size=layer_size, is_trainable=is_trainable, indexing_offset=indexing_offset)
+        super().__init__(n_of_layers, layer_factory)
+
+
 class RandomDAG(DAG):
     """
-    A DAG that consists of a random number of layers, with a random size, and in a random configuration.
+    A DAG that consists of layers in a semi random configuration governed by a linearity coefficient
     """
+    def __init__(self, n_of_layers, layer_factory: LayerFactory, linearity_coefficient=0.5):
+        pass
 
 
 def serialize_dag(path_to_file):
