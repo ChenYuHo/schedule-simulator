@@ -100,6 +100,23 @@ def clone_layer(layer):
     return deserialize(serialize(layer))
 
 
+def generate_dummy_data(model, num_of_samples):
+    # Keras gives us a list of shapes in case of multiple inputs / outputs
+    model_input_shapes = [model.input_shape] if model.input_shape[0] is None else model.input_shape
+    model_output_shapes = [model.output_shape] if model.output_shape[0] is None else model.output_shape
+    input_shapes = list()
+    for shape in [list(input_shape) for input_shape in model_input_shapes]:
+        shape[0] = num_of_samples
+        input_shapes.append(shape)
+    input_data = [np.random.rand(*shape) for shape in input_shapes]
+    output_shapes = list()
+    for shape in [list(output_shape) for output_shape in model_output_shapes]:
+        shape[0] = num_of_samples
+        output_shapes.append(shape)
+    output_data = [np.random.rand(*shape) for shape in output_shapes]
+    return input_data, output_data
+
+
 def profile(input_model, num_of_samples, loss, optimizer, full_profiling=False, log_stream=None):
     """
     The function takes a model and profiles the cost that each layer contributes to the total training time.
@@ -118,12 +135,21 @@ def profile(input_model, num_of_samples, loss, optimizer, full_profiling=False, 
     :return: A dict with key=layer.name and value=dict with keys=(forward_pass_cost, gradient_calculation_cost,
     gradient_application_cost, loss_calculation_cost)
     """
+    # Warm up run (To set up all backend variables and stuff)
+    if log_stream:
+        print("Running warm up...")
+    input_data, output_data = generate_dummy_data(input_model, 1000)
+    input_model.compile(optimizer=optimizer, loss=loss)
+    input_model.fit(input_data, output_data, verbose=0)
+
     timings = dict()
     # Produce layer topological order
     topological_layer_order = list()
     traverse_keras_DFS(input_model, topological_layer_order.append, order="post-order", top_to_bottom=True)
     topological_layer_order.reverse()
     # Build and profile model layer by layer using the topological order
+    if log_stream:
+        print("Start profiling...")
     input_layers = list()
     added_layers = dict()
     previous_iteration_cost = {"forward_pass_cost": 0, "loss_calculation_cost": 0, "gradient_calculation_cost": 0,
@@ -137,7 +163,6 @@ def profile(input_model, num_of_samples, loss, optimizer, full_profiling=False, 
                 original_parents.add(original_parent)
         # Remove all connections of this layer by making a deep clone using properties only
         current_layer = clone_layer(original_layer)
-
         # Restore appropriate connections in cloned network
         if len(original_parents) == 0:
             # This is an input layer. It is only used for structuring purposes no need to actually profile it. Therefore
@@ -174,21 +199,12 @@ def profile(input_model, num_of_samples, loss, optimizer, full_profiling=False, 
         cloned_model = Model(inputs=[x.input for x in input_layers], outputs=[x.output for x in output_layers])
         cloned_model.compile(optimizer=optimizer, loss=loss)
         # Create dummy data that suits the current input and output layers ---------------------------------------------
-        input_shapes = list()
-        for shape in [list(input_layer.input_shape) for input_layer in input_layers]:
-            shape[0] = num_of_samples
-            input_shapes.append(shape)
-        input_data = [np.random.rand(*shape) for shape in input_shapes]
-        output_shapes = list()
-        for shape in [list(output_layer.output_shape) for output_layer in output_layers]:
-            shape[0] = num_of_samples
-            output_shapes.append(shape)
-        output_data = [np.random.rand(*shape) for shape in output_shapes]
+        input_data, output_data = generate_dummy_data(cloned_model, num_of_samples)
         # Start profiling ----------------------------------------------------------------------------------------------
         timings[current_layer.name] = dict()
         current_iteration_cost = dict()
         model = cloned_model
-        print_format = "[{}:{}/{}] Layer: {} {{key}}: {{value}}\n".format(
+        print_format = "[{}:{:4}/{:<4}] Layer: {:16} {{key:30}}: {{value}}\n".format(
             input_model.name, len(model.layers), len(input_model.layers), current_layer.name)
         s0 = time.time_ns()
         # Step 1: Predict and record <time> (Gives us forward_pass_cost)
@@ -234,6 +250,10 @@ def profile(input_model, num_of_samples, loss, optimizer, full_profiling=False, 
                     key="gradient_application_cost", value=timings[current_layer.name]["gradient_application_cost"]))
         previous_iteration_cost = current_iteration_cost
     return timings
+
+
+def visualize_timing_profile(report):
+    pass
 
 
 if __name__ == "__main__":
@@ -288,7 +308,6 @@ if __name__ == "__main__":
     import json
     from keras.layers import Layer, serialize, deserialize, InputLayer, Input, Embedding, LSTM, Dense
     from keras.layers.merge import _Merge
-    from keras.applications import VGG19, InceptionV3
     from keras.models import Model
     if args.model == "dummy":
         model = dummy_multi_model()
