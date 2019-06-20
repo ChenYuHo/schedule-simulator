@@ -1,12 +1,21 @@
-import keras
-import numpy as np
+"""
+A script for getting layer wise timings of any Keras model. It uses an inefficient approach where the model is built
+layer by layer and the timing difference introduced by each layer is assumed to be that layer's cost.
+
+Tested versions:
+keras                     2.2.4                         0
+keras-applications        1.0.8                      py_0
+keras-base                2.2.4                    py37_0
+keras-preprocessing       1.1.0                      py_1
+tensorflow                1.13.1          mkl_py37h54b294f_0
+tensorflow-base           1.13.1          mkl_py37h7ce6ba3_0
+tensorflow-estimator      1.13.0                     py_0
+"""
+
+import argparse
 import sys
-import time
-import json
-from keras.applications import VGG19, ResNet50, InceptionV3, DenseNet201
-from keras.layers import Layer, serialize, deserialize, InputLayer, Input, Embedding, LSTM, Dense
-from keras.layers.merge import _Merge
-from keras.models import Model, Sequential
+from datetime import datetime
+import importlib
 
 
 def dummy_multi_model():
@@ -24,7 +33,7 @@ def dummy_multi_model():
     x = Dense(64, activation='relu')(x)
     x = Dense(64, activation='relu')(x)
     main_output = Dense(1, activation='sigmoid', name='main_output')(x)
-    model = Model(inputs=[main_input, auxiliary_input], outputs=[main_output, auxiliary_output])
+    model = Model(name="Dummy", inputs=[main_input, auxiliary_input], outputs=[main_output, auxiliary_output])
     return model
 
 
@@ -40,7 +49,7 @@ def init_models(models, insight=True):
             print("Num of parameters: {}".format(models[i].count_params()))
 
 
-def traverse_DFS(model: Model, processing_function, order="post-order", top_to_bottom=True):
+def traverse_keras_DFS(model, processing_function, order="post-order", top_to_bottom=True):
     """
     Uses a recursive DFS O(n) to process all layers in a Keras model using the processing_function.
     :param model: Keras model to traverse.
@@ -83,7 +92,7 @@ def traverse_DFS(model: Model, processing_function, order="post-order", top_to_b
             traverse(root=end_layer, visited=visited)
 
 
-def clone_layer(layer: Layer):
+def clone_layer(layer):
     """
     Creates a clone of the layer using only its main properties (Does not copy any connections from the clone)
     Better implementation exists ?
@@ -91,7 +100,7 @@ def clone_layer(layer: Layer):
     return deserialize(serialize(layer))
 
 
-def profile(input_model: Model, num_of_samples, loss, optimizer, output_stream=None, log_stream=None):
+def profile(input_model, num_of_samples, loss, optimizer, full_profiling=False, log_stream=None):
     """
     The function takes a model and profiles the cost that each layer contributes to the total training time.
     The cost can be separated into 4 categories:
@@ -103,24 +112,22 @@ def profile(input_model: Model, num_of_samples, loss, optimizer, output_stream=N
     :param num_of_samples: The number of samples to use in profiling. The higher the more computation & accuracy.
     :param loss: The loss function for the model
     :param optimizer: The optimizer used for the model
-    :param output_stream: A stream to write the results to with every step. Useful to keep data upon crashes.
-    If none then no output is written.
+    :param full_profiling: Include step 2 and 4 in profiling
     :param log_stream: A stream to direct the output of the profiling. Useful to keep track of the current step.
     If none then no logging happens
-    :return: A dict with key=layer.name and value=(forward_pass_cost, gradient_calculation_cost,
-    gradient_application_cost)
-    as well as a special entry with key="loss_calculation_cost" value=cost since this is layer independent
+    :return: A dict with key=layer.name and value=dict with keys=(forward_pass_cost, gradient_calculation_cost,
+    gradient_application_cost, loss_calculation_cost)
     """
-    sys.stdout = log_stream
     timings = dict()
-    timings["loss_calculation_cost"] = 0
     # Produce layer topological order
     topological_layer_order = list()
-    traverse_DFS(input_model, topological_layer_order.append, order="post-order", top_to_bottom=True)
+    traverse_keras_DFS(input_model, topological_layer_order.append, order="post-order", top_to_bottom=True)
     topological_layer_order.reverse()
     # Build and profile model layer by layer using the topological order
     input_layers = list()
     added_layers = dict()
+    previous_iteration_cost = {"forward_pass_cost": 0, "loss_calculation_cost": 0, "gradient_calculation_cost": 0,
+                               "gradient_application_cost": 0}
     for original_layer in topological_layer_order:
         # Add new layer to cloned network ------------------------------------------------------------------------------
         # Flatten out the layer's parents to check what the cloned layer needs to connect to
@@ -130,6 +137,7 @@ def profile(input_model: Model, num_of_samples, loss, optimizer, output_stream=N
                 original_parents.add(original_parent)
         # Remove all connections of this layer by making a deep clone using properties only
         current_layer = clone_layer(original_layer)
+
         # Restore appropriate connections in cloned network
         if len(original_parents) == 0:
             # This is an input layer. It is only used for structuring purposes no need to actually profile it. Therefore
@@ -159,18 +167,10 @@ def profile(input_model: Model, num_of_samples, loss, optimizer, output_stream=N
         # A top to bottom fashion.
         output_layers = list()
         for layer in added_layers.values():
-            has_child = False
-            for node in layer._outbound_nodes:
-                child = node.outbound_layer
-                if child is not None:
-                    has_child = True
-                    break
-                else:
-                    print("Correct way to identify the existance of a node child. You can remove this now")
-            if not has_child:
-                output_layers.append(current_layer)
+            if layer not in input_layers and len(layer._outbound_nodes) == 0:
+                output_layers.append(layer)
         # Create and compile model -------------------------------------------------------------------------------------
-        # Inputs must be tensors not layers
+        # Inputs & outputs must be tensors not layers
         cloned_model = Model(inputs=[x.input for x in input_layers], outputs=[x.output for x in output_layers])
         cloned_model.compile(optimizer=optimizer, loss=loss)
         # Create dummy data that suits the current input and output layers ---------------------------------------------
@@ -185,47 +185,114 @@ def profile(input_model: Model, num_of_samples, loss, optimizer, output_stream=N
             output_shapes.append(shape)
         output_data = [np.random.rand(*shape) for shape in output_shapes]
         # Start profiling ----------------------------------------------------------------------------------------------
-        verbose = 0 if log_stream is None else 1
         timings[current_layer.name] = dict()
+        current_iteration_cost = dict()
         model = cloned_model
-        if verbose:
-            print("ts: {} ] Profiling {} with {}/{} layers".format(
-                time.time_ns(), model.name, len(model.layers), len(input_model.layers)))
-            model.summary()
+        print_format = "[{}:{}/{}] Layer: {} {{key}}: {{value}}\n".format(
+            input_model.name, len(model.layers), len(input_model.layers), current_layer.name)
         s0 = time.time_ns()
         # Step 1: Predict and record <time> (Gives us forward_pass_cost)
-        if verbose:
-            print("ts: {} ] Profiling forward_pass_cost".format(s0))
-        model.predict(x=input_data, batch_size=num_of_samples, verbose=verbose)
+        model.predict(x=input_data, batch_size=num_of_samples, verbose=0)
         s1 = time.time_ns()
+        current_iteration_cost["forward_pass_cost"] = s1 - s0
+        timings[current_layer.name]["forward_pass_cost"] =\
+            current_iteration_cost["forward_pass_cost"] - previous_iteration_cost["forward_pass_cost"]
+        if log_stream:
+            log_stream.write(print_format.format(
+                key="forward_pass_cost", value=timings[current_layer.name]["forward_pass_cost"]))
         # Step 2: Evaluate and record <time - Step 1> (Gives us loss_calculation_cost)
-        if verbose:
-            print("ts: {} ] Profiling loss_calculation_cost".format(s1))
-        model.evaluate(x=input_data, y=output_data, batch_size=num_of_samples, verbose=verbose)
-        s2 = time.time_ns()
+        if full_profiling:
+            model.evaluate(x=input_data, y=output_data, batch_size=num_of_samples, verbose=0)
+            s2 = time.time_ns()
+            current_iteration_cost["loss_calculation_cost"] = s2 - s1
+            timings[current_layer.name]["loss_calculation_cost"] = \
+                current_iteration_cost["loss_calculation_cost"] - previous_iteration_cost["loss_calculation_cost"]
+            if log_stream:
+                log_stream.write(print_format.format(
+                    key="loss_calculation_cost", value=timings[current_layer.name]["loss_calculation_cost"]))
         # Step 3: Train using batch_size = samples and record <time - Step 1 - Step 2>
         # (Gives us gradient_calculation_cost)
-        if verbose:
-            print("ts: {} ] Profiling gradient_calculation_cost".format(s2))
-        model.fit(x=input_data, y=output_data, batch_size=num_of_samples, verbose=verbose)
+        model.fit(x=input_data, y=output_data, batch_size=num_of_samples, verbose=0)
         s3 = time.time_ns()
+        current_iteration_cost["gradient_calculation_cost"] = s3 - s1 if not full_profiling else s3 - s2
+        timings[current_layer.name]["gradient_calculation_cost"] = \
+            current_iteration_cost["gradient_calculation_cost"] - previous_iteration_cost["gradient_calculation_cost"]
+        if log_stream:
+            log_stream.write(print_format.format(
+                key="gradient_calculation_cost", value=timings[current_layer.name]["gradient_calculation_cost"]))
         # Step 4: Train using batch_size = 1 and record <time - Step 1 - Step 2 - Step 3>
         # (Gives us gradient_application_cost)
-        if verbose:
-            print("ts: {} ] Profiling gradient_application_cost".format(s3))
-        model.fit(x=input_data, y=output_data, batch_size=1, verbose=verbose)
-        s4 = time.time_ns()
-        if verbose:
-            print("ts: {} ] Finished {} with {}/{} layers".format(
-                time.time_ns(), model.name, len(model.layers), len(input_model.layers)))
-        # Write timings ------------------------------------------------------------------------------------------------
-        timings[current_layer.name]["forward_pass_cost"] = s1-s0
-        timings["loss_calculation_cost"] += s2 - s1
-        timings[current_layer.name]["gradient_calculation_cost"] = s3-s2
-        timings[current_layer.name]["gradient_application_cost"] = s4-s3
-        if output_stream is not None:
-            json.dump(timings, output_stream)
-    timings["loss_calculation_cost"] /= len(input_model.layers)
-    if output_stream is not None:
-        json.dump(timings, output_stream)
+        if full_profiling:
+            model.fit(x=input_data, y=output_data, batch_size=1, verbose=0)
+            s4 = time.time_ns()
+            current_iteration_cost["gradient_application_cost"] = s4 - s3
+            timings[current_layer.name]["gradient_application_cost"] = \
+                current_iteration_cost["gradient_application_cost"] -\
+                previous_iteration_cost["gradient_application_cost"]
+            if log_stream:
+                log_stream.write(print_format.format(
+                    key="gradient_application_cost", value=timings[current_layer.name]["gradient_application_cost"]))
+        previous_iteration_cost = current_iteration_cost
     return timings
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="A script that profiles Keras models and produces layer wise timings.")
+    parser.add_argument("model",
+                        help="The Keras model to profile. See Keras.Applications documentation for all options."
+                             "Entering 'dummy' will use a small dummy model for debugging.")
+    parser.add_argument("-n", "--samples", type=int, default=100,
+                        help="The number of samples to run for each cost evaluation. The higher the more accurate and "
+                             "the more computation time needed.")
+    parser.add_argument("-l", "--loss", default="binary_crossentropy",
+                        help="The loss function to use. See Keras.Losses documentation for all options.")
+    parser.add_argument("-o", "--optimizer", default="sgd",
+                        help="The optimizer to use when training. See Keras.Optimizers documentation for all options.")
+    parser.add_argument("-fb", "--full_profiling", action="store_true",
+                        help="If set to true then loss calculation and gradient application will be included in "
+                             "profiling")
+    parser.add_argument("--out",
+                        help="Stream to write the timings to in json format if any. File | stdout | stderr")
+    parser.add_argument("--log",
+                        help="Stream to write status messages to if any. File | stdout | stderr")
+    args = parser.parse_args()
+    if args.out is not None:
+        if args.out == "stdout":
+            out = sys.__stdout__
+        elif args.out == "stderr":
+            out = sys.__stderr__
+        elif args.out == "suppress":
+            out = False
+        else:
+            out = open(args.out, "w")
+    else:
+        out = open("{}_{}.timings.json".format(args.model, datetime.now().strftime("%m-%d-%H-%M")), "w")
+    if args.log is not None:
+        if args.log == "stdout":
+            log = sys.__stdout__
+        elif args.log == "stderr":
+            log = sys.__stderr__
+        elif args.log == "suppress":
+            log = False
+        else:
+            log = open(args.log, "w")
+    else:
+        log = sys.__stdout__
+    if not args.model == "dummy":
+        module = __import__("keras.applications", fromlist=[args.model])
+        model = getattr(module, args.model)
+        model = model(weights=None, include_top=True)
+    import keras
+    import numpy as np
+    import time
+    import json
+    from keras.layers import Layer, serialize, deserialize, InputLayer, Input, Embedding, LSTM, Dense
+    from keras.layers.merge import _Merge
+    from keras.applications import VGG19, InceptionV3
+    from keras.models import Model
+    if args.model == "dummy":
+        model = dummy_multi_model()
+    timings = profile(input_model=model, num_of_samples=args.samples, loss=args.loss, optimizer=args.optimizer,
+                      full_profiling=args.full_profiling, log_stream=log)
+    report = {"args": args.__dict__, "timings": timings}
+    json.dump(report, out, indent=4)
