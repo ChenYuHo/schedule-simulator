@@ -62,7 +62,7 @@ def forward_pass(dag: DAG, env: simpy.Environment, computation_queue, communicat
         # Wait for all dependencies to finish
         if dependent_layer_jobs is not None:
             deps = [layer]  # Must include the layer itself
-            deps.extend(layer.forward_dependencies)
+            deps.extend(layer._forward_dependencies)
             for dep in deps:
                 yield dependent_layer_jobs[dep]
         # Create job
@@ -105,7 +105,7 @@ def backward_pass(dag: DAG, env: simpy.Environment, computation_queue, communica
         # Wait for all dependencies to finish
         if dependent_layer_jobs is not None:
             deps = [layer]  # Must include the layer itself
-            deps.extend(layer.backward_dependencies)
+            deps.extend(layer._backward_dependencies)
             for dep in deps:
                 yield dependent_layer_jobs[dep]
         # Create job

@@ -87,7 +87,7 @@ class TopologicalPriorityScheduler(Scheduler):
 
     def queue(self, job, **kwargs):
         self._lock.acquire()
-        priority = len(job.source.forward_dependencies)
+        priority = len(job.source._forward_dependencies)
         self._queue.append((priority, job))
         self._lock.release()
 

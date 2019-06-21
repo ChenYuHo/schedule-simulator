@@ -9,44 +9,26 @@ class Layer:
     The building block of a DAG.
     It is a generic layer class that can describe any type of DNN layer.
     """
-    def __init__(self, tensor_size, is_trainable, forward_pass_units=None, backward_pass_units=None,
-                 communication_units=None,input_layers=None, output_layers=None, forward_dependencies=None,
-                 backward_dependencies=None,
-                 **extras):
+    def __init__(self, forward_pass_units, backward_pass_units, communication_units,
+                 input_layers=None, output_layers=None, **extras):
         """
-        :param tensor_size: The size of the tensor that is produced (Not the dimensions!).
-        :param is_trainable: Whether this layer has trainable parameters or not. If it does not then it is only included
-        for its computational cost (No communication cost).
-        :param forward_pass_units: The processing cost of a forward pass. If none, then the tensor_size is used.
-        :param backward_pass_units: The processing cost of a backward pass. If none, then tensor_size is used
-        :param communication_units: The communication cost of a backward pass. If none, then tensor_size is used. Used
-        to accommodate communication overheads.
+        :param forward_pass_units: The processing cost of a forward pass.
+        :param backward_pass_units: The processing cost of a backward pass.
+        :param communication_units: The communication cost of a backward pass.
         :param input_layers: A list of layers that provide the input to this layer.
         :param output_layers: A list of layers that will receive the output of this layer.
         :param forward_dependencies: A set of layers that this layer depends on in a forward pass.
         :param backward_dependencies: A set of layers that this layer depends on in a backward pass.
         :param extras: Custom attributes that help identify this layer or its behavior.
         """
-        self.tensor_size = int(tensor_size)
-        self.is_trainable = is_trainable
-        self.tensor_size = tensor_size
-        if forward_pass_units is None:
-            self.forward_pass_units = self.tensor_size
-        else:
-            self.forward_pass_units = int(forward_pass_units)
-        if backward_pass_units is None:
-            self.backward_pass_units = self.tensor_size
-        else:
-            self.backward_pass_units = int(backward_pass_units)
-        if communication_units is None:
-            self.communication_units = self.tensor_size
-        else:
-            self.communication_units = int(communication_units)
+        self.forward_pass_units = forward_pass_units
+        self.backward_pass_units = backward_pass_units
+        self.communication_units = communication_units
         self.input_layers = input_layers
         self.output_layers = output_layers
         self.extras = extras
-        self.forward_dependencies = forward_dependencies
-        self.backward_dependencies = backward_dependencies
+        self._forward_dependencies = None
+        self._backward_dependencies = None
 
 
 class LayerFactory:
@@ -54,21 +36,17 @@ class LayerFactory:
     A class that is used to generate layers. Mainly used with distributions to allow for some randomness when building
     a dag.
     """
-    def __init__(self, layer_size, forward_pass_units=None, backward_pass_units=None, communication_units=None,
-                 is_trainable=True, indexing_offset=0, **extras):
-        self.layer_size = layer_size
+    def __init__(self, forward_pass_units, backward_pass_units, communication_units, indexing_offset=0, **extras):
         self.forward_pass_units = forward_pass_units
         self.backward_pass_units = backward_pass_units
         self.communication_units = communication_units
-        self.is_trainable = is_trainable
         self.indexing_offset = indexing_offset
         self.extras = extras
         self.count = 0
 
     def create_layer(self):
         attributes = list()
-        for attr in [self.layer_size, self.is_trainable, self.forward_pass_units, self.communication_units,
-                     self.communication_units]:
+        for attr in [self.forward_pass_units, self.backward_pass_units, self.communication_units]:
             try:
                 attributes.append(attr.generate_value())
             except AttributeError:
@@ -88,8 +66,8 @@ class DAG:
         self.dag_output_layers = list()
         # Traverse dag and setup layer variables as well as extract dag_output_layers
         def process_node(node):
-            node.forward_dependencies = set()
-            node.backward_dependencies = set()
+            node._forward_dependencies = set()
+            node._backward_dependencies = set()
             if node.output_layers is None:
                 self.dag_output_layers.append(node)
         self.traverse_BFS(processing_function=process_node)
@@ -155,7 +133,7 @@ class DAG:
         def extract_forward_dependencies(root: Layer, deps: set, visited: set):
             if root in visited:
                 return
-            root.forward_dependencies = root.forward_dependencies.union(deps)
+            root._forward_dependencies = root._forward_dependencies.union(deps)
             # We should traverse the node only if the node's ingoing connections have all been traversed.
             if root.input_layers is not None:
                 for ingoing in root.input_layers:
@@ -173,7 +151,7 @@ class DAG:
         def extract_backward_dependencies(root: Layer, deps: set, visited: set):
             if root in visited:
                 return
-            root.backward_dependencies = root.backward_dependencies.union(deps)
+            root._backward_dependencies = root._backward_dependencies.union(deps)
             # We should traverse the node only if the node's outgoing connections have all been traversed.
             if root.output_layers is not None:
                 for outgoing in root.output_layers:
@@ -208,6 +186,7 @@ class LinearDag(DAG):
         prev = root
         for i in range(n_of_layers):
             new = self.layer_factory.create_layer()
+            new.input_layers = [prev]
             prev.output_layers = [new]
             prev = new
         super().__init__([root])
@@ -219,7 +198,7 @@ class HomogeneousLinearDAG(LinearDag):
     Used for quick verification.
     """
     def __init__(self, n_of_layers, layer_size, is_trainable=True, indexing_offset=0):
-        layer_factory = LayerFactory(layer_size=layer_size, is_trainable=is_trainable, indexing_offset=indexing_offset)
+        layer_factory = LayerFactory(layer_size, layer_size, layer_size, indexing_offset=indexing_offset)
         super().__init__(n_of_layers, layer_factory)
 
 
@@ -231,19 +210,77 @@ class RandomDAG(DAG):
         pass
 
 
-def serialize_dag(path_to_file):
-    pass
+def serialize_dag(dag: DAG, formatted=True):
+    """
+    A function that returns a json string that is simply a list of layers. With each layer's connections described.
+    """
+    import json
+    i = 0
+    temp_ids = dict()
+    serialized_dag = dict()
+
+    def add_layer(layer):
+        nonlocal i
+        sl = dict()
+        if layer not in temp_ids:
+            temp_ids[layer] = i
+            i += 1
+        sl["forward_pass_units"] = layer.forward_pass_units
+        sl["backward_pass_units"] = layer.backward_pass_units
+        sl["communication_units"] = layer.communication_units
+        sl["input_layers"] = list()
+        if layer.input_layers is not None:
+            for input_layer in layer.input_layers:
+                if input_layer not in temp_ids:
+                    temp_ids[input_layer] = i
+                    i += 1
+                sl["input_layers"].append(temp_ids[input_layer])
+        sl["output_layers"] = list()
+        if layer.output_layers is not None:
+            for output_layer in layer.output_layers:
+                if output_layer not in temp_ids:
+                    temp_ids[output_layer] = i
+                    i += 1
+                sl["output_layers"].append(temp_ids[output_layer])
+        sl["extras"] = layer.extras
+        serialized_dag[temp_ids[layer]] = sl
+    dag.traverse_BFS(add_layer)
+    return json.dumps(serialized_dag, indent=4) if formatted else json.dumps(serialized_dag)
 
 
-def deserialize_dag(path_to_file):
-    pass
+def deserialize_dag(serialized_dag):
+    import json
+    serialized_dag = json.loads(serialized_dag)
+    temp_ids = dict()
+    input_layers = list()
+    for i, layer_dict in serialized_dag.items():
+        extras = layer_dict["extras"]
+        del(layer_dict["extras"])
+        temp_ids[i] = Layer(**layer_dict, **extras)
+    # Translate layer ids to objects in layer lists
+    for layer in temp_ids.values():
+        object_input_layers = list()
+        object_output_layers = list()
+        if len(layer.input_layers) == 0:
+            input_layers.append(layer)
+        else:
+            for input_layer_i in layer.input_layers:
+                object_input_layers.append(temp_ids[str(input_layer_i)])
+        if len(layer.output_layers) > 0:
+            for output_layer_i in layer.output_layers:
+                object_output_layers.append(temp_ids[str(output_layer_i)])
+        layer.input_layers = object_input_layers
+        layer.output_layers = object_output_layers
+    dag = DAG(input_layers)
+    return dag
 
 
 if __name__ == "__main__":
     """
     An example usage
     """
-    DAG = HomogeneousLinearDAG(5, 4)
+    dag = HomogeneousLinearDAG(5, 4)
+    print(serialize_dag(dag))
     def p(node):
         print(node.extras['index'])
-    DAG.traverse_DFS(p, order="pre-order")
+    dag.traverse_DFS(p, order="pre-order")
