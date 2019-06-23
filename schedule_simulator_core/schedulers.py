@@ -40,28 +40,24 @@ class FIFOScheduler(Scheduler):
         self._lock = Lock()
 
     def count(self):
-        self._lock.acquire()
-        a = len(self._queue)
-        self._lock.release()
-        return a
+        with self._lock:
+            a = len(self._queue)
+            return a
 
     def queue(self, job, **kwargs):
-        self._lock.acquire()
-        self._queue.append(job)
-        self._lock.release()
+        with self._lock:
+            self._queue.append(job)
 
     def request(self, **kwargs):
-        self._lock.acquire()
-        job = None
-        if len(self._queue) > 0:
-            job = self._queue[0]
-        self._lock.release()
+        with self._lock:
+            job = None
+            if len(self._queue) > 0:
+                job = self._queue[0]
         return job
 
     def remove(self, job, **kwargs):
-        self._lock.acquire()
-        self._queue.remove(job)
-        self._lock.release()
+        with self._lock:
+            self._queue.remove(job)
 
 
 class TopologicalPriorityScheduler(Scheduler):
@@ -80,39 +76,35 @@ class TopologicalPriorityScheduler(Scheduler):
         self._current_job = None
 
     def count(self):
-        self._lock.acquire()
-        a = len(self._queue)
-        self._lock.release()
+        with self._lock:
+            a = len(self._queue)
         return a
 
     def queue(self, job, **kwargs):
-        self._lock.acquire()
-        priority = len(job.source._forward_dependencies)
-        self._queue.append((priority, job))
-        self._lock.release()
+        with self._lock:
+            priority = len(job.source._forward_dependencies)
+            self._queue.append((priority, job))
 
     def request(self, **kwargs):
-        self._lock.acquire()
-        if self.preemptive or self._current_job is None:
-            min_priority = None
-            min_job = None
-            for priority, job in self._queue:
-                if min_priority is None or priority < min_priority:
-                    min_priority = priority
-                    min_job = job
-            self._current_job = min_job
-        self._lock.release()
+        with self._lock:
+            if self.preemptive or self._current_job is None:
+                min_priority = None
+                min_job = None
+                for priority, job in self._queue:
+                    if min_priority is None or priority < min_priority:
+                        min_priority = priority
+                        min_job = job
+                self._current_job = min_job
         return self._current_job
 
     def remove(self, job, **kwargs):
-        self._lock.acquire()
-        if job == self._current_job:
-            self._current_job = None
-        for i, item in enumerate(self._queue):
-            if item[1] == job:
-                self._queue.pop(i)
-                break
-        self._lock.release()
+        with self._lock:
+            if job == self._current_job:
+                self._current_job = None
+            for i, item in enumerate(self._queue):
+                if item[1] == job:
+                    self._queue.pop(i)
+                    break
 
     def __str__(self):
         return "{}:{}".format(super().__str__(), "Preemptive" if self.preemptive else "Non-preemptive")
