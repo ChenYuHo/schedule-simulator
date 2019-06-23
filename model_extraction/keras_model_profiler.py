@@ -18,6 +18,7 @@ from datetime import datetime
 import importlib
 import time
 import json
+import socket
 
 
 def dummy_multi_model():
@@ -38,7 +39,17 @@ def dummy_multi_model():
     x = Dense(64, activation='relu')(x)
     x = Dense(64, activation='relu')(x)
     main_output = Dense(1, activation='sigmoid', name='main_output')(x)
-    model = Model(name="Dummy", inputs=[main_input, auxiliary_input], outputs=[main_output, auxiliary_output])
+    model = Model(name="dummy_multi", inputs=[main_input, auxiliary_input], outputs=[main_output, auxiliary_output])
+    return model
+
+
+def dummy_linear_dense_model(units=100, n_of_layers=10):
+    from keras.models import Sequential
+    from keras.layers import Dense
+    model = Sequential(name="dummy_linear")
+    model.add(Dense(units, input_shape=(units,)))
+    for _ in range(n_of_layers-1):
+        model.add(Dense(units))
     return model
 
 
@@ -124,7 +135,7 @@ def generate_dummy_data(model, num_of_samples):
     return input_data, output_data
 
 
-def profile(input_model, loss, optimizer, num_of_samples=100, trials=5, do_warmup=True,
+def profile(input_model, loss, optimizer, num_of_samples=100, trials=1, num_of_function_calls=5, do_warmup=True,
             full_profiling=False, log_stream=None):
     """
     The function takes a model and profiles the cost that each layer contributes to the total training time.
@@ -137,15 +148,18 @@ def profile(input_model, loss, optimizer, num_of_samples=100, trials=5, do_warmu
     4- Apply the gradient (Taking the calculated gradient and applying it using an optimizer)
     :param input_model: The model to profile
     :param num_of_samples: The number of samples to use in profiling. The higher the more computation & accuracy.
-    :param trials: The number of times to call the profiling functions using the number of samples.
+    :param trials: The number of layer building & evaluation iterations to do.
+    :param num_of_function_calls: The number of function calls to make before taking and recording the minimum cost.
+    Only the minimum cost of these calls is added to the report.
     :param do_warmup: Whether a warmup run is done first so that the keras backend engine is setup
     :param loss: The loss function for the model
     :param optimizer: The optimizer used for the model
     :param full_profiling: Include step 2 and 4 in profiling
     :param log_stream: A stream to direct the output of the profiling. Useful to keep track of the current step.
     If none then no logging happens
-    :return: A dict with key=layer.name and value=dict with keys=(forward_pass_cost, gradient_calculation_cost,
-    gradient_application_cost, loss_calculation_cost)
+    :return: An (exception,dict) tuple the exception slot is to detect if an exception has occurred and the dict
+    contains the information. The dict has key=layer.name and value=dict with
+    keys=(forward_pass_cost, gradient_calculation_cost, gradient_application_cost, loss_calculation_cost)
     """
     import keras
     from keras.layers import InputLayer
@@ -171,12 +185,12 @@ def profile(input_model, loss, optimizer, num_of_samples=100, trials=5, do_warmu
                                        args=dict(x=None, y=None, batch_size=num_of_samples, verbose=0)))
         accumulative_costs.append(dict(name="gradient_calculation_cost", func="fit",
                                        args=dict(x=None, y=None, batch_size=num_of_samples, verbose=0)))
-        accumulative_costs.append(dict(name="output_calculation_cost", func="fit",
+        accumulative_costs.append(dict(name="gradient_application_cost", func="fit",
                                        args=dict(x=None, y=None, batch_size=1, verbose=0)))
     else:
         accumulative_costs.append(dict(name="forward_pass_cost", func="evaluate",
                                        args=dict(x=None, y=None, batch_size=num_of_samples, verbose=0)))
-        accumulative_costs.append(dict(name="gradient_calculation_cost", func="fit",
+        accumulative_costs.append(dict(name="backward_pass_cost", func="fit",
                                        args=dict(x=None, y=None, verbose=0)))
     # Initialize timings dictionary
     timings = dict()
@@ -189,101 +203,112 @@ def profile(input_model, loss, optimizer, num_of_samples=100, trials=5, do_warmu
     # Build and profile model layer by layer using the topological order
     if log_stream:
         log_stream.write("Start profiling...\n")
-    for trial in range(trials):
-        if log_stream:
-            log_stream.write("Trial: {}\n".format(trial))
-        input_layers = list()
-        added_layers = dict()
-        previous_iteration_cost = None
-        for original_layer in topological_layer_order:
-            # Add new layer to cloned network --------------------------------------------------------------------------
-            # Flatten out the layer's parents to check what the cloned layer needs to connect to
-            original_parents = set()
-            for original_node in original_layer._inbound_nodes:
-                for original_parent in original_node.inbound_layers:
-                    original_parents.add(original_parent)
-            # Remove all connections of this layer by making a clone using properties only
-            current_layer = clone_layer(original_layer)
-            # Restore appropriate connections in cloned network
-            if len(original_parents) == 0:
-                # This is an input layer. It is only used for structuring purposes no need to actually profile it.
-                # Therefore we add it and continue
-                input_layers.append(current_layer)
+    try:
+        for trial in range(trials):
+            if log_stream:
+                log_stream.write("Trial: {}\n".format(trial))
+            input_layers = list()
+            added_layers = dict()
+            previous_model_cost = None
+            for original_layer in topological_layer_order:
+                # Add new layer to cloned network ----------------------------------------------------------------------
+                # Flatten out the layer's parents to check what the cloned layer needs to connect to
+                original_parents = set()
+                for original_node in original_layer._inbound_nodes:
+                    for original_parent in original_node.inbound_layers:
+                        original_parents.add(original_parent)
+                # Remove all connections of this layer by making a clone using properties only
+                current_layer = clone_layer(original_layer)
+                # Restore appropriate connections in cloned network
+                if len(original_parents) == 0:
+                    # This is an input layer. It is only used for structuring purposes no need to actually profile it.
+                    # Therefore we add it and continue
+                    input_layers.append(current_layer)
+                    added_layers[current_layer.name] = current_layer
+                    continue
+                cloned_parents = set()
+                try:
+                    for original_parent in original_parents:
+                        cloned_parents.add(added_layers[original_parent.name])
+                except KeyError:
+                    raise Exception("Attempting to add layer before one of its parents")
+                assert len(cloned_parents) == len(original_parents)
+                if len(cloned_parents) > 1:
+                    # Merge all parents into this layer
+                    # https://github.com/keras-team/keras/blob/master/keras/layers/merge.py#L328
+                    # https://keras.io/layers/merge/
+                    if not isinstance(current_layer, _Merge):
+                        raise Exception("Non merge layer should not have multiple parents")
+                    current_layer([x.output for x in cloned_parents])
+                elif len(cloned_parents) == 1:
+                    # Make a connection to the only parent
+                    current_layer(cloned_parents.pop().output)
                 added_layers[current_layer.name] = current_layer
-                continue
-            cloned_parents = set()
-            try:
-                for original_parent in original_parents:
-                    cloned_parents.add(added_layers[original_parent.name])
-            except KeyError:
-                raise Exception("Attempting to add layer before one of its parents")
-            assert len(cloned_parents) == len(original_parents)
-            if len(cloned_parents) > 1:
-                # Merge all parents into this layer
-                # https://github.com/keras-team/keras/blob/master/keras/layers/merge.py#L328
-                # https://keras.io/layers/merge/
-                if not isinstance(current_layer, _Merge):
-                    raise Exception("Non merge layer should not have multiple parents")
-                current_layer([x.output for x in cloned_parents])
-            elif len(cloned_parents) == 1:
-                # Make a connection to the only parent
-                current_layer(cloned_parents.pop().output)
-            added_layers[current_layer.name] = current_layer
-            # Find output layers. Output layers need to be updated with every iteration since we are building the model
-            # from a top to bottom fashion.
-            output_layers = list()
-            for layer in added_layers.values():
-                if layer not in input_layers and len(layer._outbound_nodes) == 0:
-                    output_layers.append(layer)
-            # Create and compile model ---------------------------------------------------------------------------------
-            # Inputs & outputs must be tensors not layers
-            cloned_model = Model(inputs=[x.input for x in input_layers], outputs=[x.output for x in output_layers])
-            cloned_model.compile(optimizer=optimizer, loss=loss)
-            # Create dummy data that suits the current input and output layers -----------------------------------------
-            input_data, output_data = generate_dummy_data(cloned_model, num_of_samples)
-            # Start profiling ------------------------------------------------------------------------------------------
-            current_iteration_cost = dict()
-            print_format = "[{}:{:4}/{:<4}] Layer: {:16} {{key:30}}: {{value}}\n".format(
-                input_model.name, len(cloned_model.layers), len(input_model.layers), current_layer.name)
-            accumulated_cost = 0
-            for i, cost in enumerate(accumulative_costs):
-                name = cost["name"]
-                func = getattr(cloned_model, cost["func"])
-                args = cost["args"]
-                # Substitute in the input and output data
-                if "x" in args.keys():
-                    args["x"] = input_data
-                if "y" in args.keys():
-                    args["y"] = output_data
-                # Call the function and record the time
-                t = time.time_ns()
-                func(**args)
-                current_iteration_cost[name] = time.time_ns() - t
-                # The layer total function cost is the difference between the previous and current iteration cost
-                layer_total_func_cost = current_iteration_cost[name] -\
-                                        (previous_iteration_cost[name] if previous_iteration_cost else 0)
-                # The layer actual cost to measure is the total function cost minus all the actual costs before it
-                layer_actual_specific_cost = layer_total_func_cost - accumulated_cost
-                accumulated_cost += layer_actual_specific_cost
-                if log_stream:
-                    log_stream.write(print_format.format(key=name, value=layer_actual_specific_cost))
-                timings[current_layer.name][name].append(layer_actual_specific_cost)
-            previous_iteration_cost = current_iteration_cost
-    return timings
+                # Find output layers. Output layers need to be updated with every iteration since we are building the
+                # model from a top to bottom fashion.
+                output_layers = list()
+                for layer in added_layers.values():
+                    if layer not in input_layers and len(layer._outbound_nodes) == 0:
+                        output_layers.append(layer)
+                # Create and compile model -----------------------------------------------------------------------------
+                # Inputs & outputs must be tensors not layers
+                cloned_model = Model(inputs=[x.input for x in input_layers], outputs=[x.output for x in output_layers])
+                cloned_model.compile(optimizer=optimizer, loss=loss)
+                # Create dummy data that suits the current input and output layers -------------------------------------
+                input_data, output_data = generate_dummy_data(cloned_model, num_of_samples)
+                # Start profiling --------------------------------------------------------------------------------------
+                current_model_cost = dict()
+                for cost in accumulative_costs:
+                    current_model_cost[cost["name"]] = float("inf")
+                print_format = "[{}:{:4}/{:<4}] Layer: {:16} {{key:30}}: {{value}}\n".format(
+                    input_model.name, len(cloned_model.layers), len(input_model.layers), current_layer.name)
+                accumulated_cost = 0
+                for i, cost in enumerate(accumulative_costs):
+                    name = cost["name"]
+                    func = getattr(cloned_model, cost["func"])
+                    args = cost["args"]
+                    # Substitute in the input and output data
+                    if "x" in args.keys():
+                        args["x"] = input_data
+                    if "y" in args.keys():
+                        args["y"] = output_data
+                    # Call the function and record the time
+                    for _ in range(num_of_function_calls):
+                        t = time.time_ns()
+                        func(**args)
+                        tc = time.time_ns()
+                        if tc < current_model_cost[name]:
+                            current_model_cost[name] = tc
+                    # The layer total function cost is the difference between the previous and current iteration cost
+                    layer_total_func_cost = current_model_cost[name] -\
+                                            (previous_model_cost[name] if previous_model_cost else 0)
+                    # The layer actual cost to measure is the total function cost minus all the actual costs before it
+                    layer_actual_specific_cost = layer_total_func_cost - accumulated_cost
+                    accumulated_cost += layer_actual_specific_cost
+                    if log_stream:
+                        log_stream.write(print_format.format(key=name, value=layer_actual_specific_cost))
+                    timings[current_layer.name][name].append(layer_actual_specific_cost)
+                previous_model_cost = current_model_cost
+    except BaseException as e:
+        return e, timings
+    return None, timings
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="A script that profiles Keras models and produces layer wise timings.")
     parser.add_argument("model",
                         help="The Keras model to profile. See Keras.Applications documentation for all options."
-                             "Entering 'dummy' will use a small dummy model for debugging.")
+                             "Dummy options include: [dummy_multi, dummy_linear]")
     parser.add_argument("-l", "--loss", default="binary_crossentropy",
                         help="The loss function to use. See Keras.Losses documentation for all options.")
     parser.add_argument("-o", "--optimizer", default="sgd",
                         help="The optimizer to use when training. See Keras.Optimizers documentation for all options.")
-    parser.add_argument("-n", "--samples", type=int, default=100,
+    parser.add_argument("-s", "--samples", type=int, default=100,
                         help="The number of samples to run for each cost evaluation. The higher the more accurate and "
                              "the more computation time needed.")
+    parser.add_argument("-f", "--num_calls", type=int, default=2,
+                        help="num_of_function_calls: The number of function calls to make before taking and recording "
+                             "the minimum cost. Only the minimum cost of these calls is added to the report.")
     parser.add_argument("-t", "--trials", type=int, default=5,
                         help="The number of function calls to run for each cost evaluation with the number of samples."
                              " The higher the more accurate and the more computation time needed.")
@@ -319,14 +344,22 @@ if __name__ == "__main__":
             log = open(args.log, "w")
     else:
         log = sys.__stdout__
-    if not args.model == "dummy":
+    if args.model == "dummy_multi":
+        model = dummy_multi_model()
+    elif args.model == "dummy_linear":
+        model = dummy_linear_dense_model()
+    else:
         module = __import__("keras.applications", fromlist=[args.model])
         model = getattr(module, args.model)
         model = model(weights=None, include_top=True)
-    if args.model == "dummy":
-        model = dummy_multi_model()
-    timings = profile(input_model=model, num_of_samples=args.samples, loss=args.loss, optimizer=args.optimizer,
-                      full_profiling=args.full_profiling, log_stream=log, do_warmup=not args.no_warmup,
-                      trials=args.trials)
-    report = {"args": args.__dict__, "timings": timings}
+    exception, timings = profile(input_model=model, num_of_samples=args.samples, loss=args.loss,
+                                 optimizer=args.optimizer, full_profiling=args.full_profiling, log_stream=log,
+                                 num_of_function_calls=args.num_calls, do_warmup=not args.no_warmup, trials=args.trials)
+    if exception is not None:
+        if isinstance(exception, KeyboardInterrupt):
+            log.write("Profiling stopped by user. Attempting to write gathered data...\n")
+            exception = None
+        else:
+            log.write("Unexpected error occurred. Attempting to write gathered data...\n")
+    report = {"host": socket.gethostname(), "args": args.__dict__, "timings": timings}
     json.dump(report, out, indent=4)
