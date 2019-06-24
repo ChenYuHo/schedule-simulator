@@ -17,6 +17,7 @@ import sys
 from datetime import datetime
 import json
 import socket
+import os
 
 
 def dummy_multi_model():
@@ -133,8 +134,8 @@ def instantiate_dummy_tensors(model, num_of_samples):
     return input_data, output_data
 
 
-def profile(input_model, loss, optimizer, num_of_samples=100, trials=1, num_of_function_calls=5, do_warmup=True,
-            full_profiling=False, suppress_negatives=False, log_stream=None, device=None, accumulative=True):
+def profile(input_model, loss, optimizer, num_of_samples=100, trials=1, num_of_function_calls=5,
+            full_profiling=False, suppress_negatives=False, log_stream=None, device="gpu", accumulative=True):
     """
     The function takes a model and profiles the cost that each layer contributes to the total training time.
     The function's method is to build the model layer by layer and observe the cost changes each layer introduces. The
@@ -152,7 +153,6 @@ def profile(input_model, loss, optimizer, num_of_samples=100, trials=1, num_of_f
     :param device: cpu or gpu ?
     :param accumulative: Store the raw costs of each function call do not subtract model L+1 from model L.
     Used for debugging
-    :param do_warmup: Whether a warmup run is done first so that the keras backend engine is setup
     :param loss: The loss function for the model
     :param optimizer: The optimizer used for the model
     :param full_profiling: Include step 2 and 4 in profiling
@@ -163,7 +163,6 @@ def profile(input_model, loss, optimizer, num_of_samples=100, trials=1, num_of_f
     contains the information. The dict has key=layer.name and value=dict with
     keys=(forward_pass_cost, gradient_calculation_cost, gradient_application_cost, loss_calculation_cost)
     """
-    import tensorflow as tf
     import keras
     from keras.layers import InputLayer
     from keras.layers.pooling import _Pooling1D, _Pooling2D, _Pooling3D
@@ -175,173 +174,171 @@ def profile(input_model, loss, optimizer, num_of_samples=100, trials=1, num_of_f
 
     ignored_layer_types = []
     # ignored_layer_types = [_Pooling1D, _Pooling2D, _Pooling3D]  # Uncomment to ignore pooling layers
-
-    # Configure tensorflow session
-    running_context = contextlib.nullcontext() if device is None else tf.device("/{}:0".format(device))
-    sess_config_args = dict()
-    sess_config_args["log_device_placement"] = False  # For debugging only
+    # Check device
     if device == "cpu":
-        # Not doing this still lets tensorflow allocate gpu memory even though the context forces operations to be run
-        # on the cpu. This is dumb but its reality.
-        sess_config_args["device_count"] = {'GPU': 0}
-    sess_config = tf.ConfigProto(**sess_config_args)
-    sess_config.gpu_options.allow_growth = True
-    running_options = tf.RunOptions(report_tensor_allocations_upon_oom=False)
-    with running_context:
-        if do_warmup:
-            # Warm up run (To set up all backend variables and stuff)
-            if log_stream:
-                log_stream.write("Running warm up...\n")
-            input_data, output_data = instantiate_dummy_tensors(input_model, 100)
-            input_model.compile(optimizer=optimizer, loss=loss)
-            input_model.fit(input_data, output_data, verbose=0, steps_per_epoch=1)
-        # Produce layer topological order
-        topological_layer_order = list()
-        traverse_keras_DFS(input_model, topological_layer_order.append, order="post-order", top_to_bottom=True)
-        topological_layer_order.reverse()
-        # Initialize the costs that we will profile
-        accumulative_costs = list()
-        global_func_args = dict(verbose=0)
-        # This block is the mother of all assumptions. It is the root of all evil
-        if full_profiling:
-            accumulative_costs.append(dict(name="output_calculation_cost", func="predict", batch_size=32,
-                                           args=dict(x=None, steps=num_of_samples//32)))
-            accumulative_costs.append(dict(name="loss_calculation_cost", func="evaluate", batch_size=32,
-                                           args=dict(x=None, y=None, steps=num_of_samples//32)))
-            # accumulative_costs.append(dict(name="gradient_calculation_cost", func="fit", batch_size=32,
-            #                                args=dict(x=None, y=None, steps_per_epoch=num_of_samples//32)))
-            accumulative_costs.append(dict(name="gradient_calculation_cost", func="fit", batch_size=num_of_samples,
-                                           args=dict(x=None, y=None, steps_per_epoch=1)))
-            accumulative_costs.append(dict(name="gradient_application_cost", func="fit", batch_size=1,
-                                           args=dict(x=None, y=None, steps_per_epoch=num_of_samples)))
-        else:
-            accumulative_costs.append(dict(name="forward_pass_cost", func="evaluate", batch_size=num_of_samples,
-                                           args=dict(x=None, y=None, steps=1)))
-            accumulative_costs.append(dict(name="backward_pass_cost", func="fit", batch_size=32,
-                                           args=dict(x=None, y=None, steps_per_epoch=num_of_samples//32)))
-        # Initialize timings dictionary
-        timings = dict()
-        for original_layer in topological_layer_order:
-            if isinstance(original_layer, InputLayer):
-                continue
-            timings[original_layer.name] = {"Type": type(original_layer).__name__}
-            for cost in accumulative_costs:
-                timings[original_layer.name][cost["name"]] = list()
-        # Build and profile model layer by layer using the topological order
+        # This seems to be the most effective method. Other methods include using the tf.device("/gpu:0")
+        # context manager or setting ConfigProto(device_count={'GPU':0}. But both these methods use the GPU a little bit
+        os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
         if log_stream:
-            log_stream.write("Start profiling...\n")
-        try:
-            for trial in range(trials):
-                keras.backend.clear_session()
-                session = tf.Session(config=sess_config)
-                keras.backend.set_session(session)
-                if log_stream:
-                    log_stream.write("Trial: {}\n".format(trial))
-                input_layers = list()
-                added_layers = dict()
-                previous_model_cost = None
-                for original_layer in topological_layer_order:
-                    # Add new layer to cloned network ------------------------------------------------------------------
-                    # Flatten out the layer's parents to check what the cloned layer needs to connect to
-                    original_parents = set()
-                    for original_node in original_layer._inbound_nodes:
-                        for original_parent in original_node.inbound_layers:
-                            original_parents.add(original_parent)
-                    # Remove all connections of this layer by making a clone using properties only
-                    current_layer = clone_layer(original_layer)
-                    if len(original_parents) == 0:
-                        assert isinstance(current_layer, InputLayer)
-                        # This is an input layer. It is only used for structuring purposes no need to actually profile
-                        # it. Therefore we add it and continue
-                        input_layers.append(current_layer)
-                        added_layers[current_layer.name] = current_layer
-                        continue
-                    # Restore appropriate connections in cloned network
-                    cloned_parents = set()
-                    try:
-                        for original_parent in original_parents:
-                            cloned_parents.add(added_layers[original_parent.name])
-                    except KeyError:
-                        raise Exception("Attempting to add layer before one of its parents")
-                    assert len(cloned_parents) == len(original_parents)
-                    if len(cloned_parents) > 1:
-                        # Merge all parents into this layer
-                        # https://github.com/keras-team/keras/blob/master/keras/layers/merge.py#L328
-                        # https://keras.io/layers/merge/
-                        if not isinstance(current_layer, _Merge):
-                            raise Exception("Non merge layer should not have multiple parents")
-                        current_layer([x.output for x in cloned_parents])
-                    elif len(cloned_parents) == 1:
-                        # Make a connection to the only parent
-                        current_layer(cloned_parents.pop().output)
+            log_stream.write("Running on CPU\n")
+    elif device == "gpu":
+        import tensorflow as tf
+        if not tf.test.is_gpu_available():
+            raise Exception("No GPUs are available!. Change --device parameter to use cpu.")
+        if log_stream:
+            log_stream.write("Running on GPU\n")
+    # Produce layer topological order
+    topological_layer_order = list()
+    traverse_keras_DFS(input_model, topological_layer_order.append, order="post-order", top_to_bottom=True)
+    topological_layer_order.reverse()
+    # Initialize the costs that we will profile
+    accumulative_costs = list()
+    global_func_args = dict(verbose=0)
+    # This block is the mother of all assumptions. It is the root of all evil
+    if full_profiling:
+        accumulative_costs.append(dict(name="output_calculation_cost", func="predict", batch_size=32,
+                                       args=dict(x=None, steps=num_of_samples//32)))
+        accumulative_costs.append(dict(name="loss_calculation_cost", func="evaluate", batch_size=32,
+                                       args=dict(x=None, y=None, steps=num_of_samples//32)))
+        # accumulative_costs.append(dict(name="gradient_calculation_cost", func="fit", batch_size=32,
+        #                                args=dict(x=None, y=None, steps_per_epoch=num_of_samples//32)))
+        accumulative_costs.append(dict(name="gradient_calculation_cost", func="fit", batch_size=num_of_samples,
+                                       args=dict(x=None, y=None, steps_per_epoch=1)))
+        accumulative_costs.append(dict(name="gradient_application_cost", func="fit", batch_size=1,
+                                       args=dict(x=None, y=None, steps_per_epoch=num_of_samples)))
+    else:
+        accumulative_costs.append(dict(name="forward_pass_cost", func="evaluate", batch_size=num_of_samples,
+                                       args=dict(x=None, y=None, steps=1)))
+        accumulative_costs.append(dict(name="backward_pass_cost", func="fit", batch_size=32,
+                                       args=dict(x=None, y=None, steps_per_epoch=num_of_samples//32)))
+    # Initialize timings dictionary
+    timings = dict()
+    for original_layer in topological_layer_order:
+        if isinstance(original_layer, InputLayer):
+            continue
+        timings[original_layer.name] = {"Type": type(original_layer).__name__}
+        for cost in accumulative_costs:
+            timings[original_layer.name][cost["name"]] = list()
+    # Build and profile model layer by layer using the topological order
+    if log_stream:
+        log_stream.write("Start profiling...\n")
+    try:
+        for trial in range(trials):
+            keras.backend.clear_session()
+            if log_stream:
+                log_stream.write("Trial: {}\n".format(trial))
+            input_layers = list()
+            added_layers = dict()
+            previous_model_cost = None
+            for original_layer in topological_layer_order:
+                # Add new layer to cloned network ----------------------------------------------------------------------
+                # Flatten out the layer's parents to check what the cloned layer needs to connect to
+                original_parents = set()
+                for original_node in original_layer._inbound_nodes:
+                    for original_parent in original_node.inbound_layers:
+                        original_parents.add(original_parent)
+                # Remove all connections of this layer by making a clone using properties only
+                current_layer = clone_layer(original_layer)
+                # Restore appropriate connections in cloned network
+                if len(original_parents) == 0:
+                    assert isinstance(current_layer, InputLayer)
+                    # This is an input layer. It is only used for structuring purposes no need to actually profile
+                    # it. Therefore we add it and continue
+                    input_layers.append(current_layer)
                     added_layers[current_layer.name] = current_layer
-                    # Should we go on with profiling ?
-                    ignore = False
-                    for layer_type in ignored_layer_types:
-                        if isinstance(current_layer, layer_type):
-                            ignore = True
-                            break
-                    if ignore:
-                        if log_stream:
-                            log_stream.write("Skip profiling of {}\n".format(current_layer.name))
-                        continue
-                    # Find output layers. Output layers need to be updated with every iteration since we are building
-                    # the model from a top to bottom fashion.
-                    output_layers = list()
-                    for layer in added_layers.values():
-                        if layer not in input_layers and len(layer._outbound_nodes) == 0:
-                            output_layers.append(layer)
-                    # Create and compile model -------------------------------------------------------------------------
-                    # Inputs & outputs must be tensors not layers
-                    cloned_model = Model(inputs=[x.input for x in input_layers],
-                                         outputs=[x.output for x in output_layers])
-                    cloned_model.compile(optimizer=optimizer, loss=loss, options=running_options)
-                    # Start profiling ----------------------------------------------------------------------------------
-                    current_model_cost = dict()
-                    for cost in accumulative_costs:
-                        current_model_cost[cost["name"]] = float("inf")
-                    print_format = "[{}:{:4}/{:<4}] Layer: {:16} {{key:30}}: {{value}}\n".format(
-                        input_model.name, len(cloned_model.layers), len(input_model.layers), current_layer.name)
-                    accumulated_cost = 0
-                    for i, cost in enumerate(accumulative_costs):
-                        # These are symbolic tensors no computational load until we run the function
-                        # With symbolic tensors the first dimension (Usually the number of samples) constitutes the
-                        # batch size. We then specify how many batches we run using steps_per_epoch for the train
-                        # function. and using steps for the evaluation & prediction functions
-                        input_data, output_data = instantiate_dummy_tensors(cloned_model, cost["batch_size"])
-                        name = cost["name"]
-                        func = getattr(cloned_model, cost["func"])
-                        args = cost["args"]
-                        # Substitute in the input and output data
-                        if "x" in args.keys():
-                            args["x"] = input_data
-                        if "y" in args.keys():
-                            args["y"] = output_data
-                        # Call the function and record the time
-                        for _ in range(num_of_function_calls):
-                            t = time.time_ns()
-                            func(**args, **global_func_args)
-                            tc = time.time_ns() - t
-                            if tc < current_model_cost[name]:
-                                current_model_cost[name] = tc
-                        if accumulative:
-                            layer_actual_specific_cost = tc
-                        else:
-                            # The layer total function cost is the difference between the previous and current iteration cost
-                            layer_total_func_cost = current_model_cost[name] -\
-                                                    (previous_model_cost[name] if previous_model_cost else 0)
-                            # The layer actual cost to measure is the total function cost minus all the actual costs before it
-                            layer_actual_specific_cost = layer_total_func_cost - accumulated_cost
-                            if suppress_negatives and layer_actual_specific_cost < 0:
-                                layer_actual_specific_cost = 0
-                            accumulated_cost += layer_actual_specific_cost
-                        if log_stream:
-                            log_stream.write(print_format.format(key=name, value=layer_actual_specific_cost))
-                        timings[current_layer.name][name].append(layer_actual_specific_cost)
-                    previous_model_cost = current_model_cost
-                keras.backend.get_session().close()
-        except BaseException as e:
-            return e, timings
+                    continue
+                cloned_parents = set()
+                try:
+                    for original_parent in original_parents:
+                        cloned_parents.add(added_layers[original_parent.name])
+                except KeyError:
+                    raise Exception("Attempting to add layer before one of its parents")
+                assert len(cloned_parents) == len(original_parents)
+                if len(cloned_parents) > 1:
+                    # Merge all parents into this layer
+                    # https://github.com/keras-team/keras/blob/master/keras/layers/merge.py#L328
+                    # https://keras.io/layers/merge/
+                    if not isinstance(current_layer, _Merge):
+                        raise Exception("Non merge layer should not have multiple parents")
+                    current_layer([x.output for x in cloned_parents])
+                elif len(cloned_parents) == 1:
+                    # Make a connection to the only parent
+                    current_layer(cloned_parents.pop().output)
+                added_layers[current_layer.name] = current_layer
+                # Should we go on with profiling ?
+                ignore = False
+                for layer_type in ignored_layer_types:
+                    if isinstance(current_layer, layer_type):
+                        ignore = True
+                        break
+                if ignore:
+                    if log_stream:
+                        log_stream.write("Skip profiling of {}\n".format(current_layer.name))
+                    continue
+                # Find output layers. Output layers need to be updated with every iteration since we are building
+                # the model from a top to bottom fashion.
+                output_layers = list()
+                for layer in added_layers.values():
+                    if layer not in input_layers and len(layer._outbound_nodes) == 0:
+                        output_layers.append(layer)
+                # Create and compile model -----------------------------------------------------------------------------
+                # Inputs & outputs must be tensors not layers
+                cloned_model = Model(inputs=[x.input for x in input_layers],
+                                     outputs=[x.output for x in output_layers])
+                cloned_model.compile(optimizer=optimizer, loss=loss)
+                # Start profiling --------------------------------------------------------------------------------------
+                current_model_cost = dict()
+                for cost in accumulative_costs:
+                    current_model_cost[cost["name"]] = float("inf")
+                print_format = "[{}:{:4}/{:<4}] Layer: {:16} {{key:30}}: {{value}}\n".format(
+                    input_model.name, len(cloned_model.layers), len(input_model.layers), current_layer.name)
+                accumulated_cost = 0
+                for i, cost in enumerate(accumulative_costs):
+                    # These are symbolic tensors no computational load until we run the function
+                    # With symbolic tensors the first dimension (Usually the number of samples) constitutes the
+                    # batch size. We then specify how many batches we run using steps_per_epoch for the train
+                    # function. and using steps for the evaluation & prediction functions
+                    input_data, output_data = instantiate_dummy_tensors(cloned_model, cost["batch_size"])
+                    name = cost["name"]
+                    func = getattr(cloned_model, cost["func"])
+                    args = cost["args"]
+                    # Substitute in the input and output data
+                    if "x" in args.keys():
+                        args["x"] = input_data
+                    if "y" in args.keys():
+                        args["y"] = output_data
+                    # Call the function and record the time
+                    for _ in range(num_of_function_calls):
+                        t = time.time_ns()
+                        func(**args, **global_func_args)
+                        tc = time.time_ns() - t
+                        if tc < current_model_cost[name]:
+                            current_model_cost[name] = tc
+                    if accumulative:
+                        layer_actual_specific_cost = tc
+                    else:
+                        # The layer total function cost is the difference between the previous and current iteration cost
+                        layer_total_func_cost = current_model_cost[name] -\
+                                                (previous_model_cost[name] if previous_model_cost else 0)
+                        # The layer actual cost to measure is the total function cost minus all the actual costs before it
+                        layer_actual_specific_cost = layer_total_func_cost - accumulated_cost
+                        if suppress_negatives and layer_actual_specific_cost < 0:
+                            layer_actual_specific_cost = 0
+                        accumulated_cost += layer_actual_specific_cost
+                    if log_stream:
+                        log_stream.write(print_format.format(key=name, value=layer_actual_specific_cost))
+                    timings[current_layer.name][name].append(layer_actual_specific_cost)
+                previous_model_cost = current_model_cost
+                # To confirm that the graph is being reset with each iteration
+                # print(len(keras.backend.get_session().graph.get_operations()))
+            # The below line closes the session. I encounter OOM errors if i omit this and don't explicitly close the
+            # session, and if i include it, i encounter CancelledError: Session has been closed. However the latter
+            # error is ignored by tensorflow and execution continues normally.
+            # Applying the recent fix below manually seems to get rid of the annoying ignored error
+            # https://github.com/dansitu/tensorflow/commit/b124e055a17ca8e4ff897867f96c97e7bfc8eed7
+            keras.backend.get_session().close()
+    except BaseException as e:
+        return e, timings
     return None, timings
 
 
@@ -354,7 +351,7 @@ if __name__ == "__main__":
                         help="The loss function to use. See Keras.Losses documentation for all options.")
     parser.add_argument("-o", "--optimizer", default="sgd",
                         help="The optimizer to use when training. See Keras.Optimizers documentation for all options.")
-    parser.add_argument("--device", choices=["gpu", "cpu"],
+    parser.add_argument("--device", choices=["gpu", "cpu"], default="gpu",
                         help="The device to use for all operations. If none is specified then it is automated.")
     parser.add_argument("-s", "--samples", type=int, default=100,
                         help="The number of samples to run for each cost evaluation. The higher the more accurate and "
@@ -363,15 +360,12 @@ if __name__ == "__main__":
                         help="num_of_function_calls: The number of function calls to make before taking and recording "
                              "the minimum cost. Only the minimum cost of these calls is added to the report.")
     parser.add_argument("-t", "--trials", type=int, default=5,
-                        help="The number of function calls to run for each cost evaluation with the number of samples."
-                             " The higher the more accurate and the more computation time needed.")
+                        help="The number of layer building & evaluation iterations to do.")
     parser.add_argument("-fp", "--full_profiling", action="store_true",
                         help="If set to true then loss calculation and gradient application will be included in "
                              "profiling")
     parser.add_argument("-sn", "--suppress_negatives", action="store_true",
                         help="If set to true costs that are negative are set to 0")
-    parser.add_argument("-nw", "--no_warmup", action="store_true",
-                        help="If set to true no warmup stage will be executed")
     parser.add_argument("-ac", "--accumulative", action="store_true",
                         help="If set to true then the accumulative costs are stored. No subtractions are done.")
     parser.add_argument("--out",
@@ -400,7 +394,7 @@ if __name__ == "__main__":
         model = model(weights=None, include_top=True)
     exception, timings = profile(input_model=model, num_of_samples=args.samples, loss=args.loss,
                                  optimizer=args.optimizer, full_profiling=args.full_profiling, log_stream=log,
-                                 num_of_function_calls=args.num_calls, do_warmup=not args.no_warmup, trials=args.trials,
+                                 num_of_function_calls=args.num_calls, trials=args.trials,
                                  suppress_negatives=args.suppress_negatives, device=args.device,
                                  accumulative=args.accumulative)
     if exception is not None:
