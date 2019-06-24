@@ -1,0 +1,189 @@
+{
+    "host": "mcnode40",
+    "args": {
+        "model": "dummy_linear",
+        "loss": "binary_crossentropy",
+        "optimizer": "sgd",
+        "device": "cpu",
+        "samples": 1000,
+        "num_calls": 3,
+        "trials": 5,
+        "full_profiling": false,
+        "suppress_negatives": false,
+        "no_warmup": false,
+        "out": null,
+        "log": null
+    },
+    "timings": {
+        "dense_1": {
+            "Type": "Dense",
+            "forward_pass_cost": [
+                3989372,
+                3884049,
+                3760792,
+                3803918,
+                4489394
+            ],
+            "backward_pass_cost": [
+                59259760,
+                62523383,
+                61529648,
+                68296817,
+                69320528
+            ]
+        },
+        "dense_2": {
+            "Type": "Dense",
+            "forward_pass_cost": [
+                257586,
+                260691,
+                680686,
+                719980,
+                23015
+            ],
+            "backward_pass_cost": [
+                -1368206,
+                6953825,
+                16187405,
+                11330207,
+                10651368
+            ]
+        },
+        "dense_3": {
+            "Type": "Dense",
+            "forward_pass_cost": [
+                333531,
+                119608,
+                747947,
+                581763,
+                962208
+            ],
+            "backward_pass_cost": [
+                18626594,
+                9653072,
+                4245880,
+                1280057,
+                11120571
+            ]
+        },
+        "dense_4": {
+            "Type": "Dense",
+            "forward_pass_cost": [
+                511145,
+                448533,
+                -279328,
+                143528,
+                -559976
+            ],
+            "backward_pass_cost": [
+                11573176,
+                16493130,
+                11559576,
+                20612506,
+                13418686
+            ]
+        },
+        "dense_5": {
+            "Type": "Dense",
+            "forward_pass_cost": [
+                -2307,
+                1165688,
+                133189,
+                -102718,
+                658670
+            ],
+            "backward_pass_cost": [
+                13357398,
+                7165848,
+                8158333,
+                11469806,
+                9179751
+            ]
+        },
+        "dense_6": {
+            "Type": "Dense",
+            "forward_pass_cost": [
+                560961,
+                -703276,
+                483941,
+                378859,
+                1078122
+            ],
+            "backward_pass_cost": [
+                8297211,
+                7739975,
+                14508910,
+                9386680,
+                8743220
+            ]
+        },
+        "dense_7": {
+            "Type": "Dense",
+            "forward_pass_cost": [
+                859078,
+                835140,
+                620198,
+                248789,
+                344781
+            ],
+            "backward_pass_cost": [
+                9693752,
+                9994994,
+                10146241,
+                5817261,
+                13287958
+            ]
+        },
+        "dense_8": {
+            "Type": "Dense",
+            "forward_pass_cost": [
+                -224063,
+                1084040,
+                699396,
+                1749095,
+                -363405
+            ],
+            "backward_pass_cost": [
+                4699815,
+                13154075,
+                5163460,
+                12402740,
+                11952026
+            ]
+        },
+        "dense_9": {
+            "Type": "Dense",
+            "forward_pass_cost": [
+                917312,
+                550963,
+                289553,
+                -7652,
+                843924
+            ],
+            "backward_pass_cost": [
+                -5081950,
+                -11658661,
+                8803314,
+                4746895,
+                881868
+            ]
+        },
+        "dense_10": {
+            "Type": "Dense",
+            "forward_pass_cost": [
+                649063,
+                -647917,
+                179324,
+                33516,
+                329158
+            ],
+            "backward_pass_cost": [
+                24038050,
+                22508438,
+                11504225,
+                15696865,
+                9743379
+            ]
+        }
+    }
+}

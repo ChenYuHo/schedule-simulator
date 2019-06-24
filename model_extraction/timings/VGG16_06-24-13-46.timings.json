@@ -1,0 +1,240 @@
+{
+    "host": "mcnode40",
+    "args": {
+        "model": "VGG16",
+        "loss": "binary_crossentropy",
+        "optimizer": "sgd",
+        "device": "gpu",
+        "samples": 128,
+        "num_calls": 1,
+        "trials": 5,
+        "full_profiling": true,
+        "suppress_negatives": false,
+        "no_warmup": false,
+        "accumulative": true,
+        "out": null,
+        "log": null
+    },
+    "timings": {
+        "block1_conv1": {
+            "Type": "Conv2D",
+            "gradient_calculation_cost": [
+                686299490,
+                579546471,
+                585853281,
+                608317504,
+                603695799
+            ]
+        },
+        "block1_conv2": {
+            "Type": "Conv2D",
+            "gradient_calculation_cost": [
+                1181603855,
+                724907504,
+                749350984,
+                782895933,
+                738213920
+            ]
+        },
+        "block1_pool": {
+            "Type": "MaxPooling2D",
+            "gradient_calculation_cost": [
+                527296150,
+                560604387,
+                550993532,
+                572080857,
+                549059457
+            ]
+        },
+        "block2_conv1": {
+            "Type": "Conv2D",
+            "gradient_calculation_cost": [
+                860945751,
+                752322541,
+                745819932,
+                1008928036,
+                772456425
+            ]
+        },
+        "block2_conv2": {
+            "Type": "Conv2D",
+            "gradient_calculation_cost": [
+                1113636626,
+                843593659,
+                867666231,
+                898338413,
+                1154713605
+            ]
+        },
+        "block2_pool": {
+            "Type": "MaxPooling2D",
+            "gradient_calculation_cost": [
+                812159321,
+                789489312,
+                778032776,
+                779649623,
+                792708268
+            ]
+        },
+        "block3_conv1": {
+            "Type": "Conv2D",
+            "gradient_calculation_cost": [
+                1027882419,
+                899878504,
+                920112683,
+                908011449,
+                941375498
+            ]
+        },
+        "block3_conv2": {
+            "Type": "Conv2D",
+            "gradient_calculation_cost": [
+                1265132703,
+                1311361497,
+                1049428003,
+                1016555494,
+                1020792145
+            ]
+        },
+        "block3_conv3": {
+            "Type": "Conv2D",
+            "gradient_calculation_cost": [
+                1117284711,
+                1134739119,
+                1147993564,
+                1154618236,
+                1122405423
+            ]
+        },
+        "block3_pool": {
+            "Type": "MaxPooling2D",
+            "gradient_calculation_cost": [
+                1103325985,
+                1104556602,
+                1481871679,
+                1226925014,
+                1127673098
+            ]
+        },
+        "block4_conv1": {
+            "Type": "Conv2D",
+            "gradient_calculation_cost": [
+                1336589382,
+                1245676653,
+                1314865850,
+                1257412522,
+                1349000402
+            ]
+        },
+        "block4_conv2": {
+            "Type": "Conv2D",
+            "gradient_calculation_cost": [
+                1692124364,
+                1379784781,
+                1448033802,
+                1405156104,
+                1429977008
+            ]
+        },
+        "block4_conv3": {
+            "Type": "Conv2D",
+            "gradient_calculation_cost": [
+                1522713189,
+                1707878738,
+                1584312357,
+                1551160092,
+                1561091678
+            ]
+        },
+        "block4_pool": {
+            "Type": "MaxPooling2D",
+            "gradient_calculation_cost": [
+                1519179923,
+                1582755996,
+                1595131552,
+                1555703621,
+                1554896282
+            ]
+        },
+        "block5_conv1": {
+            "Type": "Conv2D",
+            "gradient_calculation_cost": [
+                1774192573,
+                1688062089,
+                1807771731,
+                1815051935,
+                1660570837
+            ]
+        },
+        "block5_conv2": {
+            "Type": "Conv2D",
+            "gradient_calculation_cost": [
+                1917737793,
+                1796262837,
+                1804524601,
+                1835630648,
+                1852325199
+            ]
+        },
+        "block5_conv3": {
+            "Type": "Conv2D",
+            "gradient_calculation_cost": [
+                1998766677,
+                2095870300,
+                1959143533,
+                1991279885,
+                1914167085
+            ]
+        },
+        "block5_pool": {
+            "Type": "MaxPooling2D",
+            "gradient_calculation_cost": [
+                1999678293,
+                1992805642,
+                2027837030,
+                1995564629,
+                2000440765
+            ]
+        },
+        "flatten": {
+            "Type": "Flatten",
+            "gradient_calculation_cost": [
+                2024886059,
+                2049584055,
+                2190104906,
+                2022298102,
+                2050373408
+            ]
+        },
+        "fc1": {
+            "Type": "Dense",
+            "gradient_calculation_cost": [
+                4251967985,
+                4319739008,
+                4334058678,
+                4435986643,
+                4412184602
+            ]
+        },
+        "fc2": {
+            "Type": "Dense",
+            "gradient_calculation_cost": [
+                4841157744,
+                4699973389,
+                4779366350,
+                4752637692,
+                4749927935
+            ]
+        },
+        "predictions": {
+            "Type": "Dense",
+            "gradient_calculation_cost": [
+                4907874056,
+                5122553367,
+                4937157587,
+                5028462581,
+                4977381100
+            ]
+        }
+    }
+}

@@ -1,0 +1,458 @@
+{
+    "host": "mcnode40",
+    "args": {
+        "model": "VGG16",
+        "loss": "binary_crossentropy",
+        "optimizer": "sgd",
+        "device": "gpu",
+        "samples": 128,
+        "num_calls": 1,
+        "trials": 5,
+        "full_profiling": true,
+        "suppress_negatives": false,
+        "no_warmup": false,
+        "accumulative": true,
+        "out": null,
+        "log": null
+    },
+    "timings": {
+        "block1_conv1": {
+            "Type": "Conv2D",
+            "output_calculation_cost": [
+                1766508095,
+                1659861873,
+                1692743641,
+                1698293322,
+                1659831540
+            ],
+            "loss_calculation_cost": [
+                127680685,
+                131458898,
+                132235348,
+                133169828,
+                138831745
+            ],
+            "gradient_calculation_cost": [
+                615423015,
+                572810344,
+                576480647,
+                574757505,
+                615436530
+            ]
+        },
+        "block1_conv2": {
+            "Type": "Conv2D",
+            "output_calculation_cost": [
+                1852393675,
+                1852788224,
+                1721958930,
+                1697342730,
+                1686283634
+            ],
+            "loss_calculation_cost": [
+                162494738,
+                179916763,
+                172905869,
+                171686577,
+                173194940
+            ],
+            "gradient_calculation_cost": [
+                1018659825,
+                737732920,
+                774164996,
+                733751918,
+                747525390
+            ]
+        },
+        "block1_pool": {
+            "Type": "MaxPooling2D",
+            "output_calculation_cost": [],
+            "loss_calculation_cost": [],
+            "gradient_calculation_cost": []
+        },
+        "block2_conv1": {
+            "Type": "Conv2D",
+            "output_calculation_cost": [
+                1146746044,
+                954396622,
+                977208318,
+                972607283,
+                954076363
+            ],
+            "loss_calculation_cost": [
+                149519552,
+                155134280,
+                156960366,
+                158840079,
+                158093937
+            ],
+            "gradient_calculation_cost": [
+                780176662,
+                997305562,
+                707227719,
+                767451921,
+                983638460
+            ]
+        },
+        "block2_conv2": {
+            "Type": "Conv2D",
+            "output_calculation_cost": [
+                1109313535,
+                1051970059,
+                1001006306,
+                1010335934,
+                1041782096
+            ],
+            "loss_calculation_cost": [
+                176232139,
+                190293727,
+                191157367,
+                193237413,
+                207640372
+            ],
+            "gradient_calculation_cost": [
+                989586574,
+                837231517,
+                826085722,
+                864135594,
+                850724206
+            ]
+        },
+        "block2_pool": {
+            "Type": "MaxPooling2D",
+            "output_calculation_cost": [],
+            "loss_calculation_cost": [],
+            "gradient_calculation_cost": []
+        },
+        "block3_conv1": {
+            "Type": "Conv2D",
+            "output_calculation_cost": [
+                679900216,
+                638183066,
+                642955154,
+                654257107,
+                655450251
+            ],
+            "loss_calculation_cost": [
+                177268958,
+                190750261,
+                191163235,
+                194821815,
+                195758556
+            ],
+            "gradient_calculation_cost": [
+                898849065,
+                835902157,
+                845813920,
+                852860333,
+                859998193
+            ]
+        },
+        "block3_conv2": {
+            "Type": "Conv2D",
+            "output_calculation_cost": [
+                778294445,
+                689789329,
+                744265627,
+                765383898,
+                708983442
+            ],
+            "loss_calculation_cost": [
+                210180898,
+                214701558,
+                236499401,
+                242579965,
+                221290853
+            ],
+            "gradient_calculation_cost": [
+                1091876629,
+                985199614,
+                987641751,
+                1027241221,
+                988319106
+            ]
+        },
+        "block3_conv3": {
+            "Type": "Conv2D",
+            "output_calculation_cost": [
+                720296655,
+                723959809,
+                745985447,
+                832204050,
+                736113995
+            ],
+            "loss_calculation_cost": [
+                248593520,
+                242867542,
+                245076349,
+                273732056,
+                247340634
+            ],
+            "gradient_calculation_cost": [
+                1043970393,
+                1065672042,
+                1471917670,
+                1120185674,
+                1098757324
+            ]
+        },
+        "block3_pool": {
+            "Type": "MaxPooling2D",
+            "output_calculation_cost": [],
+            "loss_calculation_cost": [],
+            "gradient_calculation_cost": []
+        },
+        "block4_conv1": {
+            "Type": "Conv2D",
+            "output_calculation_cost": [
+                614684642,
+                587232321,
+                651282702,
+                591122918,
+                562180728
+            ],
+            "loss_calculation_cost": [
+                251375599,
+                258367686,
+                289571155,
+                278084573,
+                261029059
+            ],
+            "gradient_calculation_cost": [
+                1197286862,
+                1136135622,
+                1216226647,
+                1165146197,
+                1303006946
+            ]
+        },
+        "block4_conv2": {
+            "Type": "Conv2D",
+            "output_calculation_cost": [
+                708360775,
+                662080274,
+                688036223,
+                632149597,
+                694829775
+            ],
+            "loss_calculation_cost": [
+                285008210,
+                300092863,
+                322127591,
+                316016733,
+                304794801
+            ],
+            "gradient_calculation_cost": [
+                1418674480,
+                1326695824,
+                1347956803,
+                1308637683,
+                1325907460
+            ]
+        },
+        "block4_conv3": {
+            "Type": "Conv2D",
+            "output_calculation_cost": [
+                726244846,
+                737624592,
+                725840958,
+                643138853,
+                711315576
+            ],
+            "loss_calculation_cost": [
+                317394966,
+                344304337,
+                344034374,
+                331712045,
+                339391162
+            ],
+            "gradient_calculation_cost": [
+                1421960325,
+                1487556175,
+                1457230858,
+                1616642468,
+                1453645965
+            ]
+        },
+        "block4_pool": {
+            "Type": "MaxPooling2D",
+            "output_calculation_cost": [],
+            "loss_calculation_cost": [],
+            "gradient_calculation_cost": []
+        },
+        "block5_conv1": {
+            "Type": "Conv2D",
+            "output_calculation_cost": [
+                627938711,
+                579197866,
+                607278495,
+                614367916,
+                609438955
+            ],
+            "loss_calculation_cost": [
+                345537807,
+                342102920,
+                352889535,
+                363506020,
+                366676852
+            ],
+            "gradient_calculation_cost": [
+                1626396069,
+                1533511512,
+                1555261350,
+                1569268095,
+                1574233079
+            ]
+        },
+        "block5_conv2": {
+            "Type": "Conv2D",
+            "output_calculation_cost": [
+                633419371,
+                618814463,
+                652719073,
+                657100760,
+                652460164
+            ],
+            "loss_calculation_cost": [
+                376212690,
+                367896698,
+                391138689,
+                417010673,
+                372976251
+            ],
+            "gradient_calculation_cost": [
+                1652035319,
+                1694337327,
+                1870742276,
+                1723748505,
+                1657157440
+            ]
+        },
+        "block5_conv3": {
+            "Type": "Conv2D",
+            "output_calculation_cost": [
+                692131286,
+                703349346,
+                759040233,
+                733198259,
+                709540108
+            ],
+            "loss_calculation_cost": [
+                422055507,
+                394626386,
+                414508826,
+                413062359,
+                397784814
+            ],
+            "gradient_calculation_cost": [
+                1811752231,
+                2097159418,
+                1833310259,
+                1794299535,
+                1961921933
+            ]
+        },
+        "block5_pool": {
+            "Type": "MaxPooling2D",
+            "output_calculation_cost": [],
+            "loss_calculation_cost": [],
+            "gradient_calculation_cost": []
+        },
+        "flatten": {
+            "Type": "Flatten",
+            "output_calculation_cost": [
+                689846190,
+                719099743,
+                749210326,
+                731045360,
+                740726160
+            ],
+            "loss_calculation_cost": [
+                420022221,
+                441630004,
+                470707583,
+                469175927,
+                440056374
+            ],
+            "gradient_calculation_cost": [
+                1850237639,
+                1837313453,
+                1917383176,
+                2029165828,
+                1882145802
+            ]
+        },
+        "fc1": {
+            "Type": "Dense",
+            "output_calculation_cost": [
+                812091209,
+                785085594,
+                806662538,
+                852620981,
+                797582872
+            ],
+            "loss_calculation_cost": [
+                462451492,
+                475879374,
+                463109054,
+                496128233,
+                484630619
+            ],
+            "gradient_calculation_cost": [
+                4156039855,
+                4129876872,
+                4078998229,
+                4155303792,
+                4303972403
+            ]
+        },
+        "fc2": {
+            "Type": "Dense",
+            "output_calculation_cost": [
+                893696636,
+                838762718,
+                858995723,
+                885840586,
+                842476730
+            ],
+            "loss_calculation_cost": [
+                496869348,
+                480425600,
+                492274155,
+                544323193,
+                485878356
+            ],
+            "gradient_calculation_cost": [
+                4585325312,
+                4511554429,
+                4692188493,
+                4520524440,
+                4561200970
+            ]
+        },
+        "predictions": {
+            "Type": "Dense",
+            "output_calculation_cost": [
+                893605326,
+                882920803,
+                961704913,
+                924726824,
+                966072232
+            ],
+            "loss_calculation_cost": [
+                529486342,
+                509862106,
+                530791323,
+                515078270,
+                535772031
+            ],
+            "gradient_calculation_cost": [
+                4682712168,
+                4922815232,
+                4771979118,
+                4689252923,
+                4735671642
+            ]
+        }
+    }
+}

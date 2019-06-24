@@ -1,0 +1,344 @@
+{
+    "host": "mcnode38",
+    "args": {
+        "model": "VGG16",
+        "loss": "binary_crossentropy",
+        "optimizer": "sgd",
+        "device": "gpu",
+        "samples": 16,
+        "num_calls": 2,
+        "trials": 5,
+        "full_profiling": false,
+        "suppress_negatives": false,
+        "no_warmup": false,
+        "out": null,
+        "log": null
+    },
+    "timings": {
+        "block1_conv1": {
+            "Type": "Conv2D",
+            "forward_pass_cost": [
+                13625380,
+                14311131,
+                15353838,
+                15677674
+            ],
+            "backward_pass_cost": [
+                58236210,
+                58154079,
+                65710728,
+                74852501
+            ]
+        },
+        "block1_conv2": {
+            "Type": "Conv2D",
+            "forward_pass_cost": [
+                3176576,
+                3190239,
+                2844889,
+                4295736
+            ],
+            "backward_pass_cost": [
+                15072112,
+                20235516,
+                19690853,
+                14265532
+            ]
+        },
+        "block1_pool": {
+            "Type": "MaxPooling2D",
+            "forward_pass_cost": [
+                -7549098,
+                -7924619,
+                -7793200,
+                -8522580
+            ],
+            "backward_pass_cost": [
+                -14593229,
+                -14027665,
+                -20280784,
+                -19872047
+            ]
+        },
+        "block2_conv1": {
+            "Type": "Conv2D",
+            "forward_pass_cost": [
+                3900681,
+                4484915,
+                4457728,
+                4312396
+            ],
+            "backward_pass_cost": [
+                11153812,
+                7405964,
+                12448878,
+                14125775
+            ]
+        },
+        "block2_conv2": {
+            "Type": "Conv2D",
+            "forward_pass_cost": [
+                2614133,
+                2815751,
+                3330189,
+                3246777
+            ],
+            "backward_pass_cost": [
+                4240468,
+                6141002,
+                6206435,
+                6607992
+            ]
+        },
+        "block2_pool": {
+            "Type": "MaxPooling2D",
+            "forward_pass_cost": [
+                -3265889,
+                -3982114,
+                -4700001,
+                -3822163
+            ],
+            "backward_pass_cost": [
+                1717995,
+                -1723894,
+                -1964721,
+                -2398242
+            ]
+        },
+        "block3_conv1": {
+            "Type": "Conv2D",
+            "forward_pass_cost": [
+                1951009,
+                2314073,
+                6202577,
+                2420400
+            ],
+            "backward_pass_cost": [
+                10472265,
+                5965416,
+                3961856,
+                12769552
+            ]
+        },
+        "block3_conv2": {
+            "Type": "Conv2D",
+            "forward_pass_cost": [
+                3131630,
+                2006777,
+                -1528417,
+                892587
+            ],
+            "backward_pass_cost": [
+                7471820,
+                11865389,
+                20338902,
+                3821819
+            ]
+        },
+        "block3_conv3": {
+            "Type": "Conv2D",
+            "forward_pass_cost": [
+                950513,
+                2076900,
+                2869821,
+                2189906
+            ],
+            "backward_pass_cost": [
+                4657318,
+                8949576,
+                7612200,
+                11497675
+            ]
+        },
+        "block3_pool": {
+            "Type": "MaxPooling2D",
+            "forward_pass_cost": [
+                -1838912,
+                -2072973,
+                -2514656,
+                1843993
+            ],
+            "backward_pass_cost": [
+                6822823,
+                -1736606,
+                -4021730,
+                557962
+            ]
+        },
+        "block4_conv1": {
+            "Type": "Conv2D",
+            "forward_pass_cost": [
+                1023989,
+                2034472,
+                842332,
+                -1816722
+            ],
+            "backward_pass_cost": [
+                6289841,
+                9625380,
+                11447875,
+                4973249
+            ]
+        },
+        "block4_conv2": {
+            "Type": "Conv2D",
+            "forward_pass_cost": [
+                2858007,
+                2169689,
+                2273080,
+                3332626
+            ],
+            "backward_pass_cost": [
+                11440291,
+                12248011,
+                8932877,
+                15955714
+            ]
+        },
+        "block4_conv3": {
+            "Type": "Conv2D",
+            "forward_pass_cost": [
+                1122963,
+                724204,
+                1525431,
+                -860042
+            ],
+            "backward_pass_cost": [
+                16353040,
+                17533831,
+                18129946,
+                19468401
+            ]
+        },
+        "block4_pool": {
+            "Type": "MaxPooling2D",
+            "forward_pass_cost": [
+                -1005090,
+                -819022,
+                -929454,
+                1004660
+            ],
+            "backward_pass_cost": [
+                1730950,
+                5319254,
+                2867330,
+                8362761
+            ]
+        },
+        "block5_conv1": {
+            "Type": "Conv2D",
+            "forward_pass_cost": [
+                1308462,
+                213623,
+                14632,
+                -1462453
+            ],
+            "backward_pass_cost": [
+                13804685,
+                9334493,
+                11318227,
+                12139414
+            ]
+        },
+        "block5_conv2": {
+            "Type": "Conv2D",
+            "forward_pass_cost": [
+                44371,
+                887381,
+                657760,
+                1024538
+            ],
+            "backward_pass_cost": [
+                17010148,
+                12903799,
+                13277229,
+                11230277
+            ]
+        },
+        "block5_conv3": {
+            "Type": "Conv2D",
+            "forward_pass_cost": [
+                797508,
+                705424,
+                721942,
+                -28880
+            ],
+            "backward_pass_cost": [
+                10281376,
+                13241810,
+                15291842,
+                14304196
+            ]
+        },
+        "block5_pool": {
+            "Type": "MaxPooling2D",
+            "forward_pass_cost": [
+                -557594,
+                -584616,
+                -357861,
+                162053
+            ],
+            "backward_pass_cost": [
+                -3374716,
+                7401609,
+                218324,
+                -4681112
+            ]
+        },
+        "flatten": {
+            "Type": "Flatten",
+            "forward_pass_cost": [
+                780610,
+                1322967,
+                1027760,
+                580927
+            ],
+            "backward_pass_cost": [
+                13468318,
+                6998758,
+                9692577,
+                11855512
+            ]
+        },
+        "fc1": {
+            "Type": "Dense",
+            "forward_pass_cost": [
+                252439,
+                -459539,
+                174774,
+                3255921
+            ],
+            "backward_pass_cost": [
+                123089430,
+                125729352,
+                126949483
+            ]
+        },
+        "fc2": {
+            "Type": "Dense",
+            "forward_pass_cost": [
+                454966,
+                499729,
+                122753
+            ],
+            "backward_pass_cost": [
+                22720521,
+                21768631,
+                24756379
+            ]
+        },
+        "predictions": {
+            "Type": "Dense",
+            "forward_pass_cost": [
+                88704,
+                191797,
+                -132101
+            ],
+            "backward_pass_cost": [
+                12768029,
+                11229776,
+                16380619
+            ]
+        }
+    }
+}

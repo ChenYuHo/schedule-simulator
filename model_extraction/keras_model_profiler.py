@@ -15,8 +15,6 @@ tensorflow-estimator      1.13.0                     py_0
 import argparse
 import sys
 from datetime import datetime
-import importlib
-import time
 import json
 import socket
 
@@ -117,26 +115,26 @@ def clone_layer(layer):
     return deserialize(serialize(layer))
 
 
-def generate_dummy_data(model, num_of_samples):
-    import numpy as np
-    # Keras gives us a list of shapes in case of multiple inputs / outputs
+def instantiate_dummy_tensors(model, num_of_samples):
+    import keras.backend as K
+    # Keras gives us a list of shapes only in case of multiple inputs / outputs
     model_input_shapes = [model.input_shape] if model.input_shape[0] is None else model.input_shape
     model_output_shapes = [model.output_shape] if model.output_shape[0] is None else model.output_shape
     input_shapes = list()
     for shape in [list(input_shape) for input_shape in model_input_shapes]:
         shape[0] = num_of_samples
         input_shapes.append(shape)
-    input_data = [np.random.rand(*shape) for shape in input_shapes]
     output_shapes = list()
     for shape in [list(output_shape) for output_shape in model_output_shapes]:
         shape[0] = num_of_samples
         output_shapes.append(shape)
-    output_data = [np.random.rand(*shape) for shape in output_shapes]
+    input_data = [K.random_normal(shape=shape) for shape in input_shapes]
+    output_data = [K.random_normal(shape=shape) for shape in output_shapes]
     return input_data, output_data
 
 
 def profile(input_model, loss, optimizer, num_of_samples=100, trials=1, num_of_function_calls=5, do_warmup=True,
-            full_profiling=False, suppress_negatives=False, log_stream=None, device=None):
+            full_profiling=False, suppress_negatives=False, log_stream=None, device=None, accumulative=True):
     """
     The function takes a model and profiles the cost that each layer contributes to the total training time.
     The function's method is to build the model layer by layer and observe the cost changes each layer introduces. The
@@ -151,30 +149,37 @@ def profile(input_model, loss, optimizer, num_of_samples=100, trials=1, num_of_f
     :param trials: The number of layer building & evaluation iterations to do.
     :param num_of_function_calls: The number of function calls to make before taking and recording the minimum cost.
     Only the minimum cost of these calls is added to the report.
+    :param device: cpu or gpu ?
+    :param accumulative: Store the raw costs of each function call do not subtract model L+1 from model L.
+    Used for debugging
     :param do_warmup: Whether a warmup run is done first so that the keras backend engine is setup
     :param loss: The loss function for the model
     :param optimizer: The optimizer used for the model
     :param full_profiling: Include step 2 and 4 in profiling
-    :param supress_negatives: Whether we should set a cost to 0 if it is negative.
+    :param suppress_negatives: Whether we should set a cost to 0 if it is negative.
     :param log_stream: A stream to direct the output of the profiling. Useful to keep track of the current step.
     If none then no logging happens
     :return: An (exception,dict) tuple the exception slot is to detect if an exception has occurred and the dict
     contains the information. The dict has key=layer.name and value=dict with
     keys=(forward_pass_cost, gradient_calculation_cost, gradient_application_cost, loss_calculation_cost)
     """
+    import tensorflow as tf
     import keras
     from keras.layers import InputLayer
+    from keras.layers.pooling import _Pooling1D, _Pooling2D, _Pooling3D
     from keras.layers.merge import _Merge
     from keras.models import Model
-    import tensorflow as tf
+
     import time
-    import numba
     import contextlib
+
+    ignored_layer_types = []
+    # ignored_layer_types = [_Pooling1D, _Pooling2D, _Pooling3D]  # Uncomment to ignore pooling layers
 
     # Configure tensorflow session
     running_context = contextlib.nullcontext() if device is None else tf.device("/{}:0".format(device))
     sess_config_args = dict()
-    sess_config_args["log_device_placement"] = False
+    sess_config_args["log_device_placement"] = False  # For debugging only
     if device == "cpu":
         # Not doing this still lets tensorflow allocate gpu memory even though the context forces operations to be run
         # on the cpu. This is dumb but its reality.
@@ -182,36 +187,38 @@ def profile(input_model, loss, optimizer, num_of_samples=100, trials=1, num_of_f
     sess_config = tf.ConfigProto(**sess_config_args)
     sess_config.gpu_options.allow_growth = True
     running_options = tf.RunOptions(report_tensor_allocations_upon_oom=False)
-    session = tf.Session(config=sess_config)
-    keras.backend.set_session(session)
     with running_context:
         if do_warmup:
             # Warm up run (To set up all backend variables and stuff)
             if log_stream:
                 log_stream.write("Running warm up...\n")
-            input_data, output_data = generate_dummy_data(input_model, 1000)
+            input_data, output_data = instantiate_dummy_tensors(input_model, 100)
             input_model.compile(optimizer=optimizer, loss=loss)
-            input_model.fit(input_data, output_data, verbose=0)
+            input_model.fit(input_data, output_data, verbose=0, steps_per_epoch=1)
         # Produce layer topological order
         topological_layer_order = list()
         traverse_keras_DFS(input_model, topological_layer_order.append, order="post-order", top_to_bottom=True)
         topological_layer_order.reverse()
         # Initialize the costs that we will profile
         accumulative_costs = list()
+        global_func_args = dict(verbose=0)
+        # This block is the mother of all assumptions. It is the root of all evil
         if full_profiling:
-            accumulative_costs.append(dict(name="output_calculation_cost", func="predict",
-                                           args=dict(x=None, batch_size=num_of_samples, verbose=0)))
-            accumulative_costs.append(dict(name="loss_calculation_cost", func="evaluate",
-                                           args=dict(x=None, y=None, batch_size=num_of_samples, verbose=0)))
-            accumulative_costs.append(dict(name="gradient_calculation_cost", func="fit",
-                                           args=dict(x=None, y=None, batch_size=num_of_samples, verbose=0)))
-            accumulative_costs.append(dict(name="gradient_application_cost", func="fit",
-                                           args=dict(x=None, y=None, batch_size=1, verbose=0)))
+            accumulative_costs.append(dict(name="output_calculation_cost", func="predict", batch_size=32,
+                                           args=dict(x=None, steps=num_of_samples//32)))
+            accumulative_costs.append(dict(name="loss_calculation_cost", func="evaluate", batch_size=32,
+                                           args=dict(x=None, y=None, steps=num_of_samples//32)))
+            # accumulative_costs.append(dict(name="gradient_calculation_cost", func="fit", batch_size=32,
+            #                                args=dict(x=None, y=None, steps_per_epoch=num_of_samples//32)))
+            accumulative_costs.append(dict(name="gradient_calculation_cost", func="fit", batch_size=num_of_samples,
+                                           args=dict(x=None, y=None, steps_per_epoch=1)))
+            accumulative_costs.append(dict(name="gradient_application_cost", func="fit", batch_size=1,
+                                           args=dict(x=None, y=None, steps_per_epoch=num_of_samples)))
         else:
-            accumulative_costs.append(dict(name="forward_pass_cost", func="evaluate",
-                                           args=dict(x=None, y=None, batch_size=num_of_samples, verbose=0)))
-            accumulative_costs.append(dict(name="backward_pass_cost", func="fit",
-                                           args=dict(x=None, y=None, verbose=0)))
+            accumulative_costs.append(dict(name="forward_pass_cost", func="evaluate", batch_size=num_of_samples,
+                                           args=dict(x=None, y=None, steps=1)))
+            accumulative_costs.append(dict(name="backward_pass_cost", func="fit", batch_size=32,
+                                           args=dict(x=None, y=None, steps_per_epoch=num_of_samples//32)))
         # Initialize timings dictionary
         timings = dict()
         for original_layer in topological_layer_order:
@@ -225,13 +232,15 @@ def profile(input_model, loss, optimizer, num_of_samples=100, trials=1, num_of_f
             log_stream.write("Start profiling...\n")
         try:
             for trial in range(trials):
+                keras.backend.clear_session()
+                session = tf.Session(config=sess_config)
+                keras.backend.set_session(session)
                 if log_stream:
                     log_stream.write("Trial: {}\n".format(trial))
                 input_layers = list()
                 added_layers = dict()
                 previous_model_cost = None
                 for original_layer in topological_layer_order:
-                    #keras.backend.clear_session()
                     # Add new layer to cloned network ------------------------------------------------------------------
                     # Flatten out the layer's parents to check what the cloned layer needs to connect to
                     original_parents = set()
@@ -240,13 +249,14 @@ def profile(input_model, loss, optimizer, num_of_samples=100, trials=1, num_of_f
                             original_parents.add(original_parent)
                     # Remove all connections of this layer by making a clone using properties only
                     current_layer = clone_layer(original_layer)
-                    # Restore appropriate connections in cloned network
                     if len(original_parents) == 0:
+                        assert isinstance(current_layer, InputLayer)
                         # This is an input layer. It is only used for structuring purposes no need to actually profile
                         # it. Therefore we add it and continue
                         input_layers.append(current_layer)
                         added_layers[current_layer.name] = current_layer
                         continue
+                    # Restore appropriate connections in cloned network
                     cloned_parents = set()
                     try:
                         for original_parent in original_parents:
@@ -265,6 +275,16 @@ def profile(input_model, loss, optimizer, num_of_samples=100, trials=1, num_of_f
                         # Make a connection to the only parent
                         current_layer(cloned_parents.pop().output)
                     added_layers[current_layer.name] = current_layer
+                    # Should we go on with profiling ?
+                    ignore = False
+                    for layer_type in ignored_layer_types:
+                        if isinstance(current_layer, layer_type):
+                            ignore = True
+                            break
+                    if ignore:
+                        if log_stream:
+                            log_stream.write("Skip profiling of {}\n".format(current_layer.name))
+                        continue
                     # Find output layers. Output layers need to be updated with every iteration since we are building
                     # the model from a top to bottom fashion.
                     output_layers = list()
@@ -276,8 +296,6 @@ def profile(input_model, loss, optimizer, num_of_samples=100, trials=1, num_of_f
                     cloned_model = Model(inputs=[x.input for x in input_layers],
                                          outputs=[x.output for x in output_layers])
                     cloned_model.compile(optimizer=optimizer, loss=loss, options=running_options)
-                    # Create dummy data that suits the current input and output layers ---------------------------------
-                    input_data, output_data = generate_dummy_data(cloned_model, num_of_samples)
                     # Start profiling ----------------------------------------------------------------------------------
                     current_model_cost = dict()
                     for cost in accumulative_costs:
@@ -286,6 +304,11 @@ def profile(input_model, loss, optimizer, num_of_samples=100, trials=1, num_of_f
                         input_model.name, len(cloned_model.layers), len(input_model.layers), current_layer.name)
                     accumulated_cost = 0
                     for i, cost in enumerate(accumulative_costs):
+                        # These are symbolic tensors no computational load until we run the function
+                        # With symbolic tensors the first dimension (Usually the number of samples) constitutes the
+                        # batch size. We then specify how many batches we run using steps_per_epoch for the train
+                        # function. and using steps for the evaluation & prediction functions
+                        input_data, output_data = instantiate_dummy_tensors(cloned_model, cost["batch_size"])
                         name = cost["name"]
                         func = getattr(cloned_model, cost["func"])
                         args = cost["args"]
@@ -297,22 +320,26 @@ def profile(input_model, loss, optimizer, num_of_samples=100, trials=1, num_of_f
                         # Call the function and record the time
                         for _ in range(num_of_function_calls):
                             t = time.time_ns()
-                            func(**args)
-                            tc = time.time_ns()
+                            func(**args, **global_func_args)
+                            tc = time.time_ns() - t
                             if tc < current_model_cost[name]:
                                 current_model_cost[name] = tc
-                        # The layer total function cost is the difference between the previous and current iteration cost
-                        layer_total_func_cost = current_model_cost[name] -\
-                                                (previous_model_cost[name] if previous_model_cost else 0)
-                        # The layer actual cost to measure is the total function cost minus all the actual costs before it
-                        layer_actual_specific_cost = layer_total_func_cost - accumulated_cost
-                        if suppress_negatives and layer_actual_specific_cost < 0:
-                            layer_actual_specific_cost = 0
-                        accumulated_cost += layer_actual_specific_cost
+                        if accumulative:
+                            layer_actual_specific_cost = tc
+                        else:
+                            # The layer total function cost is the difference between the previous and current iteration cost
+                            layer_total_func_cost = current_model_cost[name] -\
+                                                    (previous_model_cost[name] if previous_model_cost else 0)
+                            # The layer actual cost to measure is the total function cost minus all the actual costs before it
+                            layer_actual_specific_cost = layer_total_func_cost - accumulated_cost
+                            if suppress_negatives and layer_actual_specific_cost < 0:
+                                layer_actual_specific_cost = 0
+                            accumulated_cost += layer_actual_specific_cost
                         if log_stream:
                             log_stream.write(print_format.format(key=name, value=layer_actual_specific_cost))
                         timings[current_layer.name][name].append(layer_actual_specific_cost)
                     previous_model_cost = current_model_cost
+                keras.backend.get_session().close()
         except BaseException as e:
             return e, timings
     return None, timings
@@ -345,6 +372,8 @@ if __name__ == "__main__":
                         help="If set to true costs that are negative are set to 0")
     parser.add_argument("-nw", "--no_warmup", action="store_true",
                         help="If set to true no warmup stage will be executed")
+    parser.add_argument("-ac", "--accumulative", action="store_true",
+                        help="If set to true then the accumulative costs are stored. No subtractions are done.")
     parser.add_argument("--out",
                         help="Stream to write the timings to in json format if any. File | stdout | stderr | suppress")
     parser.add_argument("--log",
@@ -372,7 +401,8 @@ if __name__ == "__main__":
     exception, timings = profile(input_model=model, num_of_samples=args.samples, loss=args.loss,
                                  optimizer=args.optimizer, full_profiling=args.full_profiling, log_stream=log,
                                  num_of_function_calls=args.num_calls, do_warmup=not args.no_warmup, trials=args.trials,
-                                 suppress_negatives=args.suppress_negatives, device=args.device)
+                                 suppress_negatives=args.suppress_negatives, device=args.device,
+                                 accumulative=args.accumulative)
     if exception is not None:
         if isinstance(exception, KeyboardInterrupt):
             log.write("Profiling stopped by user. Attempting to write gathered data...\n")
