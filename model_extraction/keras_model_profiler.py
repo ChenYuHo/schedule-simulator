@@ -21,20 +21,20 @@ import os
 import time
 
 
+
 def dummy_multi_model():
     """
     https://keras.io/getting-started/functional-api-guide/
     :return: A multi input multi output model for testing
     """
-    import keras
-    from keras.layers import Input, Embedding, LSTM, Dense
-    from keras.models import Model
+    from tensorflow.python.keras.layers import Input, Embedding, LSTM, Dense, concatenate
+    from tensorflow.python.keras.models import Model
     main_input = Input(shape=(100,), dtype='int32', name='main_input')
     x = Embedding(output_dim=512, input_dim=10000, input_length=100)(main_input)
     lstm_out = LSTM(32)(x)
     auxiliary_output = Dense(1, activation='sigmoid', name='aux_output')(lstm_out)
     auxiliary_input = Input(shape=(5,), name='aux_input')
-    x = keras.layers.concatenate([lstm_out, auxiliary_input])
+    x = concatenate([lstm_out, auxiliary_input])
     x = Dense(64, activation='relu')(x)
     x = Dense(64, activation='relu')(x)
     x = Dense(64, activation='relu')(x)
@@ -44,8 +44,8 @@ def dummy_multi_model():
 
 
 def dummy_linear_dense_model(units=100, n_of_layers=10):
-    from keras.models import Sequential
-    from keras.layers import Dense
+    from tensorflow.python.keras.models import Sequential
+    from tensorflow.python.keras.layers import Dense
     model = Sequential(name="dummy_linear_dense")
     model.add(Dense(units, input_shape=(units,)))
     for _ in range(n_of_layers-1):
@@ -54,8 +54,8 @@ def dummy_linear_dense_model(units=100, n_of_layers=10):
 
 
 def dummy_linear_cnn_model():
-    from keras.models import Sequential
-    from keras.layers import Dense, Conv2D, MaxPooling2D, AveragePooling2D, Flatten
+    from tensorflow.python.keras.models import Sequential
+    from tensorflow.python.keras.layers import Dense, Conv2D, MaxPooling2D, AveragePooling2D, Flatten
     model = Sequential(name="dummy_linear_cnn")
     model.add(Conv2D(8, 16, padding="same", input_shape=(256, 256, 1), activation="relu"))
     model.add(Conv2D(16, 16, padding="same", activation="relu"))
@@ -73,8 +73,8 @@ def dummy_linear_cnn_model():
 
 
 def dummy_2_layers_model():
-    from keras.models import Sequential
-    from keras.layers import Dense, Conv2D
+    from tensorflow.python.keras.models import Sequential
+    from tensorflow.python.keras.layers import Dense, Conv2D
     model = Sequential(name="dummy_2_layers")
     model.add(Conv2D(8, 16, padding="same", input_shape=(256, 256, 1), activation="relu"))
     model.add(Dense(64))
@@ -109,7 +109,7 @@ def traverse_keras_DFS(model, processing_function, order="post-order", top_to_bo
         visited.add(root)
         if order == "pre-order":
             processing_function(root)
-        # Note that the Keras model structure uses a layer node layer node scheme.
+        # Note that the keras model structure uses a layer node layer node scheme.
         # A `Node` describes the connectivity between two layers See
         # https://github.com/keras-team/keras/blob/b0bfd5201da2bfced84028bcc5bda05bdfd75af7/keras/engine/base_layer.py#L1178
         # Regardless, for our purpose, it is only important to know that a layer can have multiple inbound nodes and
@@ -122,9 +122,14 @@ def traverse_keras_DFS(model, processing_function, order="post-order", top_to_bo
                     traverse(root=child_layer, visited=visited)
         else:
             for node in root._inbound_nodes:
-                for parent_layer in node.inbound_layers:
-                    if parent_layer not in visited:
-                        traverse(root=parent_layer, visited=visited)
+                # Sometimes node.inbound_layers is a list and sometimes it is a single layer
+                try:
+                    for parent_layer in node.inbound_layers:
+                        if parent_layer not in visited:
+                            traverse(root=parent_layer, visited=visited)
+                except TypeError:  # node.inbound_layers is not a list
+                    if node.inbound_layers not in visited:
+                        traverse(root=node.inbound_layers, visited=visited)
         if order == "post-order":
             processing_function(root)
     visited = set()
@@ -135,18 +140,17 @@ def traverse_keras_DFS(model, processing_function, order="post-order", top_to_bo
         for end_layer in model._output_layers:
             traverse(root=end_layer, visited=visited)
 
-
 def clone_layer(layer):
     """
     Creates a clone of the layer using only its main properties (Does not copy any connections from the clone)
     Better implementation exists ?
     """
-    from keras.layers import serialize, deserialize
+    from tensorflow.python.keras.layers import serialize, deserialize
     return deserialize(serialize(layer))
 
 
 def get_dummy_input_output(model, num_of_samples):
-    import keras.backend as K
+    import tensorflow.python.keras.backend as K
     # Keras gives us a list of shapes only in case of multiple inputs / outputs
     model_input_shapes = [model.input_shape] if model.input_shape[0] is None else model.input_shape
     model_output_shapes = [model.output_shape] if model.output_shape[0] is None else model.output_shape
@@ -158,8 +162,9 @@ def get_dummy_input_output(model, num_of_samples):
     for shape in [list(output_shape) for output_shape in model_output_shapes]:
         shape[0] = num_of_samples
         output_shapes.append(shape)
-    # Which op takes less time depends on whether you are using gpu or not and whether 
-    op = K.random_uniform if random else K.ones
+    # Which op takes less time depends on whether you are using gpu or not and whether you are using eager execution or
+    # not
+    op = K.random_uniform
     input_data = [op(shape=shape) for shape in input_shapes]
     output_data = [op(shape=shape) for shape in output_shapes]
     return input_data, output_data
@@ -195,12 +200,11 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
     contains the information. The dict has key=layer.name and value=dict with
     keys=(forward_pass_cost, gradient_calculation_cost, gradient_application_cost, loss_calculation_cost)
     """
-    import keras
-    from keras.layers import InputLayer
-    from keras.layers.pooling import _Pooling1D, _Pooling2D, _Pooling3D
-    from keras.layers.merge import _Merge
-    from keras.models import Model
-
+    import tensorflow as tf
+    from tensorflow.python.keras.layers import InputLayer
+    from tensorflow.python.keras.layers.pooling import Pooling1D, Pooling2D, Pooling3D
+    from tensorflow.python.keras.layers.merge import _Merge
+    from tensorflow.python.keras.models import Model
 
     ignored_layer_types = []
     # ignored_layer_types = [_Pooling1D, _Pooling2D, _Pooling3D]  # Uncomment to ignore pooling layers
@@ -254,119 +258,117 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
         log_stream.write("Start profiling...\n")
     try:
         for trial in range(trials):
-            keras.backend.clear_session()
-            if log_stream:
-                log_stream.write("Trial: {}\n".format(trial))
-            input_layers = list()
-            added_layers = dict()
-            previous_model_cost = None
-            for original_layer in topological_layer_order:
-                # Add new layer to cloned network ----------------------------------------------------------------------
-                # Flatten out the layer's parents to check what the cloned layer needs to connect to
-                original_parents = set()
-                for original_node in original_layer._inbound_nodes:
-                    for original_parent in original_node.inbound_layers:
-                        original_parents.add(original_parent)
-                # Remove all connections of this layer by making a clone using properties only
-                current_layer = clone_layer(original_layer)
-                # Restore appropriate connections in cloned network
-                if len(original_parents) == 0:
-                    assert isinstance(current_layer, InputLayer)
-                    # This is an input layer. It is only used for structuring purposes no need to actually profile
-                    # it. Therefore we add it and continue
-                    input_layers.append(current_layer)
+            tf.reset_default_graph()
+            with tf.Session() as sess:
+                if log_stream:
+                    log_stream.write("Trial: {}\n".format(trial))
+                input_layers = list()
+                added_layers = dict()
+                previous_model_cost = None
+                for original_layer in topological_layer_order:
+                    # Add new layer to cloned network ------------------------------------------------------------------
+                    # Flatten out the layer's parents to check what the cloned layer needs to connect to
+                    original_parents = set()
+                    for original_node in original_layer._inbound_nodes:
+                        try:
+                            for original_parent in original_node.inbound_layers:
+                                original_parents.add(original_parent)
+                        except TypeError:  # inbound_layers is a single layer and not iterable
+                            original_parents.add(original_node.inbound_layers)
+                    # Remove all connections of this layer by making a clone using properties only
+                    current_layer = clone_layer(original_layer)
+                    # Restore appropriate connections in cloned network
+                    if len(original_parents) == 0:
+                        assert isinstance(current_layer, InputLayer)
+                        # This is an input layer. It is only used for structuring purposes no need to actually profile
+                        # it. Therefore we add it and continue
+                        input_layers.append(current_layer)
+                        added_layers[current_layer.name] = current_layer
+                        continue
+                    cloned_parents = set()
+                    try:
+                        for original_parent in original_parents:
+                            cloned_parents.add(added_layers[original_parent.name])
+                    except KeyError:
+                        raise Exception("Attempting to add layer before one of its parents")
+                    assert len(cloned_parents) == len(original_parents)
+                    if len(cloned_parents) > 1:
+                        # Merge all parents into this layer
+                        # https://github.com/keras-team/keras/blob/master/keras/layers/merge.py#L328
+                        # https://keras.io/layers/merge/
+                        if not isinstance(current_layer, _Merge):
+                            raise Exception("Non merge layer should not have multiple parents")
+                        current_layer([x.output for x in cloned_parents])
+                    elif len(cloned_parents) == 1:
+                        # Make a connection to the only parent
+                        current_layer(cloned_parents.pop().output)
                     added_layers[current_layer.name] = current_layer
-                    continue
-                cloned_parents = set()
-                try:
-                    for original_parent in original_parents:
-                        cloned_parents.add(added_layers[original_parent.name])
-                except KeyError:
-                    raise Exception("Attempting to add layer before one of its parents")
-                assert len(cloned_parents) == len(original_parents)
-                if len(cloned_parents) > 1:
-                    # Merge all parents into this layer
-                    # https://github.com/keras-team/keras/blob/master/keras/layers/merge.py#L328
-                    # https://keras.io/layers/merge/
-                    if not isinstance(current_layer, _Merge):
-                        raise Exception("Non merge layer should not have multiple parents")
-                    current_layer([x.output for x in cloned_parents])
-                elif len(cloned_parents) == 1:
-                    # Make a connection to the only parent
-                    current_layer(cloned_parents.pop().output)
-                added_layers[current_layer.name] = current_layer
-                # Should we go on with profiling ?
-                ignore = False
-                for layer_type in ignored_layer_types:
-                    if isinstance(current_layer, layer_type):
-                        ignore = True
-                        break
-                if ignore:
-                    if log_stream:
-                        log_stream.write("Skip profiling of {}\n".format(current_layer.name))
-                    continue
-                # Find output layers. Output layers need to be updated with every iteration since we are building
-                # the model from a top to bottom fashion.
-                output_layers = list()
-                for layer in added_layers.values():
-                    if layer not in input_layers and len(layer._outbound_nodes) == 0:
-                        output_layers.append(layer)
-                # Create and compile model -----------------------------------------------------------------------------
-                # Inputs & outputs must be tensors not layers
-                cloned_model = Model(inputs=[x.input for x in input_layers],
-                                     outputs=[x.output for x in output_layers])
-                cloned_model.compile(optimizer=optimizer, loss=loss)
-                # Start profiling --------------------------------------------------------------------------------------
-                current_model_cost = dict()
-                for cost in accumulative_costs:
-                    current_model_cost[cost["name"]] = float("inf")
-                print_format = "[{}:{:4}/{:<4}] Layer: {:16} {{key:30}}: {{value}}\n".format(
-                    input_model.name, len(cloned_model.layers), len(input_model.layers), current_layer.name)
-                accumulated_cost = 0
-                for i, cost in enumerate(accumulative_costs):
-                    # These are symbolic tensors no computational load until we run the function
-                    # With symbolic tensors the first dimension (Usually the number of samples) constitutes the
-                    # batch size. We then specify how many batches we run using steps_per_epoch for the train
-                    # function. and using steps for the evaluation & prediction functions
-                    input_data, output_data = get_dummy_input_output(cloned_model, cost["batch_size"], random=True)
-                    name = cost["name"]
-                    func = getattr(cloned_model, cost["func"])
-                    args = cost["args"]
-                    # Substitute in the input and output data
-                    if "x" in args.keys():
-                        args["x"] = input_data
-                    if "y" in args.keys():
-                        args["y"] = output_data
-                    # Call the function and record the time
-                    for _ in range(num_of_function_calls):
-                        t = time.time_ns()
-                        func(**args, **global_func_args)
-                        tc = time.time_ns() - t
-                        if tc < current_model_cost[name]:
-                            current_model_cost[name] = tc
-                    if accumulative:
-                        layer_actual_specific_cost = tc
-                    else:
-                        # The layer total function cost is the difference between the previous and current iteration cost
-                        layer_total_func_cost = current_model_cost[name] -\
-                                                (previous_model_cost[name] if previous_model_cost else 0)
-                        # The layer actual cost to measure is the total function cost minus all the actual costs before it
-                        layer_actual_specific_cost = layer_total_func_cost - accumulated_cost
-                        if suppress_negatives and layer_actual_specific_cost < 0:
-                            layer_actual_specific_cost = 0
-                        accumulated_cost += layer_actual_specific_cost
-                    if log_stream:
-                        log_stream.write(print_format.format(key=name, value=layer_actual_specific_cost))
-                    timings[current_layer.name][name].append(layer_actual_specific_cost)
-                previous_model_cost = current_model_cost
-                # To confirm that the graph is being reset with each iteration
-                # print(len(keras.backend.get_session().graph.get_operations()))
-            # The below line closes the session. I encounter OOM errors if i omit this and don't explicitly close the
-            # session, and if i include it, i encounter CancelledError: Session has been closed. However the latter
-            # error is ignored by tensorflow and execution continues normally.
-            # Applying the recent fix below manually seems to get rid of the annoying ignored error
-            # https://github.com/dansitu/tensorflow/commit/b124e055a17ca8e4ff897867f96c97e7bfc8eed7
-            keras.backend.get_session().close()
+                    # Should we go on with profiling ?
+                    ignore = False
+                    for layer_type in ignored_layer_types:
+                        if isinstance(current_layer, layer_type):
+                            ignore = True
+                            break
+                    if ignore:
+                        if log_stream:
+                            log_stream.write("Skip profiling of {}\n".format(current_layer.name))
+                        continue
+                    # Find output layers. Output layers need to be updated with every iteration since we are building
+                    # the model from a top to bottom fashion.
+                    output_layers = list()
+                    for layer in added_layers.values():
+                        if layer not in input_layers and len(layer._outbound_nodes) == 0:
+                            output_layers.append(layer)
+                    # Create and compile model -----------------------------------------------------------------------------
+                    # Inputs & outputs must be tensors not layers
+                    cloned_model = Model(inputs=[x.input for x in input_layers],
+                                         outputs=[x.output for x in output_layers])
+                    cloned_model.compile(optimizer=optimizer, loss=loss)
+                    # Start profiling --------------------------------------------------------------------------------------
+                    current_model_cost = dict()
+                    for cost in accumulative_costs:
+                        current_model_cost[cost["name"]] = float("inf")
+                    print_format = "[{}:{:4}/{:<4}] Layer: {:16} {{key:30}}: {{value}}\n".format(
+                        input_model.name, len(cloned_model.layers), len(input_model.layers), current_layer.name)
+                    accumulated_cost = 0
+                    for i, cost in enumerate(accumulative_costs):
+                        # These are symbolic tensors no computational load until we run the function
+                        # With symbolic tensors the first dimension (Usually the number of samples) constitutes the
+                        # batch size. We then specify how many batches we run using steps_per_epoch for the train
+                        # function. and using steps for the evaluation & prediction functions
+                        input_data, output_data = get_dummy_input_output(cloned_model, cost["batch_size"])
+                        name = cost["name"]
+                        func = getattr(cloned_model, cost["func"])
+                        args = cost["args"]
+                        # Substitute in the input and output data
+                        if "x" in args.keys():
+                            args["x"] = input_data
+                        if "y" in args.keys():
+                            args["y"] = output_data
+                        # Call the function and record the time
+                        for _ in range(num_of_function_calls):
+                            t = time.time_ns()
+                            func(**args, **global_func_args)
+                            tc = time.time_ns() - t
+                            if tc < current_model_cost[name]:
+                                current_model_cost[name] = tc
+                        if accumulative:
+                            layer_actual_specific_cost = tc
+                        else:
+                            # The layer total function cost is the difference between the previous and current iteration cost
+                            layer_total_func_cost = current_model_cost[name] -\
+                                                    (previous_model_cost[name] if previous_model_cost else 0)
+                            # The layer actual cost to measure is the total function cost minus all the actual costs before it
+                            layer_actual_specific_cost = layer_total_func_cost - accumulated_cost
+                            if suppress_negatives and layer_actual_specific_cost < 0:
+                                layer_actual_specific_cost = 0
+                            accumulated_cost += layer_actual_specific_cost
+                        if log_stream:
+                            log_stream.write(print_format.format(key=name, value=layer_actual_specific_cost))
+                        timings[current_layer.name][name].append(layer_actual_specific_cost)
+                    previous_model_cost = current_model_cost
+                    # To confirm that the graph is being reset with each iteration
+                    # print(len(sess.graph.get_operations()))
     except BaseException as e:
         return e, timings
     return None, timings
@@ -391,8 +393,8 @@ def layer_input_output_profiling(model):
 
 
 if __name__ == "__main__":
-    import tensorflow as tf
-    tf.enable_eager_execution()
+    #import tensorflow as tf
+    #tf.enable_eager_execution()
     parser = argparse.ArgumentParser(description="A script that profiles Keras models and produces layer wise timings.")
     parser.add_argument("model",
                         help="The Keras model to profile. See Keras.Applications documentation for all options."
@@ -441,7 +443,7 @@ if __name__ == "__main__":
             module = sys.modules[__name__]
             model = getattr(module, model_func_name)()
         else:
-            module = __import__("keras.applications", fromlist=[args.model])
+            module = __import__("tensorflow.keras.applications", fromlist=[args.model])
             model = getattr(module, args.model)
             model = model(weights=None, include_top=True)
     except AttributeError:
