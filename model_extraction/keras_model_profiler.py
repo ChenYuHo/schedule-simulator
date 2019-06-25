@@ -18,6 +18,7 @@ from datetime import datetime
 import json
 import socket
 import os
+import time
 
 
 def dummy_multi_model():
@@ -45,10 +46,38 @@ def dummy_multi_model():
 def dummy_linear_dense_model(units=100, n_of_layers=10):
     from keras.models import Sequential
     from keras.layers import Dense
-    model = Sequential(name="dummy_linear")
+    model = Sequential(name="dummy_linear_dense")
     model.add(Dense(units, input_shape=(units,)))
     for _ in range(n_of_layers-1):
         model.add(Dense(units))
+    return model
+
+
+def dummy_linear_cnn_model():
+    from keras.models import Sequential
+    from keras.layers import Dense, Conv2D, MaxPooling2D, AveragePooling2D, Flatten
+    model = Sequential(name="dummy_linear_cnn")
+    model.add(Conv2D(8, 16, padding="same", input_shape=(256, 256, 1), activation="relu"))
+    model.add(Conv2D(16, 16, padding="same", activation="relu"))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Conv2D(32, 32, padding="same", activation="relu"))
+    model.add(AveragePooling2D(pool_size=(4, 4)))
+    model.add(Conv2D(64, 64, padding="same", activation="relu"))
+    model.add(AveragePooling2D(pool_size=(4, 4)))
+    model.add(Flatten())
+    model.add(Dense(128, activation="relu"))
+    model.add(Dense(64, activation="relu"))
+    model.add(Dense(64, activation="relu"))
+    model.add(Dense(8, activation="relu"))
+    return model
+
+
+def dummy_2_layers_model():
+    from keras.models import Sequential
+    from keras.layers import Dense, Conv2D
+    model = Sequential(name="dummy_2_layers")
+    model.add(Conv2D(8, 16, padding="same", input_shape=(256, 256, 1), activation="relu"))
+    model.add(Dense(64))
     return model
 
 
@@ -116,7 +145,7 @@ def clone_layer(layer):
     return deserialize(serialize(layer))
 
 
-def instantiate_dummy_tensors(model, num_of_samples):
+def get_dummy_input_output(model, num_of_samples):
     import keras.backend as K
     # Keras gives us a list of shapes only in case of multiple inputs / outputs
     model_input_shapes = [model.input_shape] if model.input_shape[0] is None else model.input_shape
@@ -129,13 +158,15 @@ def instantiate_dummy_tensors(model, num_of_samples):
     for shape in [list(output_shape) for output_shape in model_output_shapes]:
         shape[0] = num_of_samples
         output_shapes.append(shape)
-    input_data = [K.random_normal(shape=shape) for shape in input_shapes]
-    output_data = [K.random_normal(shape=shape) for shape in output_shapes]
+    # Which op takes less time depends on whether you are using gpu or not and whether 
+    op = K.random_uniform if random else K.ones
+    input_data = [op(shape=shape) for shape in input_shapes]
+    output_data = [op(shape=shape) for shape in output_shapes]
     return input_data, output_data
 
 
-def profile(input_model, loss, optimizer, num_of_samples=100, trials=1, num_of_function_calls=5,
-            full_profiling=False, suppress_negatives=False, log_stream=None, device="gpu", accumulative=True):
+def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8, trials=1, num_of_function_calls=5,
+                   full_profiling=False, suppress_negatives=False, log_stream=None, device="gpu", accumulative=True):
     """
     The function takes a model and profiles the cost that each layer contributes to the total training time.
     The function's method is to build the model layer by layer and observe the cost changes each layer introduces. The
@@ -146,7 +177,8 @@ def profile(input_model, loss, optimizer, num_of_samples=100, trials=1, num_of_f
     3- Calculate gradient (Taking the derivative of 1, 2)
     4- Apply the gradient (Taking the calculated gradient and applying it using an optimizer)
     :param input_model: The model to profile
-    :param num_of_samples: The number of samples to use in profiling. The higher the more computation & accuracy.
+    :param batch_size: The batch size used for all functions.
+    :param num_of_batches: The number of batches to run
     :param trials: The number of layer building & evaluation iterations to do.
     :param num_of_function_calls: The number of function calls to make before taking and recording the minimum cost.
     Only the minimum cost of these calls is added to the report.
@@ -169,14 +201,12 @@ def profile(input_model, loss, optimizer, num_of_samples=100, trials=1, num_of_f
     from keras.layers.merge import _Merge
     from keras.models import Model
 
-    import time
-    import contextlib
 
     ignored_layer_types = []
     # ignored_layer_types = [_Pooling1D, _Pooling2D, _Pooling3D]  # Uncomment to ignore pooling layers
     # Check device
     if device == "cpu":
-        # This seems to be the most effective method. Other methods include using the tf.device("/gpu:0")
+        # This seems to be the most effective method. Other methods include using the tf.device("/cpu:0")
         # context manager or setting ConfigProto(device_count={'GPU':0}. But both these methods use the GPU a little bit
         os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
         if log_stream:
@@ -196,21 +226,21 @@ def profile(input_model, loss, optimizer, num_of_samples=100, trials=1, num_of_f
     global_func_args = dict(verbose=0)
     # This block is the mother of all assumptions. It is the root of all evil
     if full_profiling:
-        accumulative_costs.append(dict(name="output_calculation_cost", func="predict", batch_size=32,
-                                       args=dict(x=None, steps=num_of_samples//32)))
-        accumulative_costs.append(dict(name="loss_calculation_cost", func="evaluate", batch_size=32,
-                                       args=dict(x=None, y=None, steps=num_of_samples//32)))
-        # accumulative_costs.append(dict(name="gradient_calculation_cost", func="fit", batch_size=32,
-        #                                args=dict(x=None, y=None, steps_per_epoch=num_of_samples//32)))
-        accumulative_costs.append(dict(name="gradient_calculation_cost", func="fit", batch_size=num_of_samples,
-                                       args=dict(x=None, y=None, steps_per_epoch=1)))
-        accumulative_costs.append(dict(name="gradient_application_cost", func="fit", batch_size=1,
-                                       args=dict(x=None, y=None, steps_per_epoch=num_of_samples)))
+        accumulative_costs.append(dict(name="predict", func="predict", batch_size=batch_size,
+                                       args=dict(x=None, steps=num_of_batches)))
+        accumulative_costs.append(dict(name="evaluate", func="evaluate", batch_size=batch_size,
+                                       args=dict(x=None, y=None, steps=num_of_batches)))
+        accumulative_costs.append(dict(name="fit", func="fit", batch_size=batch_size,
+                                       args=dict(x=None, y=None, steps_per_epoch=num_of_batches)))
+        # accumulative_costs.append(dict(name="gradient_calculation_cost", func="fit", batch_size=batch_size,
+        #                                args=dict(x=None, y=None, steps_per_epoch=num_of_batches)))
+        # accumulative_costs.append(dict(name="gradient_application_cost", func="fit", batch_size=1,
+        #                                args=dict(x=None, y=None, steps_per_epoch=num_of_batches*batch_size)))
     else:
-        accumulative_costs.append(dict(name="forward_pass_cost", func="evaluate", batch_size=num_of_samples,
-                                       args=dict(x=None, y=None, steps=1)))
-        accumulative_costs.append(dict(name="backward_pass_cost", func="fit", batch_size=32,
-                                       args=dict(x=None, y=None, steps_per_epoch=num_of_samples//32)))
+        accumulative_costs.append(dict(name="forward_pass_cost", func="evaluate", batch_size=batch_size,
+                                       args=dict(x=None, y=None, steps=num_of_batches)))
+        accumulative_costs.append(dict(name="backward_pass_cost", func="fit", batch_size=batch_size,
+                                       args=dict(x=None, y=None, steps_per_epoch=num_of_batches)))
     # Initialize timings dictionary
     timings = dict()
     for original_layer in topological_layer_order:
@@ -298,7 +328,7 @@ def profile(input_model, loss, optimizer, num_of_samples=100, trials=1, num_of_f
                     # With symbolic tensors the first dimension (Usually the number of samples) constitutes the
                     # batch size. We then specify how many batches we run using steps_per_epoch for the train
                     # function. and using steps for the evaluation & prediction functions
-                    input_data, output_data = instantiate_dummy_tensors(cloned_model, cost["batch_size"])
+                    input_data, output_data = get_dummy_input_output(cloned_model, cost["batch_size"], random=True)
                     name = cost["name"]
                     func = getattr(cloned_model, cost["func"])
                     args = cost["args"]
@@ -342,20 +372,41 @@ def profile(input_model, loss, optimizer, num_of_samples=100, trials=1, num_of_f
     return None, timings
 
 
+def timing_profile2():
+    pass
+
+
+def layer_input_output_profiling(model):
+    layers = list()
+    def process_layer(layer):
+        layer_dict = dict()
+        layer_dict["name"] = layer.name
+        layer_dict["type"] = type(layer).__name__
+        layer_dict["input_shape"] = None
+        layer_dict["output_shape"] = None
+        layer_dict["parameters"] = 0
+        layers.append(layer_dict)
+    traverse_keras_DFS(model=model, processing_function=process_layer)
+    return layers
+
+
 if __name__ == "__main__":
+    import tensorflow as tf
+    tf.enable_eager_execution()
     parser = argparse.ArgumentParser(description="A script that profiles Keras models and produces layer wise timings.")
     parser.add_argument("model",
                         help="The Keras model to profile. See Keras.Applications documentation for all options."
-                             "Dummy options include: [dummy_multi, dummy_linear]")
+                             "Dummy options include: [dummy_multi, dummy_linear_dense, dummy_linear_cnn, dummy_2_layers]")
     parser.add_argument("-l", "--loss", default="binary_crossentropy",
                         help="The loss function to use. See Keras.Losses documentation for all options.")
     parser.add_argument("-o", "--optimizer", default="sgd",
                         help="The optimizer to use when training. See Keras.Optimizers documentation for all options.")
     parser.add_argument("--device", choices=["gpu", "cpu"], default="gpu",
                         help="The device to use for all operations. If none is specified then it is automated.")
-    parser.add_argument("-s", "--samples", type=int, default=100,
-                        help="The number of samples to run for each cost evaluation. The higher the more accurate and "
-                             "the more computation time needed.")
+    parser.add_argument("-bs", "--batch_size", type=int, default=32,
+                        help="The batch size used for all functions")
+    parser.add_argument("-nb", "--num_of_batches", type=int, default=8,
+                        help="The number of batches to run")
     parser.add_argument("-f", "--num_calls", type=int, default=2,
                         help="num_of_function_calls: The number of function calls to make before taking and recording "
                              "the minimum cost. Only the minimum cost of these calls is added to the report.")
@@ -384,25 +435,35 @@ if __name__ == "__main__":
             log = open(args.log, "w")
     else:
         log = sys.__stdout__
-    if args.model == "dummy_multi":
-        model = dummy_multi_model()
-    elif args.model == "dummy_linear":
-        model = dummy_linear_dense_model()
-    else:
-        module = __import__("keras.applications", fromlist=[args.model])
-        model = getattr(module, args.model)
-        model = model(weights=None, include_top=True)
-    exception, timings = profile(input_model=model, num_of_samples=args.samples, loss=args.loss,
-                                 optimizer=args.optimizer, full_profiling=args.full_profiling, log_stream=log,
-                                 num_of_function_calls=args.num_calls, trials=args.trials,
-                                 suppress_negatives=args.suppress_negatives, device=args.device,
-                                 accumulative=args.accumulative)
+    try:
+        model_func_name = "{}_model".format(args.model)
+        if model_func_name in dir(sys.modules[__name__]):
+            module = sys.modules[__name__]
+            model = getattr(module, model_func_name)()
+        else:
+            module = __import__("keras.applications", fromlist=[args.model])
+            model = getattr(module, args.model)
+            model = model(weights=None, include_top=True)
+    except AttributeError:
+        msg = "'{}' is not a valid dummy or keras model.\n".format(args.model)
+        if log:
+            log.write(msg)
+            sys.exit()
+        else:
+            print(msg)
+    exception, timings = timing_profile(input_model=model, batch_size=args.batch_size, num_of_batches=args.num_of_batches,
+                                        loss=args.loss, optimizer=args.optimizer, full_profiling=args.full_profiling,
+                                        log_stream=log, num_of_function_calls=args.num_calls, trials=args.trials,
+                                        suppress_negatives=args.suppress_negatives, device=args.device,
+                                        accumulative=args.accumulative)
     if exception is not None:
         if isinstance(exception, KeyboardInterrupt):
-            log.write("Profiling stopped by user. Attempting to write gathered data...\n")
+            if log:
+                log.write("Profiling stopped by user. Attempting to write gathered data...\n")
             exception = None
         else:
-            log.write("Unexpected error occurred. Attempting to write gathered data...\n")
+            if log:
+                log.write("Unexpected error occurred. Attempting to write gathered data...\n")
     if args.out is not None:
         if args.out == "stdout":
             out = sys.__stdout__
