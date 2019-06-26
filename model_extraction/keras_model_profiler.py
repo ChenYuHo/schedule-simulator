@@ -19,7 +19,8 @@ import json
 import socket
 import os
 import time
-
+import tensorflow as tf
+import contextlib
 
 
 def dummy_multi_model():
@@ -43,7 +44,7 @@ def dummy_multi_model():
     return model
 
 
-def dummy_linear_dense_model(units=100, n_of_layers=10):
+def dummy_linear_dense_model(units=100, n_of_layers=5):
     from tensorflow.python.keras.models import Sequential
     from tensorflow.python.keras.layers import Dense
     model = Sequential(name="dummy_linear_dense")
@@ -77,7 +78,7 @@ def dummy_2_layers_model():
     from tensorflow.python.keras.layers import Dense, Conv2D
     model = Sequential(name="dummy_2_layers")
     model.add(Conv2D(8, 16, padding="same", input_shape=(256, 256, 1), activation="relu"))
-    model.add(Dense(64))
+    #model.add(Dense(64))
     return model
 
 
@@ -140,6 +141,7 @@ def traverse_keras_DFS(model, processing_function, order="post-order", top_to_bo
         for end_layer in model._output_layers:
             traverse(root=end_layer, visited=visited)
 
+
 def clone_layer(layer):
     """
     Creates a clone of the layer using only its main properties (Does not copy any connections from the clone)
@@ -150,7 +152,6 @@ def clone_layer(layer):
 
 
 def get_dummy_input_output(model, num_of_samples):
-    import tensorflow.python.keras.backend as K
     # Keras gives us a list of shapes only in case of multiple inputs / outputs
     model_input_shapes = [model.input_shape] if model.input_shape[0] is None else model.input_shape
     model_output_shapes = [model.output_shape] if model.output_shape[0] is None else model.output_shape
@@ -164,14 +165,13 @@ def get_dummy_input_output(model, num_of_samples):
         output_shapes.append(shape)
     # Which op takes less time depends on whether you are using gpu or not and whether you are using eager execution or
     # not
-    op = K.random_uniform
-    input_data = [op(shape=shape) for shape in input_shapes]
-    output_data = [op(shape=shape) for shape in output_shapes]
+    input_data = [tf.random.uniform(shape=shape, name="Input") for shape in input_shapes]
+    output_data = [tf.random.uniform(shape=shape, name="Output") for shape in output_shapes]
     return input_data, output_data
 
 
-def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8, trials=1, num_of_function_calls=5,
-                   full_profiling=False, suppress_negatives=False, log_stream=None, device="gpu", accumulative=True):
+def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8, trials=1, num_of_function_calls=1,
+                   log_stream=None, device="gpu", write_timeline=True):
     """
     The function takes a model and profiles the cost that each layer contributes to the total training time.
     The function's method is to build the model layer by layer and observe the cost changes each layer introduces. The
@@ -188,23 +188,19 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
     :param num_of_function_calls: The number of function calls to make before taking and recording the minimum cost.
     Only the minimum cost of these calls is added to the report.
     :param device: cpu or gpu ?
-    :param accumulative: Store the raw costs of each function call do not subtract model L+1 from model L.
-    Used for debugging
     :param loss: The loss function for the model
     :param optimizer: The optimizer used for the model
-    :param full_profiling: Include step 2 and 4 in profiling
-    :param suppress_negatives: Whether we should set a cost to 0 if it is negative.
     :param log_stream: A stream to direct the output of the profiling. Useful to keep track of the current step.
     If none then no logging happens
     :return: An (exception,dict) tuple the exception slot is to detect if an exception has occurred and the dict
     contains the information. The dict has key=layer.name and value=dict with
     keys=(forward_pass_cost, gradient_calculation_cost, gradient_application_cost, loss_calculation_cost)
     """
-    import tensorflow as tf
     from tensorflow.python.keras.layers import InputLayer
     from tensorflow.python.keras.layers.pooling import Pooling1D, Pooling2D, Pooling3D
     from tensorflow.python.keras.layers.merge import _Merge
     from tensorflow.python.keras.models import Model
+    from tensorflow.python.client import timeline
 
     ignored_layer_types = []
     # ignored_layer_types = [_Pooling1D, _Pooling2D, _Pooling3D]  # Uncomment to ignore pooling layers
@@ -212,11 +208,11 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
     if device == "cpu":
         # This seems to be the most effective method. Other methods include using the tf.device("/cpu:0")
         # context manager or setting ConfigProto(device_count={'GPU':0}. But both these methods use the GPU a little bit
+        # Update: This does not work for eager execution
         os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
         if log_stream:
             log_stream.write("Running on CPU\n")
     elif device == "gpu":
-        import tensorflow as tf
         if not tf.test.is_gpu_available():
             raise Exception("No GPUs are available!. Change --device parameter to use cpu.")
         if log_stream:
@@ -229,28 +225,20 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
     accumulative_costs = list()
     global_func_args = dict(verbose=0)
     # This block is the mother of all assumptions. It is the root of all evil
-    if full_profiling:
-        accumulative_costs.append(dict(name="predict", func="predict", batch_size=batch_size,
-                                       args=dict(x=None, steps=num_of_batches)))
-        accumulative_costs.append(dict(name="evaluate", func="evaluate", batch_size=batch_size,
-                                       args=dict(x=None, y=None, steps=num_of_batches)))
-        accumulative_costs.append(dict(name="fit", func="fit", batch_size=batch_size,
-                                       args=dict(x=None, y=None, steps_per_epoch=num_of_batches)))
-        # accumulative_costs.append(dict(name="gradient_calculation_cost", func="fit", batch_size=batch_size,
-        #                                args=dict(x=None, y=None, steps_per_epoch=num_of_batches)))
-        # accumulative_costs.append(dict(name="gradient_application_cost", func="fit", batch_size=1,
-        #                                args=dict(x=None, y=None, steps_per_epoch=num_of_batches*batch_size)))
-    else:
-        accumulative_costs.append(dict(name="forward_pass_cost", func="evaluate", batch_size=batch_size,
-                                       args=dict(x=None, y=None, steps=num_of_batches)))
-        accumulative_costs.append(dict(name="backward_pass_cost", func="fit", batch_size=batch_size,
-                                       args=dict(x=None, y=None, steps_per_epoch=num_of_batches)))
+    accumulative_costs.append(dict(name="predict", func="predict",
+                                   args=dict(x=None, steps=num_of_batches)))
+    accumulative_costs.append(dict(name="evaluate", func="evaluate",
+                                   args=dict(x=None, y=None, steps=num_of_batches)))
+    accumulative_costs.append(dict(name="fit", func="fit",
+                                   args=dict(x=None, y=None, steps_per_epoch=num_of_batches)))
     # Initialize timings dictionary
     timings = dict()
     for original_layer in topological_layer_order:
         if isinstance(original_layer, InputLayer):
             continue
         timings[original_layer.name] = {"Type": type(original_layer).__name__}
+        if tf.executing_eagerly():
+            timings[original_layer.name]["data_generation_cost"] = list()
         for cost in accumulative_costs:
             timings[original_layer.name][cost["name"]] = list()
     # Build and profile model layer by layer using the topological order
@@ -258,13 +246,17 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
         log_stream.write("Start profiling...\n")
     try:
         for trial in range(trials):
-            tf.reset_default_graph()
-            with tf.Session() as sess:
+            session_context = contextlib.nullcontext() if tf.executing_eagerly() else tf.Session()
+            device_context = tf.device("/{}:0".format(device))
+            if not tf.executing_eagerly():
+                tf.reset_default_graph()
+            if log_stream:
+                log_stream.write("Trial: {}\n".format(trial))
+            input_layers = list()
+            added_layers = dict()
+            with device_context, session_context:
                 if log_stream:
-                    log_stream.write("Trial: {}\n".format(trial))
-                input_layers = list()
-                added_layers = dict()
-                previous_model_cost = None
+                    log_stream.write("Executing eagerly: {}\n".format(tf.executing_eagerly()))
                 for original_layer in topological_layer_order:
                     # Add new layer to cloned network ------------------------------------------------------------------
                     # Flatten out the layer's parents to check what the cloned layer needs to connect to
@@ -319,24 +311,24 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
                     for layer in added_layers.values():
                         if layer not in input_layers and len(layer._outbound_nodes) == 0:
                             output_layers.append(layer)
-                    # Create and compile model -----------------------------------------------------------------------------
+                    # Create and compile model -------------------------------------------------------------------------
                     # Inputs & outputs must be tensors not layers
                     cloned_model = Model(inputs=[x.input for x in input_layers],
                                          outputs=[x.output for x in output_layers])
                     cloned_model.compile(optimizer=optimizer, loss=loss)
-                    # Start profiling --------------------------------------------------------------------------------------
-                    current_model_cost = dict()
-                    for cost in accumulative_costs:
-                        current_model_cost[cost["name"]] = float("inf")
+                    # Start profiling ----------------------------------------------------------------------------------
                     print_format = "[{}:{:4}/{:<4}] Layer: {:16} {{key:30}}: {{value}}\n".format(
                         input_model.name, len(cloned_model.layers), len(input_model.layers), current_layer.name)
-                    accumulated_cost = 0
+                    # Generate input output data
+                    t = time.time_ns()
+                    input_data, output_data = get_dummy_input_output(cloned_model, batch_size)
+                    tc = time.time_ns() - t
+                    if tf.executing_eagerly():
+                        # print(input_data[0].device)
+                        timings[current_layer.name]["data_generation_cost"].append(tc)
+                        if log_stream:
+                            log_stream.write(print_format.format(key="data_generation_cost", value=tc))
                     for i, cost in enumerate(accumulative_costs):
-                        # These are symbolic tensors no computational load until we run the function
-                        # With symbolic tensors the first dimension (Usually the number of samples) constitutes the
-                        # batch size. We then specify how many batches we run using steps_per_epoch for the train
-                        # function. and using steps for the evaluation & prediction functions
-                        input_data, output_data = get_dummy_input_output(cloned_model, cost["batch_size"])
                         name = cost["name"]
                         func = getattr(cloned_model, cost["func"])
                         args = cost["args"]
@@ -346,27 +338,16 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
                         if "y" in args.keys():
                             args["y"] = output_data
                         # Call the function and record the time
+                        min_cost_time = float("inf")
                         for _ in range(num_of_function_calls):
                             t = time.time_ns()
                             func(**args, **global_func_args)
                             tc = time.time_ns() - t
-                            if tc < current_model_cost[name]:
-                                current_model_cost[name] = tc
-                        if accumulative:
-                            layer_actual_specific_cost = tc
-                        else:
-                            # The layer total function cost is the difference between the previous and current iteration cost
-                            layer_total_func_cost = current_model_cost[name] -\
-                                                    (previous_model_cost[name] if previous_model_cost else 0)
-                            # The layer actual cost to measure is the total function cost minus all the actual costs before it
-                            layer_actual_specific_cost = layer_total_func_cost - accumulated_cost
-                            if suppress_negatives and layer_actual_specific_cost < 0:
-                                layer_actual_specific_cost = 0
-                            accumulated_cost += layer_actual_specific_cost
+                            if tc < min_cost_time:
+                                min_cost_time = tc
                         if log_stream:
-                            log_stream.write(print_format.format(key=name, value=layer_actual_specific_cost))
-                        timings[current_layer.name][name].append(layer_actual_specific_cost)
-                    previous_model_cost = current_model_cost
+                            log_stream.write(print_format.format(key=name, value=min_cost_time))
+                        timings[current_layer.name][name].append(min_cost_time)
                     # To confirm that the graph is being reset with each iteration
                     # print(len(sess.graph.get_operations()))
     except BaseException as e:
@@ -393,14 +374,14 @@ def layer_input_output_profiling(model):
 
 
 if __name__ == "__main__":
-    #import tensorflow as tf
-    #tf.enable_eager_execution()
     parser = argparse.ArgumentParser(description="A script that profiles Keras models and produces layer wise timings.")
     parser.add_argument("model",
                         help="The Keras model to profile. See Keras.Applications documentation for all options."
                              "Dummy options include: [dummy_multi, dummy_linear_dense, dummy_linear_cnn, dummy_2_layers]")
     parser.add_argument("-l", "--loss", default="binary_crossentropy",
                         help="The loss function to use. See Keras.Losses documentation for all options.")
+    parser.add_argument("--eager", default=False, action="store_true",
+                        help="Whether or not to enable tensorflow eager execution")
     parser.add_argument("-o", "--optimizer", default="sgd",
                         help="The optimizer to use when training. See Keras.Optimizers documentation for all options.")
     parser.add_argument("--device", choices=["gpu", "cpu"], default="gpu",
@@ -414,18 +395,13 @@ if __name__ == "__main__":
                              "the minimum cost. Only the minimum cost of these calls is added to the report.")
     parser.add_argument("-t", "--trials", type=int, default=5,
                         help="The number of layer building & evaluation iterations to do.")
-    parser.add_argument("-fp", "--full_profiling", action="store_true",
-                        help="If set to true then loss calculation and gradient application will be included in "
-                             "profiling")
-    parser.add_argument("-sn", "--suppress_negatives", action="store_true",
-                        help="If set to true costs that are negative are set to 0")
-    parser.add_argument("-ac", "--accumulative", action="store_true",
-                        help="If set to true then the accumulative costs are stored. No subtractions are done.")
     parser.add_argument("--out",
                         help="Stream to write the timings to in json format if any. File | stdout | stderr | suppress")
     parser.add_argument("--log",
                         help="Stream to write status messages to if any. File | stdout | stderr | suppress")
     args = parser.parse_args()
+    if args.eager:
+        tf.enable_eager_execution()
     if args.log is not None:
         if args.log == "stdout":
             log = sys.__stdout__
@@ -453,11 +429,10 @@ if __name__ == "__main__":
             sys.exit()
         else:
             print(msg)
-    exception, timings = timing_profile(input_model=model, batch_size=args.batch_size, num_of_batches=args.num_of_batches,
-                                        loss=args.loss, optimizer=args.optimizer, full_profiling=args.full_profiling,
-                                        log_stream=log, num_of_function_calls=args.num_calls, trials=args.trials,
-                                        suppress_negatives=args.suppress_negatives, device=args.device,
-                                        accumulative=args.accumulative)
+    exception, timings = timing_profile(input_model=model, batch_size=args.batch_size,
+                                        num_of_batches=args.num_of_batches, loss=args.loss, optimizer=args.optimizer,
+                                        device=args.device, log_stream=log, num_of_function_calls=args.num_calls,
+                                        trials=args.trials)
     if exception is not None:
         if isinstance(exception, KeyboardInterrupt):
             if log:
