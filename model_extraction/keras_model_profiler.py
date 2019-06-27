@@ -82,18 +82,6 @@ def dummy_2_layers_model():
     return model
 
 
-def init_models(models, insight=True):
-    for i, model_fun in enumerate(models):
-        models[i] = model_fun(weights=None, include_top=True)
-        if insight:
-            print("Model: {}".format(models[i].name))
-            print("Inputs: {}".format(models[i]._input_layers))
-            print("Outputs: {}".format(models[i]._output_layers))
-            print("Num of layers: {}".format(len(models[i].layers)))
-            print("Num of nodes: {}".format(len(models[i]._nodes_by_depth)))
-            print("Num of parameters: {}".format(models[i].count_params()))
-
-
 def traverse_keras_DFS(model, processing_function, order="post-order", top_to_bottom=True):
     """
     Uses a recursive DFS O(n) to process all layers in a Keras model using the processing_function.
@@ -170,8 +158,55 @@ def get_dummy_input_output(model, num_of_samples):
     return input_data, output_data
 
 
-def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8, trials=1, num_of_function_calls=1,
-                   log_stream=None, device="gpu", write_timeline=True):
+def get_trace_duration(trace_dict):
+    """
+    Get the total trace duration in microseconds
+    :param trace_dict: A trace dictionary generated in the chrome trace format
+    :return: Time in microseconds
+    """
+    mn = float("inf")
+    mx = 0
+    for event in trace_dict["traceEvents"]:
+        if "ts" not in event:
+            continue
+        start_time = event["ts"]
+        end_time = start_time + event["dur"] if "dur" in event else 0
+        if end_time > mx:
+            mx = end_time
+        if start_time < mn:
+            mn = start_time
+    return (mx - mn)
+
+
+class RunCost(tf.keras.callbacks.LambdaCallback):
+    def __init__(self, run_metadata=None):
+        from tensorflow.python.client import timeline
+        """
+        :param run_metadata: If run metadata is None then the time module is used instead of the tracer
+        """
+        self.costs = list()
+        self.run_metadata = run_metadata
+        self.tmp = None
+
+        def on_batch_begin(batch, logs):
+            if not self.run_metadata:
+                self.tmp = time.time_ns()
+
+        def on_batch_end(batch, logs):
+            if self.run_metadata:
+                tm = timeline.Timeline(step_stats=self.run_metadata.step_stats)
+                tc = get_trace_duration(json.loads(tm.generate_chrome_trace_format())) * 1e3
+            else:
+                tc = time.time_ns() - self.tmp
+            self.costs.append(tc)
+        super().__init__(on_train_batch_begin=on_batch_begin, on_train_batch_end=on_batch_end,
+                         on_predict_batch_begin=on_batch_begin, on_predict_batch_end=on_batch_end,
+                         on_test_batch_begin=on_batch_begin, on_test_batch_end=on_batch_end)
+
+
+def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8, trials=1,
+                   log_stream=None, device="gpu", use_tracer=True, skip_untrainable_layers=False,
+                   suppress_tensorflow_messages=True):
     """
     The function takes a model and profiles the cost that each layer contributes to the total training time.
     The function's method is to build the model layer by layer and observe the cost changes each layer introduces. The
@@ -185,25 +220,33 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
     :param batch_size: The batch size used for all functions.
     :param num_of_batches: The number of batches to run
     :param trials: The number of layer building & evaluation iterations to do.
-    :param num_of_function_calls: The number of function calls to make before taking and recording the minimum cost.
-    Only the minimum cost of these calls is added to the report.
     :param device: cpu or gpu ?
     :param loss: The loss function for the model
     :param optimizer: The optimizer used for the model
     :param log_stream: A stream to direct the output of the profiling. Useful to keep track of the current step.
     If none then no logging happens
+    :param use_tracer: Whether to use the tensorflow tracer to get the time instead of the time module. Can be more
+    accurate to use with gpus however it only stores the information of the last batch.
+    :param skip_untrainable_layers: Whether to skip profiling layers that have no trainable parameters
     :return: An (exception,dict) tuple the exception slot is to detect if an exception has occurred and the dict
     contains the information. The dict has key=layer.name and value=dict with
     keys=(forward_pass_cost, gradient_calculation_cost, gradient_application_cost, loss_calculation_cost)
     """
+    if tf.executing_eagerly() and use_tracer:
+        raise Exception("Cannot use tracer with eager execution.")
+    if use_tracer and num_of_batches > 1:
+        if log_stream:
+            log_stream.write("Warning: the tensorflow tracer only stores the cost of the last batch. That cost will be"
+                             "extrapolated (multiplied by num_of_batches) to get the final cost.")
     from tensorflow.python.keras.layers import InputLayer
-    from tensorflow.python.keras.layers.pooling import Pooling1D, Pooling2D, Pooling3D
     from tensorflow.python.keras.layers.merge import _Merge
     from tensorflow.python.keras.models import Model
-    from tensorflow.python.client import timeline
-
-    ignored_layer_types = []
-    # ignored_layer_types = [_Pooling1D, _Pooling2D, _Pooling3D]  # Uncomment to ignore pooling layers
+    # Disable annoying tensorflow messages
+    if suppress_tensorflow_messages:
+        os.environ['TF_CPP_MIN_LOG_LEVEL'] = "999"
+        # Supressing deprectation messages is not working
+        import tensorflow.python.util.deprecation as deprecation
+        deprecation._PRINT_DEPRECATION_WARNINGS = False
     # Check device
     if device == "cpu":
         # This seems to be the most effective method. Other methods include using the tf.device("/cpu:0")
@@ -296,12 +339,7 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
                         current_layer(cloned_parents.pop().output)
                     added_layers[current_layer.name] = current_layer
                     # Should we go on with profiling ?
-                    ignore = False
-                    for layer_type in ignored_layer_types:
-                        if isinstance(current_layer, layer_type):
-                            ignore = True
-                            break
-                    if ignore:
+                    if skip_untrainable_layers and current_layer.count_params() == 0:
                         if log_stream:
                             log_stream.write("Skip profiling of {}\n".format(current_layer.name))
                         continue
@@ -315,7 +353,13 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
                     # Inputs & outputs must be tensors not layers
                     cloned_model = Model(inputs=[x.input for x in input_layers],
                                          outputs=[x.output for x in output_layers])
-                    cloned_model.compile(optimizer=optimizer, loss=loss)
+                    if use_tracer:
+                        run_metadata = tf.RunMetadata()
+                        run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+                        cloned_model.compile(optimizer=optimizer, loss=loss, run_metadata=run_metadata,
+                                             options=run_options)
+                    else:
+                        cloned_model.compile(optimizer=optimizer, loss=loss)
                     # Start profiling ----------------------------------------------------------------------------------
                     print_format = "[{}:{:4}/{:<4}] Layer: {:16} {{key:30}}: {{value}}\n".format(
                         input_model.name, len(cloned_model.layers), len(input_model.layers), current_layer.name)
@@ -338,16 +382,12 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
                         if "y" in args.keys():
                             args["y"] = output_data
                         # Call the function and record the time
-                        min_cost_time = float("inf")
-                        for _ in range(num_of_function_calls):
-                            t = time.time_ns()
-                            func(**args, **global_func_args)
-                            tc = time.time_ns() - t
-                            if tc < min_cost_time:
-                                min_cost_time = tc
+                        rmd = run_metadata if use_tracer else None
+                        run_cost = RunCost(run_metadata=rmd)
+                        func(**args, **global_func_args, callbacks=[run_cost])
                         if log_stream:
-                            log_stream.write(print_format.format(key=name, value=min_cost_time))
-                        timings[current_layer.name][name].append(min_cost_time)
+                            log_stream.write(print_format.format(key=name, value=run_cost.costs))
+                        timings[current_layer.name][name].extend(run_cost.costs)
                     # To confirm that the graph is being reset with each iteration
                     # print(len(sess.graph.get_operations()))
     except BaseException as e:
@@ -390,11 +430,12 @@ if __name__ == "__main__":
                         help="The batch size used for all functions")
     parser.add_argument("-nb", "--num_of_batches", type=int, default=8,
                         help="The number of batches to run")
-    parser.add_argument("-f", "--num_calls", type=int, default=2,
-                        help="num_of_function_calls: The number of function calls to make before taking and recording "
-                             "the minimum cost. Only the minimum cost of these calls is added to the report.")
     parser.add_argument("-t", "--trials", type=int, default=5,
                         help="The number of layer building & evaluation iterations to do.")
+    parser.add_argument("--skip", default=False, action="store_true",
+                        help="Whether or not to skip layers with no trainable parameters")
+    parser.add_argument("-upt", "--use_python_timing", default=False, action="store_true",
+                        help="Whether or not to use the tensorflow tracer to calculate the time costs.")
     parser.add_argument("--out",
                         help="Stream to write the timings to in json format if any. File | stdout | stderr | suppress")
     parser.add_argument("--log",
@@ -431,8 +472,8 @@ if __name__ == "__main__":
             print(msg)
     exception, timings = timing_profile(input_model=model, batch_size=args.batch_size,
                                         num_of_batches=args.num_of_batches, loss=args.loss, optimizer=args.optimizer,
-                                        device=args.device, log_stream=log, num_of_function_calls=args.num_calls,
-                                        trials=args.trials)
+                                        device=args.device, log_stream=log, use_tracer=not args.use_python_timing,
+                                        trials=args.trials, skip_untrainable_layers=args.skip)
     if exception is not None:
         if isinstance(exception, KeyboardInterrupt):
             if log:
