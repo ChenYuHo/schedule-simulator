@@ -1,0 +1,4234 @@
+{
+    "traceEvents": [
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 0,
+            "args": {
+                "name": "Allocators"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 1,
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:CPU:0 Compute"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 2,
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:CPU:0 Tensors"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 3,
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:GPU:0 Compute"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 4,
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:GPU:0 Tensors"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "NoOp",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660686583,
+            "dur": 10,
+            "args": {
+                "name": "_SOURCE",
+                "op": "NoOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "_Retval",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660686860,
+            "dur": 2,
+            "args": {
+                "name": "_retval_lambda/lambda/Identity_0_0",
+                "op": "_Retval",
+                "input0": "lambda/lambda/Identity/_5"
+            }
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "lambda/lambda/Identity",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660686727,
+            "id": 0
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "lambda/lambda/Identity",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660686860,
+            "id": 0
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "NoOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660686587,
+            "dur": 11,
+            "args": {
+                "name": "_SOURCE",
+                "op": "NoOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "VarHandleOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660686603,
+            "dur": 12,
+            "args": {
+                "name": "dense/bias",
+                "op": "VarHandleOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "VarHandleOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660686617,
+            "dur": 2,
+            "args": {
+                "name": "dense/kernel",
+                "op": "VarHandleOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660686620,
+            "dur": 4,
+            "args": {
+                "name": "Input/shape",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "ReadVariableOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660686625,
+            "dur": 8,
+            "args": {
+                "name": "dense/BiasAdd/ReadVariableOp",
+                "op": "ReadVariableOp",
+                "input0": "dense/bias"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "ReadVariableOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660686635,
+            "dur": 2,
+            "args": {
+                "name": "dense/MatMul/ReadVariableOp",
+                "op": "ReadVariableOp",
+                "input0": "dense/kernel"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "RandomUniform",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660686638,
+            "dur": 24,
+            "args": {
+                "name": "Input/RandomUniform",
+                "op": "RandomUniform",
+                "input0": "Input/shape"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Identity",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660686664,
+            "dur": 3,
+            "args": {
+                "name": "Input",
+                "op": "Identity",
+                "input0": "Input/RandomUniform"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Identity",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660686669,
+            "dur": 3,
+            "args": {
+                "name": "_identity_input_1_0",
+                "op": "Identity",
+                "input0": "Input"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "MatMul",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660686672,
+            "dur": 35,
+            "args": {
+                "name": "dense/MatMul",
+                "op": "MatMul",
+                "input0": "_identity_input_1_0",
+                "input1": "dense/MatMul/ReadVariableOp"
+            }
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "_identity_input_1_0",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660686672,
+            "id": 1
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "_identity_input_1_0",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660686672,
+            "id": 1
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "dense/MatMul/ReadVariableOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660686637,
+            "id": 2
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "dense/MatMul/ReadVariableOp",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660686672,
+            "id": 2
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "BiasAdd",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660686709,
+            "dur": 14,
+            "args": {
+                "name": "dense/BiasAdd",
+                "op": "BiasAdd",
+                "input0": "dense/MatMul",
+                "input1": "dense/BiasAdd/ReadVariableOp"
+            }
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "dense/MatMul",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660686707,
+            "id": 3
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "dense/MatMul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660686709,
+            "id": 3
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Identity",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660686724,
+            "dur": 3,
+            "args": {
+                "name": "lambda/lambda/Identity",
+                "op": "Identity",
+                "input0": "dense/BiasAdd"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "NoOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660686728,
+            "dur": 1,
+            "args": {
+                "name": "predict/group_deps",
+                "op": "NoOp",
+                "input0": "^lambda/lambda/Identity"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 0,
+            "args": {
+                "name": "Allocators"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 1,
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:GPU:0 Compute"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 2,
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:GPU:0 Tensors"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 3,
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:CPU:0 Compute"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 4,
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:CPU:0 Tensors"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "NoOp",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660689986,
+            "dur": 6,
+            "args": {
+                "name": "_SOURCE",
+                "op": "NoOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "VarHandleOp",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660689995,
+            "dur": 3,
+            "args": {
+                "name": "dense/bias",
+                "op": "VarHandleOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "VarHandleOp",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660690000,
+            "dur": 2,
+            "args": {
+                "name": "dense/kernel",
+                "op": "VarHandleOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660690003,
+            "dur": 4,
+            "args": {
+                "name": "Input/shape",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "ReadVariableOp",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660690008,
+            "dur": 4,
+            "args": {
+                "name": "dense/BiasAdd/ReadVariableOp",
+                "op": "ReadVariableOp",
+                "input0": "dense/bias"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "ReadVariableOp",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660690014,
+            "dur": 2,
+            "args": {
+                "name": "dense/MatMul/ReadVariableOp",
+                "op": "ReadVariableOp",
+                "input0": "dense/kernel"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "RandomUniform",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660690017,
+            "dur": 16,
+            "args": {
+                "name": "Input/RandomUniform",
+                "op": "RandomUniform",
+                "input0": "Input/shape"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Identity",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660690034,
+            "dur": 2,
+            "args": {
+                "name": "Input",
+                "op": "Identity",
+                "input0": "Input/RandomUniform"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Identity",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660690037,
+            "dur": 3,
+            "args": {
+                "name": "_identity_input_1_0",
+                "op": "Identity",
+                "input0": "Input"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "MatMul",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660690041,
+            "dur": 18,
+            "args": {
+                "name": "dense/MatMul",
+                "op": "MatMul",
+                "input0": "_identity_input_1_0",
+                "input1": "dense/MatMul/ReadVariableOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "BiasAdd",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660690060,
+            "dur": 7,
+            "args": {
+                "name": "dense/BiasAdd",
+                "op": "BiasAdd",
+                "input0": "dense/MatMul",
+                "input1": "dense/BiasAdd/ReadVariableOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Identity",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660690068,
+            "dur": 3,
+            "args": {
+                "name": "lambda/lambda/Identity",
+                "op": "Identity",
+                "input0": "dense/BiasAdd"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "NoOp",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660690072,
+            "dur": 1,
+            "args": {
+                "name": "predict/group_deps",
+                "op": "NoOp",
+                "input0": "^lambda/lambda/Identity"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "NoOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660689994,
+            "dur": 2,
+            "args": {
+                "name": "_SOURCE",
+                "op": "NoOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "_Retval",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660690162,
+            "dur": 1,
+            "args": {
+                "name": "_retval_lambda/lambda/Identity_0_0",
+                "op": "_Retval",
+                "input0": "lambda/lambda/Identity/_5"
+            }
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "lambda/lambda/Identity",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660690071,
+            "id": 0
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "lambda/lambda/Identity",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660690162,
+            "id": 0
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 0,
+            "args": {
+                "name": "Allocators"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 1,
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:CPU:0 Compute"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 2,
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:CPU:0 Tensors"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 3,
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:GPU:0 Compute"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 4,
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:GPU:0 Tensors"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "NoOp",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660702886,
+            "dur": 2,
+            "args": {
+                "name": "_SOURCE",
+                "op": "NoOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "_Retval",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660703399,
+            "dur": 4,
+            "args": {
+                "name": "_retval_loss/mul_0_0",
+                "op": "_Retval",
+                "input0": "loss/mul/_9"
+            }
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "loss/mul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660703317,
+            "id": 0
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "loss/mul",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660703399,
+            "id": 0
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "NoOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660702883,
+            "dur": 6,
+            "args": {
+                "name": "_SOURCE",
+                "op": "NoOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660702896,
+            "dur": 5,
+            "args": {
+                "name": "Output/shape",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "VarHandleOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660702903,
+            "dur": 3,
+            "args": {
+                "name": "dense/bias",
+                "op": "VarHandleOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660702907,
+            "dur": 3,
+            "args": {
+                "name": "loss/lambda_loss/Const",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660702911,
+            "dur": 1,
+            "args": {
+                "name": "Input/shape",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660702913,
+            "dur": 4,
+            "args": {
+                "name": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Const",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "VarHandleOp",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660702917,
+            "dur": 2,
+            "args": {
+                "name": "dense/kernel",
+                "op": "VarHandleOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660702920,
+            "dur": 3,
+            "args": {
+                "name": "loss/lambda_loss/Mean/reduction_indices",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "RandomUniform",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660702924,
+            "dur": 21,
+            "args": {
+                "name": "Output/RandomUniform",
+                "op": "RandomUniform",
+                "input0": "Output/shape"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "ReadVariableOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660702946,
+            "dur": 5,
+            "args": {
+                "name": "dense/BiasAdd/ReadVariableOp",
+                "op": "ReadVariableOp",
+                "input0": "dense/bias"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "RandomUniform",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660702952,
+            "dur": 7,
+            "args": {
+                "name": "Input/RandomUniform",
+                "op": "RandomUniform",
+                "input0": "Input/shape"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "ReadVariableOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660702961,
+            "dur": 2,
+            "args": {
+                "name": "dense/MatMul/ReadVariableOp",
+                "op": "ReadVariableOp",
+                "input0": "dense/kernel"
+            }
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "dense/kernel",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660702919,
+            "id": 1
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "dense/kernel",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660702961,
+            "id": 1
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Identity",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660702964,
+            "dur": 3,
+            "args": {
+                "name": "Output",
+                "op": "Identity",
+                "input0": "Output/RandomUniform"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Identity",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660702967,
+            "dur": 2,
+            "args": {
+                "name": "Input",
+                "op": "Identity",
+                "input0": "Input/RandomUniform"
+            }
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "Input/RandomUniform",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660702959,
+            "id": 2
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "Input/RandomUniform",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660702967,
+            "id": 2
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Identity",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660702970,
+            "dur": 2,
+            "args": {
+                "name": "_identity_lambda_target_0",
+                "op": "Identity",
+                "input0": "Output"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Identity",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660702973,
+            "dur": 3,
+            "args": {
+                "name": "_identity_input_1_0",
+                "op": "Identity",
+                "input0": "Input"
+            }
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "Input",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660702969,
+            "id": 3
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "Input",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660702973,
+            "id": 3
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "MatMul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660702977,
+            "dur": 22,
+            "args": {
+                "name": "dense/MatMul",
+                "op": "MatMul",
+                "input0": "_identity_input_1_0",
+                "input1": "dense/MatMul/ReadVariableOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "BiasAdd",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660703000,
+            "dur": 7,
+            "args": {
+                "name": "dense/BiasAdd",
+                "op": "BiasAdd",
+                "input0": "dense/MatMul",
+                "input1": "dense/BiasAdd/ReadVariableOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "SquaredDifference",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660703008,
+            "dur": 16,
+            "args": {
+                "name": "loss/lambda_loss/SquaredDifference",
+                "op": "SquaredDifference",
+                "input0": "dense/BiasAdd",
+                "input1": "_identity_lambda_target_0"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Mean",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660703026,
+            "dur": 27,
+            "args": {
+                "name": "loss/lambda_loss/Mean",
+                "op": "Mean",
+                "input0": "loss/lambda_loss/SquaredDifference",
+                "input1": "loss/lambda_loss/Mean/reduction_indices"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Shape",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660703055,
+            "dur": 7,
+            "args": {
+                "name": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Shape",
+                "op": "Shape",
+                "input0": "loss/lambda_loss/Mean"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Fill",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660703063,
+            "dur": 10,
+            "args": {
+                "name": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like",
+                "op": "Fill",
+                "input0": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Shape",
+                "input1": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Mul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660703074,
+            "dur": 7,
+            "args": {
+                "name": "loss/lambda_loss/weighted_loss/broadcast_weights",
+                "op": "Mul",
+                "input0": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like",
+                "input1": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Mul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660703083,
+            "dur": 9,
+            "args": {
+                "name": "loss/lambda_loss/weighted_loss/Mul",
+                "op": "Mul",
+                "input0": "loss/lambda_loss/Mean",
+                "input1": "loss/lambda_loss/weighted_loss/broadcast_weights"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Size",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660703093,
+            "dur": 3,
+            "args": {
+                "name": "loss/lambda_loss/num_elements",
+                "op": "Size",
+                "input0": "loss/lambda_loss/weighted_loss/Mul"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Sum",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660703097,
+            "dur": 14,
+            "args": {
+                "name": "loss/lambda_loss/Sum",
+                "op": "Sum",
+                "input0": "loss/lambda_loss/weighted_loss/Mul",
+                "input1": "loss/lambda_loss/Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Cast",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660703271,
+            "dur": 19,
+            "args": {
+                "name": "loss/lambda_loss/num_elements/Cast",
+                "op": "Cast",
+                "input0": "loss/lambda_loss/num_elements/_7"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "DivNoNan",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660703292,
+            "dur": 16,
+            "args": {
+                "name": "loss/lambda_loss/value",
+                "op": "DivNoNan",
+                "input0": "loss/lambda_loss/Sum",
+                "input1": "loss/lambda_loss/num_elements/Cast"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Mul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660703311,
+            "dur": 6,
+            "args": {
+                "name": "loss/mul",
+                "op": "Mul",
+                "input0": "loss/lambda_loss/value",
+                "input1": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "NoOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660703318,
+            "dur": 1,
+            "args": {
+                "name": "evaluation/group_deps",
+                "op": "NoOp",
+                "input0": "^loss/mul"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 0,
+            "args": {
+                "name": "Allocators"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 1,
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:CPU:0 Compute"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 2,
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:CPU:0 Tensors"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 3,
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:GPU:0 Compute"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 4,
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:GPU:0 Tensors"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "NoOp",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660708503,
+            "dur": 3,
+            "args": {
+                "name": "_SOURCE",
+                "op": "NoOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "_Retval",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660708886,
+            "dur": 3,
+            "args": {
+                "name": "_retval_loss/mul_0_0",
+                "op": "_Retval",
+                "input0": "loss/mul/_9"
+            }
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "loss/mul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708817,
+            "id": 0
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "loss/mul",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660708886,
+            "id": 0
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "NoOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708505,
+            "dur": 6,
+            "args": {
+                "name": "_SOURCE",
+                "op": "NoOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708514,
+            "dur": 4,
+            "args": {
+                "name": "Output/shape",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "VarHandleOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708519,
+            "dur": 2,
+            "args": {
+                "name": "dense/bias",
+                "op": "VarHandleOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708522,
+            "dur": 2,
+            "args": {
+                "name": "loss/lambda_loss/Const",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708525,
+            "dur": 3,
+            "args": {
+                "name": "Input/shape",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708529,
+            "dur": 2,
+            "args": {
+                "name": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Const",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "VarHandleOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708532,
+            "dur": 3,
+            "args": {
+                "name": "dense/kernel",
+                "op": "VarHandleOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708536,
+            "dur": 1,
+            "args": {
+                "name": "loss/lambda_loss/Mean/reduction_indices",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "RandomUniform",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708538,
+            "dur": 21,
+            "args": {
+                "name": "Output/RandomUniform",
+                "op": "RandomUniform",
+                "input0": "Output/shape"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "ReadVariableOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708561,
+            "dur": 3,
+            "args": {
+                "name": "dense/BiasAdd/ReadVariableOp",
+                "op": "ReadVariableOp",
+                "input0": "dense/bias"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "RandomUniform",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708566,
+            "dur": 7,
+            "args": {
+                "name": "Input/RandomUniform",
+                "op": "RandomUniform",
+                "input0": "Input/shape"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "ReadVariableOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708574,
+            "dur": 3,
+            "args": {
+                "name": "dense/MatMul/ReadVariableOp",
+                "op": "ReadVariableOp",
+                "input0": "dense/kernel"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Identity",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708578,
+            "dur": 2,
+            "args": {
+                "name": "Output",
+                "op": "Identity",
+                "input0": "Output/RandomUniform"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Identity",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708581,
+            "dur": 2,
+            "args": {
+                "name": "Input",
+                "op": "Identity",
+                "input0": "Input/RandomUniform"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Identity",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708584,
+            "dur": 2,
+            "args": {
+                "name": "_identity_lambda_target_0",
+                "op": "Identity",
+                "input0": "Output"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Identity",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708588,
+            "dur": 1,
+            "args": {
+                "name": "_identity_input_1_0",
+                "op": "Identity",
+                "input0": "Input"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "MatMul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708590,
+            "dur": 18,
+            "args": {
+                "name": "dense/MatMul",
+                "op": "MatMul",
+                "input0": "_identity_input_1_0",
+                "input1": "dense/MatMul/ReadVariableOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "BiasAdd",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708609,
+            "dur": 7,
+            "args": {
+                "name": "dense/BiasAdd",
+                "op": "BiasAdd",
+                "input0": "dense/MatMul",
+                "input1": "dense/BiasAdd/ReadVariableOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "SquaredDifference",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708617,
+            "dur": 8,
+            "args": {
+                "name": "loss/lambda_loss/SquaredDifference",
+                "op": "SquaredDifference",
+                "input0": "dense/BiasAdd",
+                "input1": "_identity_lambda_target_0"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Mean",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708626,
+            "dur": 10,
+            "args": {
+                "name": "loss/lambda_loss/Mean",
+                "op": "Mean",
+                "input0": "loss/lambda_loss/SquaredDifference",
+                "input1": "loss/lambda_loss/Mean/reduction_indices"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Shape",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708638,
+            "dur": 4,
+            "args": {
+                "name": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Shape",
+                "op": "Shape",
+                "input0": "loss/lambda_loss/Mean"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Fill",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708644,
+            "dur": 7,
+            "args": {
+                "name": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like",
+                "op": "Fill",
+                "input0": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Shape",
+                "input1": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Mul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708652,
+            "dur": 6,
+            "args": {
+                "name": "loss/lambda_loss/weighted_loss/broadcast_weights",
+                "op": "Mul",
+                "input0": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like",
+                "input1": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Mul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708659,
+            "dur": 6,
+            "args": {
+                "name": "loss/lambda_loss/weighted_loss/Mul",
+                "op": "Mul",
+                "input0": "loss/lambda_loss/Mean",
+                "input1": "loss/lambda_loss/weighted_loss/broadcast_weights"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Size",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708666,
+            "dur": 5,
+            "args": {
+                "name": "loss/lambda_loss/num_elements",
+                "op": "Size",
+                "input0": "loss/lambda_loss/weighted_loss/Mul"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Sum",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708673,
+            "dur": 7,
+            "args": {
+                "name": "loss/lambda_loss/Sum",
+                "op": "Sum",
+                "input0": "loss/lambda_loss/weighted_loss/Mul",
+                "input1": "loss/lambda_loss/Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Cast",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708789,
+            "dur": 12,
+            "args": {
+                "name": "loss/lambda_loss/num_elements/Cast",
+                "op": "Cast",
+                "input0": "loss/lambda_loss/num_elements/_7"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "DivNoNan",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708803,
+            "dur": 7,
+            "args": {
+                "name": "loss/lambda_loss/value",
+                "op": "DivNoNan",
+                "input0": "loss/lambda_loss/Sum",
+                "input1": "loss/lambda_loss/num_elements/Cast"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Mul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708811,
+            "dur": 6,
+            "args": {
+                "name": "loss/mul",
+                "op": "Mul",
+                "input0": "loss/lambda_loss/value",
+                "input1": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "NoOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660708819,
+            "dur": 2,
+            "args": {
+                "name": "evaluation/group_deps",
+                "op": "NoOp",
+                "input0": "^loss/mul"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 0,
+            "args": {
+                "name": "Allocators"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 1,
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:CPU:0 Compute"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 2,
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:CPU:0 Tensors"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 3,
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:GPU:0 Compute"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 4,
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:GPU:0 Tensors"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "NoOp",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660837402,
+            "dur": 3,
+            "args": {
+                "name": "_SOURCE",
+                "op": "NoOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "_Retval",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660838142,
+            "dur": 3,
+            "args": {
+                "name": "_retval_loss/mul_0_0",
+                "op": "_Retval",
+                "input0": "loss/mul/_29"
+            }
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "loss/mul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838051,
+            "id": 0
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "loss/mul",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660838142,
+            "id": 0
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "NoOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837400,
+            "dur": 7,
+            "args": {
+                "name": "_SOURCE",
+                "op": "NoOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837411,
+            "dur": 6,
+            "args": {
+                "name": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Const",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837419,
+            "dur": 2,
+            "args": {
+                "name": "loss/lambda_loss/Mean/reduction_indices",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837422,
+            "dur": 3,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Sum_grad/Reshape/shape",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "VarHandleOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837426,
+            "dur": 2,
+            "args": {
+                "name": "dense/bias",
+                "op": "VarHandleOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "VarHandleOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837429,
+            "dur": 3,
+            "args": {
+                "name": "SGD/learning_rate",
+                "op": "VarHandleOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837433,
+            "dur": 1,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum/y",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "VarHandleOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837435,
+            "dur": 3,
+            "args": {
+                "name": "dense/kernel",
+                "op": "VarHandleOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "VarHandleOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837439,
+            "dur": 2,
+            "args": {
+                "name": "SGD/iter",
+                "op": "VarHandleOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837442,
+            "dur": 2,
+            "args": {
+                "name": "loss/lambda_loss/Const",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837445,
+            "dur": 1,
+            "args": {
+                "name": "Output/shape",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837447,
+            "dur": 2,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/range",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837450,
+            "dur": 3,
+            "args": {
+                "name": "Input/shape",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837454,
+            "dur": 2,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum_1/y",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "ReadVariableOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837457,
+            "dur": 4,
+            "args": {
+                "name": "dense/BiasAdd/ReadVariableOp",
+                "op": "ReadVariableOp",
+                "input0": "dense/bias"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "ReadVariableOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837462,
+            "dur": 3,
+            "args": {
+                "name": "SGD/SGD/update_dense/kernel/ResourceApplyGradientDescent/ReadVariableOp",
+                "op": "ReadVariableOp",
+                "input0": "SGD/learning_rate"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "ReadVariableOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837466,
+            "dur": 2,
+            "args": {
+                "name": "SGD/SGD/update_dense/bias/ResourceApplyGradientDescent/ReadVariableOp",
+                "op": "ReadVariableOp",
+                "input0": "SGD/learning_rate"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "ReadVariableOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837471,
+            "dur": 3,
+            "args": {
+                "name": "dense/MatMul/ReadVariableOp",
+                "op": "ReadVariableOp",
+                "input0": "dense/kernel"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "RandomUniform",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837475,
+            "dur": 21,
+            "args": {
+                "name": "Output/RandomUniform",
+                "op": "RandomUniform",
+                "input0": "Output/shape"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "RandomUniform",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837497,
+            "dur": 8,
+            "args": {
+                "name": "Input/RandomUniform",
+                "op": "RandomUniform",
+                "input0": "Input/shape"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Identity",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837584,
+            "dur": 5,
+            "args": {
+                "name": "Output",
+                "op": "Identity",
+                "input0": "Output/RandomUniform"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Identity",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837590,
+            "dur": 2,
+            "args": {
+                "name": "Input",
+                "op": "Identity",
+                "input0": "Input/RandomUniform"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Identity",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837593,
+            "dur": 1,
+            "args": {
+                "name": "_identity_lambda_target_0",
+                "op": "Identity",
+                "input0": "Output"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Identity",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837595,
+            "dur": 2,
+            "args": {
+                "name": "_identity_input_1_0",
+                "op": "Identity",
+                "input0": "Input"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Shape",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660837597,
+            "dur": 5,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Shape_1",
+                "op": "Shape",
+                "input0": "_identity_lambda_target_0"
+            }
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "_identity_lambda_target_0",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837594,
+            "id": 1
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "_identity_lambda_target_0",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660837597,
+            "id": 1
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "MatMul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837603,
+            "dur": 22,
+            "args": {
+                "name": "dense/MatMul",
+                "op": "MatMul",
+                "input0": "_identity_input_1_0",
+                "input1": "dense/MatMul/ReadVariableOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "BiasAdd",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837626,
+            "dur": 8,
+            "args": {
+                "name": "dense/BiasAdd",
+                "op": "BiasAdd",
+                "input0": "dense/MatMul",
+                "input1": "dense/BiasAdd/ReadVariableOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Shape",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837635,
+            "dur": 3,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Shape",
+                "op": "Shape",
+                "input0": "dense/BiasAdd"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "SquaredDifference",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837642,
+            "dur": 10,
+            "args": {
+                "name": "loss/lambda_loss/SquaredDifference",
+                "op": "SquaredDifference",
+                "input0": "dense/BiasAdd",
+                "input1": "_identity_lambda_target_0"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "BroadcastGradientArgs",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837654,
+            "dur": 4,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/BroadcastGradientArgs",
+                "op": "BroadcastGradientArgs",
+                "input0": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Shape",
+                "input1": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Shape_1"
+            }
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Shape_1",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660837602,
+            "id": 2
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Shape_1",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837654,
+            "id": 2
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Mean",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837659,
+            "dur": 10,
+            "args": {
+                "name": "loss/lambda_loss/Mean",
+                "op": "Mean",
+                "input0": "loss/lambda_loss/SquaredDifference",
+                "input1": "loss/lambda_loss/Mean/reduction_indices"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Shape",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837670,
+            "dur": 5,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Shape_2",
+                "op": "Shape",
+                "input0": "loss/lambda_loss/SquaredDifference"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Shape",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837676,
+            "dur": 2,
+            "args": {
+                "name": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Shape",
+                "op": "Shape",
+                "input0": "loss/lambda_loss/Mean"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Size",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837679,
+            "dur": 4,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Prod",
+                "op": "Size",
+                "input0": "loss/lambda_loss/SquaredDifference",
+                "input1": "^SGD/gradients/loss/lambda_loss/Mean_grad/Shape_2"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Fill",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837686,
+            "dur": 7,
+            "args": {
+                "name": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like",
+                "op": "Fill",
+                "input0": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Shape",
+                "input1": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Size",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837695,
+            "dur": 4,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Prod_1",
+                "op": "Size",
+                "input0": "loss/lambda_loss/Mean",
+                "input1": "^loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Shape"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Mul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837743,
+            "dur": 11,
+            "args": {
+                "name": "loss/lambda_loss/weighted_loss/broadcast_weights",
+                "op": "Mul",
+                "input0": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like",
+                "input1": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Maximum",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837756,
+            "dur": 12,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum_1",
+                "op": "Maximum",
+                "input0": "SGD/gradients/loss/lambda_loss/Mean_grad/Prod_1",
+                "input1": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum_1/y"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Mul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837769,
+            "dur": 7,
+            "args": {
+                "name": "loss/lambda_loss/weighted_loss/Mul",
+                "op": "Mul",
+                "input0": "loss/lambda_loss/Mean",
+                "input1": "loss/lambda_loss/weighted_loss/broadcast_weights"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Shape",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837777,
+            "dur": 3,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/weighted_loss/Mul_grad/Shape_1",
+                "op": "Shape",
+                "input0": "loss/lambda_loss/weighted_loss/broadcast_weights"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "FloorDiv",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837781,
+            "dur": 11,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/floordiv_1",
+                "op": "FloorDiv",
+                "input0": "SGD/gradients/loss/lambda_loss/Mean_grad/Prod",
+                "input1": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum_1"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Size",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837793,
+            "dur": 2,
+            "args": {
+                "name": "loss/lambda_loss/num_elements",
+                "op": "Size",
+                "input0": "loss/lambda_loss/weighted_loss/Mul"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Sum",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837796,
+            "dur": 9,
+            "args": {
+                "name": "loss/lambda_loss/Sum",
+                "op": "Sum",
+                "input0": "loss/lambda_loss/weighted_loss/Mul",
+                "input1": "loss/lambda_loss/Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Shape",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837807,
+            "dur": 3,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Sum_grad/Shape",
+                "op": "Shape",
+                "input0": "loss/lambda_loss/weighted_loss/Mul"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "BroadcastGradientArgs",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837811,
+            "dur": 5,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/weighted_loss/Mul_grad/BroadcastGradientArgs",
+                "op": "BroadcastGradientArgs",
+                "input0": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Shape",
+                "input1": "SGD/gradients/loss/lambda_loss/weighted_loss/Mul_grad/Shape_1"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "DynamicStitch",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660837782,
+            "dur": 36,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/DynamicStitch",
+                "op": "DynamicStitch",
+                "input0": "SGD/gradients/loss/lambda_loss/Mean_grad/range",
+                "input1": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum_1/y",
+                "input2": "SGD/gradients/loss/lambda_loss/Mean_grad/Shape_2/_19",
+                "input3": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum/y/_21"
+            }
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/range",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837449,
+            "id": 3
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/range",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660837782,
+            "id": 3
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum_1/y",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837456,
+            "id": 4
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum_1/y",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660837782,
+            "id": 4
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Shape_2",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837675,
+            "id": 5
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Shape_2",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660837782,
+            "id": 5
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum/y",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837434,
+            "id": 6
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum/y",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660837782,
+            "id": 6
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Cast",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837897,
+            "dur": 26,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Cast",
+                "op": "Cast",
+                "input0": "SGD/gradients/loss/lambda_loss/Mean_grad/floordiv_1/_25"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Maximum",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837967,
+            "dur": 10,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum",
+                "op": "Maximum",
+                "input0": "SGD/gradients/loss/lambda_loss/Mean_grad/DynamicStitch/_23",
+                "input1": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum/y"
+            }
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/DynamicStitch",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660837818,
+            "id": 7
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/DynamicStitch",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837967,
+            "id": 7
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "FloorDiv",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660837980,
+            "dur": 9,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/floordiv",
+                "op": "FloorDiv",
+                "input0": "SGD/gradients/loss/lambda_loss/Mean_grad/Shape_2",
+                "input1": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Cast",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838006,
+            "dur": 18,
+            "args": {
+                "name": "loss/lambda_loss/num_elements/Cast",
+                "op": "Cast",
+                "input0": "loss/lambda_loss/num_elements/_27"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "DivNoNan",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838028,
+            "dur": 8,
+            "args": {
+                "name": "loss/lambda_loss/value",
+                "op": "DivNoNan",
+                "input0": "loss/lambda_loss/Sum",
+                "input1": "loss/lambda_loss/num_elements/Cast"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "DivNoNan",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838038,
+            "dur": 6,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/value_grad/div_no_nan",
+                "op": "DivNoNan",
+                "input0": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Const",
+                "input1": "loss/lambda_loss/num_elements/Cast"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Mul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838045,
+            "dur": 6,
+            "args": {
+                "name": "loss/mul",
+                "op": "Mul",
+                "input0": "loss/lambda_loss/value",
+                "input1": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Reshape",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838052,
+            "dur": 6,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Sum_grad/Reshape",
+                "op": "Reshape",
+                "input0": "SGD/gradients/loss/lambda_loss/value_grad/div_no_nan",
+                "input1": "SGD/gradients/loss/lambda_loss/Sum_grad/Reshape/shape"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Tile",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838106,
+            "dur": 25,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Sum_grad/Tile",
+                "op": "Tile",
+                "input0": "SGD/gradients/loss/lambda_loss/Sum_grad/Reshape",
+                "input1": "SGD/gradients/loss/lambda_loss/Sum_grad/Shape"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Mul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838133,
+            "dur": 11,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/weighted_loss/Mul_grad/Mul",
+                "op": "Mul",
+                "input0": "SGD/gradients/loss/lambda_loss/Sum_grad/Tile",
+                "input1": "loss/lambda_loss/weighted_loss/broadcast_weights"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Sum",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838145,
+            "dur": 3,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/weighted_loss/Mul_grad/Sum",
+                "op": "Sum",
+                "input0": "SGD/gradients/loss/lambda_loss/weighted_loss/Mul_grad/Mul",
+                "input1": "SGD/gradients/loss/lambda_loss/weighted_loss/Mul_grad/BroadcastGradientArgs"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Reshape",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838149,
+            "dur": 5,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Reshape",
+                "op": "Reshape",
+                "input0": "SGD/gradients/loss/lambda_loss/weighted_loss/Mul_grad/Sum",
+                "input1": "SGD/gradients/loss/lambda_loss/Mean_grad/DynamicStitch/_23"
+            }
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/DynamicStitch",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660837818,
+            "id": 8
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/DynamicStitch",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838149,
+            "id": 8
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Tile",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838155,
+            "dur": 10,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Tile",
+                "op": "Tile",
+                "input0": "SGD/gradients/loss/lambda_loss/Mean_grad/Reshape",
+                "input1": "SGD/gradients/loss/lambda_loss/Mean_grad/floordiv"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "RealDiv",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838167,
+            "dur": 10,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/truediv",
+                "op": "RealDiv",
+                "input0": "SGD/gradients/loss/lambda_loss/Mean_grad/Tile",
+                "input1": "SGD/gradients/loss/lambda_loss/Mean_grad/Cast"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Sub",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838179,
+            "dur": 13,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/sub",
+                "op": "Sub",
+                "input0": "dense/BiasAdd",
+                "input1": "_identity_lambda_target_0",
+                "input2": "^SGD/gradients/loss/lambda_loss/Mean_grad/truediv"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838193,
+            "dur": 2,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/scalar",
+                "op": "Const",
+                "input0": "^SGD/gradients/loss/lambda_loss/Mean_grad/truediv"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Mul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838196,
+            "dur": 10,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Mul",
+                "op": "Mul",
+                "input0": "SGD/gradients/loss/lambda_loss/Mean_grad/truediv",
+                "input1": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/scalar"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Mul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838207,
+            "dur": 6,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/mul_1",
+                "op": "Mul",
+                "input0": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Mul",
+                "input1": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/sub"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Sum",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838215,
+            "dur": 4,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Sum",
+                "op": "Sum",
+                "input0": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/mul_1",
+                "input1": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/BroadcastGradientArgs"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Reshape",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838220,
+            "dur": 3,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Reshape",
+                "op": "Reshape",
+                "input0": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Sum",
+                "input1": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Shape"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "MatMul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838224,
+            "dur": 15,
+            "args": {
+                "name": "SGD/gradients/dense/MatMul_grad/MatMul_1",
+                "op": "MatMul",
+                "input0": "_identity_input_1_0",
+                "input1": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Reshape"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "BiasAddGrad",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838240,
+            "dur": 208,
+            "args": {
+                "name": "SGD/gradients/dense/BiasAdd_grad/BiasAddGrad",
+                "op": "BiasAddGrad",
+                "input0": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Reshape"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "ResourceApplyGradientDescent",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838450,
+            "dur": 24,
+            "args": {
+                "name": "SGD/SGD/update_dense/kernel/ResourceApplyGradientDescent",
+                "op": "ResourceApplyGradientDescent",
+                "input0": "dense/kernel",
+                "input1": "SGD/SGD/update_dense/kernel/ResourceApplyGradientDescent/ReadVariableOp",
+                "input2": "SGD/gradients/dense/MatMul_grad/MatMul_1"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "ResourceApplyGradientDescent",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838476,
+            "dur": 27,
+            "args": {
+                "name": "SGD/SGD/update_dense/bias/ResourceApplyGradientDescent",
+                "op": "ResourceApplyGradientDescent",
+                "input0": "dense/bias",
+                "input1": "SGD/SGD/update_dense/bias/ResourceApplyGradientDescent/ReadVariableOp",
+                "input2": "SGD/gradients/dense/BiasAdd_grad/BiasAddGrad"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838504,
+            "dur": 3,
+            "args": {
+                "name": "SGD/SGD/Const",
+                "op": "Const",
+                "input0": "^SGD/SGD/update_dense/bias/ResourceApplyGradientDescent",
+                "input1": "^SGD/SGD/update_dense/kernel/ResourceApplyGradientDescent"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "AssignAddVariableOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838508,
+            "dur": 17,
+            "args": {
+                "name": "SGD/SGD/AssignAddVariableOp",
+                "op": "AssignAddVariableOp",
+                "input0": "SGD/iter",
+                "input1": "SGD/SGD/Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "NoOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660838526,
+            "dur": 3,
+            "args": {
+                "name": "training_1/group_deps",
+                "op": "NoOp",
+                "input0": "^SGD/SGD/AssignAddVariableOp",
+                "input1": "^loss/mul"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 0,
+            "args": {
+                "name": "Allocators"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 1,
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:CPU:0 Compute"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 2,
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:CPU:0 Tensors"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 3,
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:GPU:0 Compute"
+            }
+        },
+        {
+            "name": "process_name",
+            "ph": "M",
+            "pid": 4,
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:GPU:0 Tensors"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "NoOp",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660849190,
+            "dur": 5,
+            "args": {
+                "name": "_SOURCE",
+                "op": "NoOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "_Retval",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660849953,
+            "dur": 3,
+            "args": {
+                "name": "_retval_loss/mul_0_0",
+                "op": "_Retval",
+                "input0": "loss/mul/_29"
+            }
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "loss/mul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849856,
+            "id": 0
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "loss/mul",
+            "pid": 1,
+            "tid": 0,
+            "ts": 1561724660849953,
+            "id": 0
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "NoOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849191,
+            "dur": 10,
+            "args": {
+                "name": "_SOURCE",
+                "op": "NoOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849205,
+            "dur": 6,
+            "args": {
+                "name": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Const",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849213,
+            "dur": 2,
+            "args": {
+                "name": "loss/lambda_loss/Mean/reduction_indices",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849216,
+            "dur": 2,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Sum_grad/Reshape/shape",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "VarHandleOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849219,
+            "dur": 4,
+            "args": {
+                "name": "dense/bias",
+                "op": "VarHandleOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "VarHandleOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849226,
+            "dur": 1,
+            "args": {
+                "name": "SGD/learning_rate",
+                "op": "VarHandleOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849228,
+            "dur": 2,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum/y",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "VarHandleOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849232,
+            "dur": 3,
+            "args": {
+                "name": "dense/kernel",
+                "op": "VarHandleOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "VarHandleOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849236,
+            "dur": 2,
+            "args": {
+                "name": "SGD/iter",
+                "op": "VarHandleOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660849238,
+            "dur": 3,
+            "args": {
+                "name": "loss/lambda_loss/Const",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849242,
+            "dur": 2,
+            "args": {
+                "name": "Output/shape",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849246,
+            "dur": 2,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/range",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849249,
+            "dur": 3,
+            "args": {
+                "name": "Input/shape",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849253,
+            "dur": 1,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum_1/y",
+                "op": "Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "ReadVariableOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849256,
+            "dur": 5,
+            "args": {
+                "name": "dense/BiasAdd/ReadVariableOp",
+                "op": "ReadVariableOp",
+                "input0": "dense/bias"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "ReadVariableOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849263,
+            "dur": 2,
+            "args": {
+                "name": "SGD/SGD/update_dense/kernel/ResourceApplyGradientDescent/ReadVariableOp",
+                "op": "ReadVariableOp",
+                "input0": "SGD/learning_rate"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "ReadVariableOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849266,
+            "dur": 3,
+            "args": {
+                "name": "SGD/SGD/update_dense/bias/ResourceApplyGradientDescent/ReadVariableOp",
+                "op": "ReadVariableOp",
+                "input0": "SGD/learning_rate"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "ReadVariableOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849275,
+            "dur": 2,
+            "args": {
+                "name": "dense/MatMul/ReadVariableOp",
+                "op": "ReadVariableOp",
+                "input0": "dense/kernel"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "RandomUniform",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849278,
+            "dur": 30,
+            "args": {
+                "name": "Output/RandomUniform",
+                "op": "RandomUniform",
+                "input0": "Output/shape"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "RandomUniform",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849309,
+            "dur": 7,
+            "args": {
+                "name": "Input/RandomUniform",
+                "op": "RandomUniform",
+                "input0": "Input/shape"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Identity",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849396,
+            "dur": 3,
+            "args": {
+                "name": "Output",
+                "op": "Identity",
+                "input0": "Output/RandomUniform"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Identity",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849401,
+            "dur": 2,
+            "args": {
+                "name": "Input",
+                "op": "Identity",
+                "input0": "Input/RandomUniform"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Identity",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849405,
+            "dur": 2,
+            "args": {
+                "name": "_identity_lambda_target_0",
+                "op": "Identity",
+                "input0": "Output"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Identity",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849408,
+            "dur": 2,
+            "args": {
+                "name": "_identity_input_1_0",
+                "op": "Identity",
+                "input0": "Input"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Shape",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849411,
+            "dur": 5,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Shape_1",
+                "op": "Shape",
+                "input0": "_identity_lambda_target_0"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "MatMul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849417,
+            "dur": 26,
+            "args": {
+                "name": "dense/MatMul",
+                "op": "MatMul",
+                "input0": "_identity_input_1_0",
+                "input1": "dense/MatMul/ReadVariableOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "BiasAdd",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849444,
+            "dur": 9,
+            "args": {
+                "name": "dense/BiasAdd",
+                "op": "BiasAdd",
+                "input0": "dense/MatMul",
+                "input1": "dense/BiasAdd/ReadVariableOp"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Shape",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849455,
+            "dur": 4,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Shape",
+                "op": "Shape",
+                "input0": "dense/BiasAdd"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "SquaredDifference",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849460,
+            "dur": 9,
+            "args": {
+                "name": "loss/lambda_loss/SquaredDifference",
+                "op": "SquaredDifference",
+                "input0": "dense/BiasAdd",
+                "input1": "_identity_lambda_target_0"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "BroadcastGradientArgs",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849472,
+            "dur": 6,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/BroadcastGradientArgs",
+                "op": "BroadcastGradientArgs",
+                "input0": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Shape",
+                "input1": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Shape_1"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Mean",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849479,
+            "dur": 11,
+            "args": {
+                "name": "loss/lambda_loss/Mean",
+                "op": "Mean",
+                "input0": "loss/lambda_loss/SquaredDifference",
+                "input1": "loss/lambda_loss/Mean/reduction_indices"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Shape",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849491,
+            "dur": 3,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Shape_2",
+                "op": "Shape",
+                "input0": "loss/lambda_loss/SquaredDifference"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Shape",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849496,
+            "dur": 4,
+            "args": {
+                "name": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Shape",
+                "op": "Shape",
+                "input0": "loss/lambda_loss/Mean"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Size",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849501,
+            "dur": 4,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Prod",
+                "op": "Size",
+                "input0": "loss/lambda_loss/SquaredDifference",
+                "input1": "^SGD/gradients/loss/lambda_loss/Mean_grad/Shape_2"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Fill",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849509,
+            "dur": 7,
+            "args": {
+                "name": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like",
+                "op": "Fill",
+                "input0": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Shape",
+                "input1": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Size",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849518,
+            "dur": 2,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Prod_1",
+                "op": "Size",
+                "input0": "loss/lambda_loss/Mean",
+                "input1": "^loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Shape"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Mul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849568,
+            "dur": 12,
+            "args": {
+                "name": "loss/lambda_loss/weighted_loss/broadcast_weights",
+                "op": "Mul",
+                "input0": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like",
+                "input1": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Maximum",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849582,
+            "dur": 4,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum_1",
+                "op": "Maximum",
+                "input0": "SGD/gradients/loss/lambda_loss/Mean_grad/Prod_1",
+                "input1": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum_1/y"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Mul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849587,
+            "dur": 6,
+            "args": {
+                "name": "loss/lambda_loss/weighted_loss/Mul",
+                "op": "Mul",
+                "input0": "loss/lambda_loss/Mean",
+                "input1": "loss/lambda_loss/weighted_loss/broadcast_weights"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Shape",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849595,
+            "dur": 3,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/weighted_loss/Mul_grad/Shape_1",
+                "op": "Shape",
+                "input0": "loss/lambda_loss/weighted_loss/broadcast_weights"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "FloorDiv",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849599,
+            "dur": 5,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/floordiv_1",
+                "op": "FloorDiv",
+                "input0": "SGD/gradients/loss/lambda_loss/Mean_grad/Prod",
+                "input1": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum_1"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Size",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849605,
+            "dur": 4,
+            "args": {
+                "name": "loss/lambda_loss/num_elements",
+                "op": "Size",
+                "input0": "loss/lambda_loss/weighted_loss/Mul"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Sum",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849610,
+            "dur": 9,
+            "args": {
+                "name": "loss/lambda_loss/Sum",
+                "op": "Sum",
+                "input0": "loss/lambda_loss/weighted_loss/Mul",
+                "input1": "loss/lambda_loss/Const"
+            }
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "loss/lambda_loss/Const",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660849241,
+            "id": 1
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "loss/lambda_loss/Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849610,
+            "id": 1
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Shape",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849621,
+            "dur": 5,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Sum_grad/Shape",
+                "op": "Shape",
+                "input0": "loss/lambda_loss/weighted_loss/Mul"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "BroadcastGradientArgs",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849628,
+            "dur": 2,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/weighted_loss/Mul_grad/BroadcastGradientArgs",
+                "op": "BroadcastGradientArgs",
+                "input0": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Shape",
+                "input1": "SGD/gradients/loss/lambda_loss/weighted_loss/Mul_grad/Shape_1"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "DynamicStitch",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660849607,
+            "dur": 26,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/DynamicStitch",
+                "op": "DynamicStitch",
+                "input0": "SGD/gradients/loss/lambda_loss/Mean_grad/range",
+                "input1": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum_1/y",
+                "input2": "SGD/gradients/loss/lambda_loss/Mean_grad/Shape_2/_19",
+                "input3": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum/y/_21"
+            }
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/range",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849248,
+            "id": 2
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/range",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660849607,
+            "id": 2
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum_1/y",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849254,
+            "id": 3
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum_1/y",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660849607,
+            "id": 3
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Shape_2",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849494,
+            "id": 4
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Shape_2",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660849607,
+            "id": 4
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum/y",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849230,
+            "id": 5
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum/y",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660849607,
+            "id": 5
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Maximum",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849785,
+            "dur": 11,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum",
+                "op": "Maximum",
+                "input0": "SGD/gradients/loss/lambda_loss/Mean_grad/DynamicStitch/_23",
+                "input1": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum/y"
+            }
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/DynamicStitch",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660849633,
+            "id": 6
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/DynamicStitch",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849785,
+            "id": 6
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "FloorDiv",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849803,
+            "dur": 5,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/floordiv",
+                "op": "FloorDiv",
+                "input0": "SGD/gradients/loss/lambda_loss/Mean_grad/Shape_2",
+                "input1": "SGD/gradients/loss/lambda_loss/Mean_grad/Maximum"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Cast",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660849787,
+            "dur": 14,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Cast",
+                "op": "Cast",
+                "input0": "SGD/gradients/loss/lambda_loss/Mean_grad/floordiv_1/_25"
+            }
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/floordiv_1",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849604,
+            "id": 7
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/floordiv_1",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660849787,
+            "id": 7
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Cast",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849811,
+            "dur": 16,
+            "args": {
+                "name": "loss/lambda_loss/num_elements/Cast",
+                "op": "Cast",
+                "input0": "loss/lambda_loss/num_elements/_27"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "DivNoNan",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849829,
+            "dur": 10,
+            "args": {
+                "name": "loss/lambda_loss/value",
+                "op": "DivNoNan",
+                "input0": "loss/lambda_loss/Sum",
+                "input1": "loss/lambda_loss/num_elements/Cast"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "DivNoNan",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849841,
+            "dur": 6,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/value_grad/div_no_nan",
+                "op": "DivNoNan",
+                "input0": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Const",
+                "input1": "loss/lambda_loss/num_elements/Cast"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Mul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849849,
+            "dur": 7,
+            "args": {
+                "name": "loss/mul",
+                "op": "Mul",
+                "input0": "loss/lambda_loss/value",
+                "input1": "loss/lambda_loss/weighted_loss/broadcast_weights/ones_like/Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Reshape",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849858,
+            "dur": 4,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Sum_grad/Reshape",
+                "op": "Reshape",
+                "input0": "SGD/gradients/loss/lambda_loss/value_grad/div_no_nan",
+                "input1": "SGD/gradients/loss/lambda_loss/Sum_grad/Reshape/shape"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Tile",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849922,
+            "dur": 14,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Sum_grad/Tile",
+                "op": "Tile",
+                "input0": "SGD/gradients/loss/lambda_loss/Sum_grad/Reshape",
+                "input1": "SGD/gradients/loss/lambda_loss/Sum_grad/Shape"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Mul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849938,
+            "dur": 7,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/weighted_loss/Mul_grad/Mul",
+                "op": "Mul",
+                "input0": "SGD/gradients/loss/lambda_loss/Sum_grad/Tile",
+                "input1": "loss/lambda_loss/weighted_loss/broadcast_weights"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Sum",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849946,
+            "dur": 3,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/weighted_loss/Mul_grad/Sum",
+                "op": "Sum",
+                "input0": "SGD/gradients/loss/lambda_loss/weighted_loss/Mul_grad/Mul",
+                "input1": "SGD/gradients/loss/lambda_loss/weighted_loss/Mul_grad/BroadcastGradientArgs"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Reshape",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849950,
+            "dur": 3,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Reshape",
+                "op": "Reshape",
+                "input0": "SGD/gradients/loss/lambda_loss/weighted_loss/Mul_grad/Sum",
+                "input1": "SGD/gradients/loss/lambda_loss/Mean_grad/DynamicStitch/_23"
+            }
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/DynamicStitch",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660849633,
+            "id": 8
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/DynamicStitch",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849950,
+            "id": 8
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Tile",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849954,
+            "dur": 9,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Tile",
+                "op": "Tile",
+                "input0": "SGD/gradients/loss/lambda_loss/Mean_grad/Reshape",
+                "input1": "SGD/gradients/loss/lambda_loss/Mean_grad/floordiv"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "RealDiv",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849966,
+            "dur": 15,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/Mean_grad/truediv",
+                "op": "RealDiv",
+                "input0": "SGD/gradients/loss/lambda_loss/Mean_grad/Tile",
+                "input1": "SGD/gradients/loss/lambda_loss/Mean_grad/Cast"
+            }
+        },
+        {
+            "ph": "s",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Cast",
+            "pid": 3,
+            "tid": 1,
+            "ts": 1561724660849801,
+            "id": 9
+        },
+        {
+            "ph": "t",
+            "cat": "DataFlow",
+            "name": "SGD/gradients/loss/lambda_loss/Mean_grad/Cast",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849966,
+            "id": 9
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Sub",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849983,
+            "dur": 9,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/sub",
+                "op": "Sub",
+                "input0": "dense/BiasAdd",
+                "input1": "_identity_lambda_target_0",
+                "input2": "^SGD/gradients/loss/lambda_loss/Mean_grad/truediv"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660849993,
+            "dur": 5,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/scalar",
+                "op": "Const",
+                "input0": "^SGD/gradients/loss/lambda_loss/Mean_grad/truediv"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Mul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660850000,
+            "dur": 12,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Mul",
+                "op": "Mul",
+                "input0": "SGD/gradients/loss/lambda_loss/Mean_grad/truediv",
+                "input1": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/scalar"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Mul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660850014,
+            "dur": 8,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/mul_1",
+                "op": "Mul",
+                "input0": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Mul",
+                "input1": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/sub"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Sum",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660850024,
+            "dur": 2,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Sum",
+                "op": "Sum",
+                "input0": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/mul_1",
+                "input1": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/BroadcastGradientArgs"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Reshape",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660850028,
+            "dur": 2,
+            "args": {
+                "name": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Reshape",
+                "op": "Reshape",
+                "input0": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Sum",
+                "input1": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Shape"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "MatMul",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660850031,
+            "dur": 14,
+            "args": {
+                "name": "SGD/gradients/dense/MatMul_grad/MatMul_1",
+                "op": "MatMul",
+                "input0": "_identity_input_1_0",
+                "input1": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Reshape"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "BiasAddGrad",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660850047,
+            "dur": 30,
+            "args": {
+                "name": "SGD/gradients/dense/BiasAdd_grad/BiasAddGrad",
+                "op": "BiasAddGrad",
+                "input0": "SGD/gradients/loss/lambda_loss/SquaredDifference_grad/Reshape"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "ResourceApplyGradientDescent",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660850078,
+            "dur": 12,
+            "args": {
+                "name": "SGD/SGD/update_dense/kernel/ResourceApplyGradientDescent",
+                "op": "ResourceApplyGradientDescent",
+                "input0": "dense/kernel",
+                "input1": "SGD/SGD/update_dense/kernel/ResourceApplyGradientDescent/ReadVariableOp",
+                "input2": "SGD/gradients/dense/MatMul_grad/MatMul_1"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "ResourceApplyGradientDescent",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660850092,
+            "dur": 6,
+            "args": {
+                "name": "SGD/SGD/update_dense/bias/ResourceApplyGradientDescent",
+                "op": "ResourceApplyGradientDescent",
+                "input0": "dense/bias",
+                "input1": "SGD/SGD/update_dense/bias/ResourceApplyGradientDescent/ReadVariableOp",
+                "input2": "SGD/gradients/dense/BiasAdd_grad/BiasAddGrad"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "Const",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660850101,
+            "dur": 3,
+            "args": {
+                "name": "SGD/SGD/Const",
+                "op": "Const",
+                "input0": "^SGD/SGD/update_dense/bias/ResourceApplyGradientDescent",
+                "input1": "^SGD/SGD/update_dense/kernel/ResourceApplyGradientDescent"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "AssignAddVariableOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660850105,
+            "dur": 7,
+            "args": {
+                "name": "SGD/SGD/AssignAddVariableOp",
+                "op": "AssignAddVariableOp",
+                "input0": "SGD/iter",
+                "input1": "SGD/SGD/Const"
+            }
+        },
+        {
+            "ph": "X",
+            "cat": "Op",
+            "name": "NoOp",
+            "pid": 3,
+            "tid": 0,
+            "ts": 1561724660850114,
+            "dur": 2,
+            "args": {
+                "name": "training_1/group_deps",
+                "op": "NoOp",
+                "input0": "^SGD/SGD/AssignAddVariableOp",
+                "input1": "^loss/mul"
+            }
+        }
+    ]
+}

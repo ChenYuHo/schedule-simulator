@@ -175,7 +175,14 @@ def get_trace_duration(trace_dict):
             mx = end_time
         if start_time < mn:
             mn = start_time
-    return (mx - mn)
+    return mx - mn
+
+
+def extend_trace(original_trace_dict, to_be_added_trace_dict, inplace=True):
+    if inplace:
+        original_trace_dict["traceEvents"].extend(to_be_added_trace_dict["traceEvents"])
+    else:
+        return original_trace_dict["traceEvents"].copy().extend(to_be_added_trace_dict["traceEvents"])
 
 
 class RunCost(tf.keras.callbacks.LambdaCallback):
