@@ -204,7 +204,8 @@ class HomogeneousLinearDAG(LinearDag):
 
 class RandomDAG(DAG):
     """
-    A DAG that consists of layers in a semi random configuration governed by a linearity coefficient
+    A DAG that consists of layers in a semi random configuration governed by a linearity coefficient.
+    Layers are built using a layer_factory
     """
     def __init__(self, n_of_layers, layer_factory: LayerFactory, linearity_coefficient=0.5):
         pass

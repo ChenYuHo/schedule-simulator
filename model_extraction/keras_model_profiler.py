@@ -82,6 +82,27 @@ def dummy_2_layers_model():
     return model
 
 
+def get_layer_parents(layer):
+    # Note that the keras model structure uses a layer node layer node scheme.
+    # A `Node` describes the connectivity between two layers See
+    # https://github.com/keras-team/keras/blob/b0bfd5201da2bfced84028bcc5bda05bdfd75af7/keras/engine/base_layer.py#L1178
+    parents = set()
+    for node in layer._inbound_nodes:
+        try:
+            for parent in node.inbound_layers:
+                parents.add(parent)
+        except TypeError:  # In case inbound_layers is a single layer and not iterable
+            parents.add(node.inbound_layers)
+    return parents
+
+
+def get_layer_children(layer):
+    children = set()
+    for node in layer._outbound_nodes:
+        children.add(node.outbound_layer)
+    return children
+
+
 def traverse_keras_DFS(model, processing_function, order="post-order", top_to_bottom=True):
     """
     Uses a recursive DFS O(n) to process all layers in a Keras model using the processing_function.
@@ -98,27 +119,14 @@ def traverse_keras_DFS(model, processing_function, order="post-order", top_to_bo
         visited.add(root)
         if order == "pre-order":
             processing_function(root)
-        # Note that the keras model structure uses a layer node layer node scheme.
-        # A `Node` describes the connectivity between two layers See
-        # https://github.com/keras-team/keras/blob/b0bfd5201da2bfced84028bcc5bda05bdfd75af7/keras/engine/base_layer.py#L1178
-        # Regardless, for our purpose, it is only important to know that a layer can have multiple inbound nodes and
-        # each node can have multiple inbound layers. Similarly, a layer can have multiple outbound nodes however each
-        # node can have one outbound layer only.
         if top_to_bottom:
-            for node in root._outbound_nodes:
-                child_layer = node.outbound_layer
+            for child_layer in get_layer_children(root):
                 if child_layer not in visited:
                     traverse(root=child_layer, visited=visited)
         else:
-            for node in root._inbound_nodes:
-                # Sometimes node.inbound_layers is a list and sometimes it is a single layer
-                try:
-                    for parent_layer in node.inbound_layers:
-                        if parent_layer not in visited:
-                            traverse(root=parent_layer, visited=visited)
-                except TypeError:  # node.inbound_layers is not a list
-                    if node.inbound_layers not in visited:
-                        traverse(root=node.inbound_layers, visited=visited)
+            for parent_layer in get_layer_parents(root):
+                if parent_layer not in visited:
+                    traverse(root=parent_layer, visited=visited)
         if order == "post-order":
             processing_function(root)
     visited = set()
@@ -153,20 +161,26 @@ def get_dummy_input_output(model, num_of_samples):
         output_shapes.append(shape)
     # Which op takes less time depends on whether you are using gpu or not and whether you are using eager execution or
     # not
-    input_data = [tf.random.uniform(shape=shape, name="Input") for shape in input_shapes]
-    output_data = [tf.random.uniform(shape=shape, name="Output") for shape in output_shapes]
+    input_data = [tf.random.uniform(shape=shape, name="data_generation_input") for shape in input_shapes]
+    output_data = [tf.random.uniform(shape=shape, name="data_generation_output") for shape in output_shapes]
     return input_data, output_data
 
 
-def get_trace_duration(trace_dict):
+def get_trace_costs(trace_dict):
     """
-    Get the total trace duration in microseconds
+    Duration: The total trace duration in microseconds calculated by looking at the very first op and the last op.
+    Total time costs: Adds all the durations of operations disregarding time gaps and parallelization
     :param trace_dict: A trace dictionary generated in the chrome trace format
-    :return: Time in microseconds
+    :return: Tuple (Duration, Total time costs)
     """
     mn = float("inf")
     mx = 0
+    total_cost = 0
     for event in trace_dict["traceEvents"]:
+        if event["name"].startswith("data_generation"):
+            continue
+        if "dur" in event:
+            total_cost += event["dur"]
         if "ts" not in event:
             continue
         start_time = event["ts"]
@@ -175,7 +189,7 @@ def get_trace_duration(trace_dict):
             mx = end_time
         if start_time < mn:
             mn = start_time
-    return mx - mn
+    return mx - mn, total_cost
 
 
 def extend_trace(original_trace_dict, to_be_added_trace_dict, inplace=True):
@@ -191,7 +205,8 @@ class RunCost(tf.keras.callbacks.LambdaCallback):
         """
         :param run_metadata: If run metadata is None then the time module is used instead of the tracer
         """
-        self.costs = list()
+        self.total_time_costs = list()
+        self.durations = list()
         self.run_metadata = run_metadata
         self.tmp = None
 
@@ -202,10 +217,12 @@ class RunCost(tf.keras.callbacks.LambdaCallback):
         def on_batch_end(batch, logs):
             if self.run_metadata:
                 tm = timeline.Timeline(step_stats=self.run_metadata.step_stats)
-                tc = get_trace_duration(json.loads(tm.generate_chrome_trace_format())) * 1e3
+                duration, total_costs = get_trace_costs(json.loads(tm.generate_chrome_trace_format()))
+                self.durations.append(duration * 1e3)
+                self.total_time_costs.append(total_costs * 1e3)
             else:
                 tc = time.time_ns() - self.tmp
-            self.costs.append(tc)
+                self.durations.append(tc * 1e3)
         super().__init__(on_train_batch_begin=on_batch_begin, on_train_batch_end=on_batch_end,
                          on_predict_batch_begin=on_batch_begin, on_predict_batch_end=on_batch_end,
                          on_test_batch_begin=on_batch_begin, on_test_batch_end=on_batch_end)
@@ -241,10 +258,6 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
     """
     if tf.executing_eagerly() and use_tracer:
         raise Exception("Cannot use tracer with eager execution.")
-    if use_tracer and num_of_batches > 1:
-        if log_stream:
-            log_stream.write("Warning: the tensorflow tracer only stores the cost of the last batch. That cost will be"
-                             "extrapolated (multiplied by num_of_batches) to get the final cost.")
     from tensorflow.python.keras.layers import InputLayer
     from tensorflow.python.keras.layers.merge import _Merge
     from tensorflow.python.keras.models import Model
@@ -290,7 +303,12 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
         if tf.executing_eagerly():
             timings[original_layer.name]["data_generation_cost"] = list()
         for cost in accumulative_costs:
-            timings[original_layer.name][cost["name"]] = list()
+            if use_tracer:
+                timings[original_layer.name][cost["name"]] = dict()
+                timings[original_layer.name][cost["name"]]["durations"] = list()
+                timings[original_layer.name][cost["name"]]["total_time_costs"] = list()
+            else:
+                timings[original_layer.name][cost["name"]] = list()
     # Build and profile model layer by layer using the topological order
     if log_stream:
         log_stream.write("Start profiling...\n")
@@ -309,14 +327,8 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
                     log_stream.write("Executing eagerly: {}\n".format(tf.executing_eagerly()))
                 for original_layer in topological_layer_order:
                     # Add new layer to cloned network ------------------------------------------------------------------
-                    # Flatten out the layer's parents to check what the cloned layer needs to connect to
-                    original_parents = set()
-                    for original_node in original_layer._inbound_nodes:
-                        try:
-                            for original_parent in original_node.inbound_layers:
-                                original_parents.add(original_parent)
-                        except TypeError:  # inbound_layers is a single layer and not iterable
-                            original_parents.add(original_node.inbound_layers)
+                    # Get the layer's parents to check what the cloned layer needs to connect to
+                    original_parents = get_layer_parents(original_layer)
                     # Remove all connections of this layer by making a clone using properties only
                     current_layer = clone_layer(original_layer)
                     # Restore appropriate connections in cloned network
@@ -354,7 +366,7 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
                     # the model from a top to bottom fashion.
                     output_layers = list()
                     for layer in added_layers.values():
-                        if layer not in input_layers and len(layer._outbound_nodes) == 0:
+                        if layer not in input_layers and len(get_layer_children(layer)) == 0:
                             output_layers.append(layer)
                     # Create and compile model -------------------------------------------------------------------------
                     # Inputs & outputs must be tensors not layers
@@ -393,8 +405,13 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
                         run_cost = RunCost(run_metadata=rmd)
                         func(**args, **global_func_args, callbacks=[run_cost])
                         if log_stream:
-                            log_stream.write(print_format.format(key=name, value=run_cost.costs))
-                        timings[current_layer.name][name].extend(run_cost.costs)
+                            v = run_cost.durations if not use_tracer else run_cost.durations, run_cost.total_time_costs
+                            log_stream.write(print_format.format(key=name, value=v))
+                        if use_tracer:
+                            timings[current_layer.name][name]["durations"].extend(run_cost.durations)
+                            timings[current_layer.name][name]["total_time_costs"].extend(run_cost.total_time_costs)
+                        else:
+                            timings[current_layer.name][name].extend(run_cost.durations)
                     # To confirm that the graph is being reset with each iteration
                     # print(len(sess.graph.get_operations()))
     except BaseException as e:

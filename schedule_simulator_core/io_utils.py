@@ -110,7 +110,7 @@ def generate_report(processing_unit, start=0, end=None,
                         if key in job.extras:
                             values.append(str(job.extras[key]))
                         else:
-                            values.append("XX")
+                            values.append("X"*cell_width)
                     jobs_text.append(":".join(values))
                 cells.append("{{:{}}}".format(cell_width).format(','.join(jobs_text)))
             elif cell_labels != "count":
