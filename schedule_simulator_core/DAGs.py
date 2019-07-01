@@ -37,6 +37,14 @@ class LayerFactory:
     a dag.
     """
     def __init__(self, forward_pass_units, backward_pass_units, communication_units, indexing_offset=0, **extras):
+        """
+        :param forward_pass_units: Constant or distribution
+        :param backward_pass_units: Constant or distribution
+        :param communication_units: Constant or distribution
+        :param indexing_offset: Layers will be given incremental indices in their extras field. Should we offset the
+        starting index ?
+        :param extras: Any extras that will be passed on when creating the layer and later passed on to all created jobs
+        """
         self.forward_pass_units = forward_pass_units
         self.backward_pass_units = backward_pass_units
         self.communication_units = communication_units
@@ -172,6 +180,24 @@ class DAG:
         visited = set()
         for root in self.dag_output_layers:
             extract_backward_dependencies(root=root, deps=set(), visited=visited)
+
+    def clone(self):
+        """
+        Should provide a concrete cloning method later
+        """
+        return deserialize_dag(serialize_dag(self))
+
+    def get_layer_costs(self):
+        fp_units = list()
+        bp_units = list()
+        comm_units = list()
+        comp_units = list()
+        for layer in self.topological_order:
+            fp_units.append(layer.forward_pass_units)
+            bp_units.append(layer.backward_pass_units)
+            comm_units.append(layer.communication_units)
+            comp_units.append(layer.forward_pass_units+layer.backward_pass_units)
+        return dict(fp_units=fp_units, bp_units=bp_units, comm_units=comm_units, comp_units=comp_units)
 
     """Should add some functions to make it easy to join different DAGs together"""
 
