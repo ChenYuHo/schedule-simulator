@@ -70,7 +70,7 @@ def keras_model_to_DAG(model, skipped_layer_types=None):
 
     for fun in [add_layer, connect_layer]:
         traverse_keras_DFS(model, processing_function=fun, order="pre-order", top_to_bottom=True)
-    return DAG(input_layers)
+    return DAG(input_layers, name=model.name)
 
 
 def extract_cost_units_from_profile(profiling_report, suppress_negatives=0, scaling_factor=1.0,

@@ -135,7 +135,7 @@ if __name__ == "__main__":
     from schedule_simulator_core.DAGs import HomogeneousLinearDAG
     from schedule_simulator_core.core import ProcessingUnit
     from schedule_simulator_core.schedulers import FIFOScheduler, TopologicalPriorityScheduler
-    from schedule_simulator_core.io_utils import SimPrinter, generate_report
+    from schedule_simulator_core.utils import SimPrinter, generate_ascii_timeline
     schedulers = [FIFOScheduler(),TopologicalPriorityScheduler(preemptive=False),
                   TopologicalPriorityScheduler(preemptive=True)]
     with open("DNN_functions_example_report.txt", "w") as file:
@@ -163,8 +163,8 @@ if __name__ == "__main__":
             env.run()
             units = [gpu, network]
             for unit in units:
-                report = generate_report(unit, time_grouping=1, row_labels=["type"], cell_labels=["index"],
-                                         group_name_width=30, cell_width=4)
+                report = generate_ascii_timeline(unit, time_grouping=1, row_labels=["type"], cell_labels=["index"],
+                                                 group_name_width=30, cell_width=4)
                 print(report)
                 print("")
                 file.write(report)

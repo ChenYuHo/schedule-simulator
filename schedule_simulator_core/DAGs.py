@@ -69,9 +69,10 @@ class DAG:
     """
     It is a generic class that can describe any DNN architecture.
     """
-    def __init__(self, dag_input_layers):
+    def __init__(self, dag_input_layers, **extras):
         self.dag_input_layers = dag_input_layers
         self.dag_output_layers = list()
+        self.extras = extras
         # Traverse dag and setup layer variables as well as extract dag_output_layers
         def process_node(node):
             node._forward_dependencies = set()
@@ -181,11 +182,14 @@ class DAG:
         for root in self.dag_output_layers:
             extract_backward_dependencies(root=root, deps=set(), visited=visited)
 
-    def clone(self):
+    def __copy__(self):
         """
         Should provide a concrete cloning method later
         """
         return deserialize_dag(serialize_dag(self))
+
+    def copy(self):
+        return self.__copy__()
 
     def get_layer_costs(self):
         fp_units = list()
@@ -199,6 +203,8 @@ class DAG:
             comp_units.append(layer.forward_pass_units+layer.backward_pass_units)
         return dict(fp_units=fp_units, bp_units=bp_units, comm_units=comm_units, comp_units=comp_units)
 
+    def __str__(self):
+        return str(self.extras)
     """Should add some functions to make it easy to join different DAGs together"""
 
 
@@ -244,7 +250,7 @@ def serialize_dag(dag: DAG, formatted=True):
     import json
     i = 0
     temp_ids = dict()
-    serialized_dag = dict()
+    serialized_dag = {"extras": dag.extras, "layers": dict()}
 
     def add_layer(layer):
         nonlocal i
@@ -270,7 +276,7 @@ def serialize_dag(dag: DAG, formatted=True):
                     i += 1
                 sl["output_layers"].append(temp_ids[output_layer])
         sl["extras"] = layer.extras
-        serialized_dag[temp_ids[layer]] = sl
+        serialized_dag["layers"][temp_ids[layer]] = sl
     dag.traverse_BFS(add_layer)
     return json.dumps(serialized_dag, indent=4) if formatted else json.dumps(serialized_dag)
 
@@ -280,7 +286,7 @@ def deserialize_dag(serialized_dag):
     serialized_dag = json.loads(serialized_dag)
     temp_ids = dict()
     input_layers = list()
-    for i, layer_dict in serialized_dag.items():
+    for i, layer_dict in serialized_dag["layers"].items():
         extras = layer_dict["extras"]
         del(layer_dict["extras"])
         temp_ids[i] = Layer(**layer_dict, **extras)
@@ -298,7 +304,7 @@ def deserialize_dag(serialized_dag):
                 object_output_layers.append(temp_ids[str(output_layer_i)])
         layer.input_layers = object_input_layers
         layer.output_layers = object_output_layers
-    dag = DAG(input_layers)
+    dag = DAG(input_layers, **serialized_dag["extras"])
     return dag
 
 

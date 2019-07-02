@@ -64,7 +64,7 @@ if __name__ == "__main__":
     from schedule_simulator_core.DAGs import HomogeneousLinearDAG
     from schedule_simulator_core.core import ProcessingUnit
     from schedule_simulator_core.schedulers import FIFOScheduler, TopologicalPriorityScheduler
-    from schedule_simulator_core.io_utils import SimPrinter, generate_report
+    from schedule_simulator_core.utils import SimPrinter, generate_ascii_timeline
     from schedule_simulator_core.DNN_functions import train
     import os
 
@@ -96,7 +96,7 @@ if __name__ == "__main__":
             env.run()
             units = [gpu, network]
             for unit in units:
-                report = generate_report(unit, time_grouping=1, row_labels=["type"], cell_labels=["index"],
-                                         group_name_width=30, cell_width=5)
+                report = generate_ascii_timeline(unit, time_grouping=1, row_labels=["type"], cell_labels=["index"],
+                                                 group_name_width=30, cell_width=5)
                 file.write(report)
                 file.write("\n\n\n")

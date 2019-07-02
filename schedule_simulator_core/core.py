@@ -183,7 +183,7 @@ if __name__ == '__main__':
     """
     An example usage of the processing unit
     """
-    from schedule_simulator_core.io_utils import SimPrinter, generate_report
+    from schedule_simulator_core.utils import SimPrinter, generate_ascii_timeline
     import random
     env = simpy.Environment()
     gpu = ProcessingUnit(env, schedulers.FIFOScheduler(),
@@ -193,4 +193,4 @@ if __name__ == '__main__':
         job = Job(env, units=random.randint(1, 10), custom_attr_1=i, custom_attr_2=i % 3)
         gpu.queue(job)
     env.run(until=100)
-    print(generate_report(gpu, start=0, time_grouping=1, row_labels=["custom_attr_1"]))
+    print(generate_ascii_timeline(gpu, start=0, time_grouping=1, row_labels=["custom_attr_1"]))

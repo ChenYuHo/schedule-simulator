@@ -1,4 +1,6 @@
 import math
+
+
 class SimPrinter:
     def __init__(self, verbosity=2):
         self.verbosity = verbosity
@@ -8,11 +10,51 @@ class SimPrinter:
             print("t:{:<4}] {:<10}] {}".format(env.now, str(source), msg))
 
 
-def generate_report(processing_unit, start=0, end=None,
-                    time_grouping=1, show_scaled_time=False,
-                    row_labels=None, cell_labels=None,
-                    show_column_labels=True, show_row_utilization=True, show_header=True, suppress_body=False,
-                    long_value_handling="trim", cell_width=5, group_name_width=20):
+def group_dict(dictionary, key_indices, extend_existing_lists=True):
+    """
+    A general method that collapses or groups a flat dictionary with compound keys,into a dictionary with smaller
+    compound keys and a list of values.
+    Ex.
+    A = { ("O",1): [10,20], ("A",1): 5, ("O",2): 30 }
+    group_dict(A, key_indices=[0]) returns {(1,): [10,20,5], (2,): [30]}
+    group_dict(A, key_indices=[1]) returns {('O',): [10,20,30], ('A',): [5]}
+    group_dict(A, key_indices=[0,1]) {(): [10,20,5,30]}
+    group_dict(A, key_indices=[]) returns {('O', 1): [10,20], ('A', 1): [5], ('O', 2): [30]}
+    :param dictionary: The dictionary to group
+    :param key_indices: The key indices to DROP.
+    :param extend_existing_lists: If true then a any value that is an iterable will be extended.
+    Ex. Joining [1,2,3] 2 would result in [1,2,3,2]
+    If false, then a new list would be constructed that joins those values.
+    Ex. Joining [1,2,3] 2 would result in [[1,2,3], 2]
+    """
+    result = dict()
+    for compound_key in dictionary.keys():
+        filtered_key = tuple([x for i, x in enumerate(compound_key) if i not in key_indices])
+        value = dictionary[compound_key]
+        if filtered_key not in result:
+            if extend_existing_lists:
+                try:
+                    result[filtered_key] = list(value)
+                except TypeError:
+                    result[filtered_key] = [value]
+            else:
+                result[filtered_key] = [value]
+        else:
+            if extend_existing_lists:
+                try:
+                    result[filtered_key].extend(value)
+                except TypeError:
+                    result[filtered_key].append(value)
+            else:
+                result[filtered_key].append(value)
+    return result
+
+
+def generate_ascii_timeline(processing_unit, start=0, end=None,
+                            time_grouping=1, show_scaled_time=False,
+                            row_labels=None, cell_labels=None,
+                            show_column_labels=True, show_row_utilization=True, show_header=True, suppress_body=False,
+                            long_value_handling="trim", cell_width=5, group_name_width=20):
     """
     The current implementation is a little messy and inefficient just to get quick insight.
     It should be refined and more structured later.
@@ -55,7 +97,6 @@ def generate_report(processing_unit, start=0, end=None,
             for job, _ in jobs:
                 values = list()
                 for key in row_labels:
-                    # We add a true/false flag before the value so that the sorting algorithm can sort None values
                     if key in job.extras.keys():
                         values.append(job.extras[key])
                     else:
@@ -155,3 +196,7 @@ def generate_report(processing_unit, start=0, end=None,
                 report.append(format[:-1].format("", time_labels))
         report.extend(rows)
     return '\n'.join(report)
+
+
+def generate_chrome_trace_timeline():
+    pass
