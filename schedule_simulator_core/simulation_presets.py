@@ -9,6 +9,7 @@ from schedule_simulator_core.utils import SimPrinter, generate_ascii_timeline, g
 import simpy
 import numpy as np
 import itertools
+import time
 
 
 class GpuNetworkSim:
@@ -83,11 +84,11 @@ class GpuNetworkSim:
 
     @staticmethod
     def run_group(gpu_rate, network_rate, gpu_scheduler, network_scheduler, dag, batch_size, n_of_batches,
-                  clear_output=True, resolution=1e3, return_simulation_objects=False):
+                  clear_output=True, resolution=1e3, return_simulation_objects=False, number_of_processes=None):
         """
         All of the required arguments can be either a value or a list of values to try.
         The product of all options will be taken and then iterated to generate simulations with all possible
-        combinations
+        combinations.
         :param gpu_rate: (Value or list of values)
         :param network_rate: (Value or list of values)
         :param gpu_scheduler: (Value or list of values)
@@ -102,9 +103,21 @@ class GpuNetworkSim:
         :param return_simulation_objects: Setting this to true will return a list of simulations instead of the summary
         file. Enabling this option will consume a huge amount of RAM since all of the simulations data is kept in
         memory. Therefore only enable for a small number of simulations
+        :param number_of_processes: The number of independent processes to spawn. If set to None then the total number
+        of effective cores will be used. (Not implemented yet)
+        Running all combinations of arguments can mean that hundreds of independent simulations
+        will be run. However, a python interpreter spawns a single process which can only use one effective core which
+        prevents us of using the full capacity of a multi-core processor. Which is why launching the simulations in a
+        multi process setup when running on a multi-core cpu will speed it up tremendously.
+        For reference:
+        https://askubuntu.com/questions/949437/python-interpreter-only-using-12-cpu-power
+        https://docs.python.org/3.6/library/multiprocessing.html
         :return if return_simulation_objects is true then the function returns a list of all simulations run.
-        Other wise a summary dict is returned { "resolution": resolution, "args": args, "results": results}
+        Other wise a summary dict is returned
+        {"resolution": resolution, "num_of_simulations": len(args_combinations), "args": [str(x) for x in args.items()],
+        "results": results}
         """
+        begin_time = time.time()
         constants = set()
         args = dict(gpu_rate=gpu_rate, network_rate=network_rate, gpu_scheduler=gpu_scheduler,
                     network_scheduler=network_scheduler, dag=dag, batch_size=batch_size, n_of_batches=n_of_batches)
@@ -115,8 +128,13 @@ class GpuNetworkSim:
             except TypeError:
                 constants.add(k)
                 args[k] = [args[k]]
+
+        def print_header():
+            print("Resolution: {}".format(resolution))
+            print("Constant arguments: {}".format(constants))
+            print("Variable arguments: {}".format(args.keys() - constants))
         if not clear_output:
-            print("Arguments kept constant: {}".format(constants))
+            print_header()
         args_combinations = list(itertools.product(*args.values()))
         results = dict()
         results["sim_index"] = list(range(len(args_combinations)))
@@ -135,8 +153,8 @@ class GpuNetworkSim:
                         clear_output(wait=True)
                     except:
                         pass
+                    print_header()
                 # Print the current combination of arguments
-                print("Arguments kept constant: {}".format(constants))
                 print("{:20}: {:<3}/{:<3}".format("Simulation", sim_i+1, len(args_combinations)))
                 for arg_key, arg_value in sub_args.items():
                     print("{:20}: {}".format(arg_key, arg_value))
@@ -168,6 +186,13 @@ class GpuNetworkSim:
         if return_simulation_objects:
             return simulations
         else:
+            for key, value in args.items():
+                new_value = list()
+                for v in value:
+                    new_value.append(str(v))
+                args[key] = new_value
             return {"resolution": resolution,
-                    "args": [str(x) for x in args],
+                    "num_of_simulations": len(args_combinations),
+                    "time_elapsed": time.time() - begin_time,
+                    "args": args,
                     "results": results}
