@@ -80,6 +80,9 @@ def generate_ascii_timeline(processing_unit, start=0, end=None,
     :param cell_width: Specifies the width of each cell in the table
     :param group_name_width: Specifies the width of the first column in the table which contains the group name.
     """
+    if not processing_unit.store_timeline:
+        raise Exception("The processing unit given did not keep a timeline. Consider enabling that option and trying"
+                        "again.")
     report = []
     duration = (processing_unit.env.now if end is None else end) - start
     if not time_grouping:
@@ -93,7 +96,7 @@ def generate_ascii_timeline(processing_unit, start=0, end=None,
     # Generate groups
     groups = set()
     if len(row_labels):
-        for jobs in processing_unit.utilization.values():
+        for jobs in processing_unit.timeline.values():
             for job, _ in jobs:
                 values = list()
                 for key in row_labels:
@@ -128,8 +131,8 @@ def generate_ascii_timeline(processing_unit, start=0, end=None,
             jobs = []
             # Generate cell
             for t in range(tg*time_grouping, (tg+1) * time_grouping):
-                if t in processing_unit.utilization.keys():
-                    for job, units in processing_unit.utilization[t]:
+                if t in processing_unit.timeline.keys():
+                    for job, units in processing_unit.timeline[t]:
                         # Does this job belong to our group ?
                         include = True
                         for i, key in enumerate(row_labels):

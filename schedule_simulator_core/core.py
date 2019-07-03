@@ -68,7 +68,8 @@ class ProcessingUnit:
     (ie. CPU, GPU, Aggregator, Network link ...etc)
     Needs a scheduler to operate.
     """
-    def __init__(self, env: simpy.Environment, scheduler, rate=1, name=None, out_pipe=None, sim_printer=None):
+    def __init__(self, env: simpy.Environment, scheduler, rate=1, name=None, out_pipe=None, sim_printer=None,
+                 store_timeline=True):
         """
         :param env: The simpy environment used in this simulation.
         :param rate: The rate at which the unit consumes job units
@@ -86,7 +87,9 @@ class ProcessingUnit:
         # The utilization structure:
         # Key: time step
         # Value: list of (job, processed units) tuples that were done in that time step
-        self.utilization = dict()
+        self.timeline = dict()
+        self.total_processed_units = 0
+        self.store_timeline = store_timeline
 
     def queue(self, job):
         """
@@ -123,19 +126,21 @@ class ProcessingUnit:
                         self.scheduler.remove(job)
                     else:
                         current_job = (job,to_process)
-                # Add utilization info
-                utilization_list = list()
-                for job in will_finish_jobs:
-                    utilization_list.append(job)
-                if current_job is not None:
-                    utilization_list.append(current_job)
-                if len(utilization_list) > 0:
-                    self.utilization[self.env.now] = utilization_list
+                # Add timeline info
+                if self.store_timeline:
+                    time_line_list = list()
+                    for job in will_finish_jobs:
+                        time_line_list.append(job)
+                    if current_job is not None:
+                        time_line_list.append(current_job)
+                    if len(time_line_list) > 0:
+                        self.timeline[self.env.now] = time_line_list
                 # Finalize finished jobs
                 # We do this before waiting to allow processes that are waiting for the job to be notified instantly
                 # in the next time step. Otherwise, the processes will always be delayed 1 time step
-                for job,_ in will_finish_jobs:
+                for job, processed_units in will_finish_jobs:
                     job.succeed()  # Fire job finished event
+                    self.total_processed_units += processed_units
                     if self.out_pipe is not None and job.result is not None:
                         self.out_pipe.queue(job.result)
                     self._print("Finished job {}".format(job), 2)
@@ -149,7 +154,7 @@ class ProcessingUnit:
 
     def get_utilization(self, start=None, end=None, extras=None):
         """
-        A function for returning the utilization percentage of a single group
+        A function for returning the utilization percentage of a single group using the timeline
         :param start: The utilization period start. If None then 0 is used.
         :param end: The utilization period end. If None then the last time step in the environment is used.
         :param extras: An extras dictionary that will be used to match each job's extras dictionary.
@@ -160,13 +165,15 @@ class ProcessingUnit:
             start = 0
         if end is None:
             end = self.env.now
-        total_used_units = 0
+        total_processed_units = 0
         duration = end - start + 1
         total_rate_units = self.rate * duration
-        for t in self.utilization.keys():
+        if start is None and end is None and extras is None:
+            return self.total_processed_units / total_rate_units
+        for t in self.timeline.keys():
             if t < start or t > end:
                 continue
-            for job, processed_units in self.utilization[t]:
+            for job, processed_units in self.timeline[t]:
                 include = True
                 if extras is not None:
                     for key in extras.keys():
@@ -174,8 +181,8 @@ class ProcessingUnit:
                             include = False
                             break
                 if include:
-                    total_used_units += processed_units
-        return total_used_units / total_rate_units
+                    total_processed_units += processed_units
+        return total_processed_units / total_rate_units
 
     def _print(self, msg, verbosity):
         if self._sim_printer:

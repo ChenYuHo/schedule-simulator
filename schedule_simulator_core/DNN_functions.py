@@ -142,7 +142,7 @@ if __name__ == "__main__":
         for scheduler in schedulers:
             env = simpy.Environment()
             sim_printer = SimPrinter(verbosity=0).print
-            dag = HomogeneousLinearDAG(n_of_layers=6, layer_size=8)
+            dag = HomogeneousLinearDAG(n_of_layers=6, fp_units=8, bp_units=8, comm_units=8)
 
             gpu = ProcessingUnit(env=env, scheduler=FIFOScheduler(), rate=2, name="GPU", sim_printer=None)
             gpu_process = env.process(gpu.main_process())

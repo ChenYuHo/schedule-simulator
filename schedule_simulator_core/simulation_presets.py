@@ -20,9 +20,11 @@ class GpuNetworkSim:
                          n_of_batches=n_of_batches)
         self.dag = dag
         self.env = simpy.Environment()
-        self.gpu = ProcessingUnit(env=self.env, scheduler=gpu_scheduler, rate=gpu_rate, name="GPU")
+        self.gpu = ProcessingUnit(env=self.env, scheduler=gpu_scheduler, rate=gpu_rate, name="GPU",
+                                  store_timeline=False)
         self.gpu_process = self.env.process(self.gpu.main_process())
-        self.network = ProcessingUnit(env=self.env, scheduler=network_scheduler, rate=network_rate, name="Network")
+        self.network = ProcessingUnit(env=self.env, scheduler=network_scheduler, rate=network_rate, name="Network",
+                                      store_timeline=False)
         self.network_process = self.env.process(self.network.main_process())
         self.training_process = self.env.process(train(dag=self.dag, env=self.env, n_of_batches=n_of_batches,
                                                        batch_size=batch_size, computation_queue=self.gpu,
@@ -92,7 +94,8 @@ class GpuNetworkSim:
 
     @staticmethod
     def run_group(gpu_rate, network_rate, gpu_scheduler, network_scheduler, dag, batch_size, n_of_batches,
-                  clear_output=True, resolution=1e3, return_simulation_objects=False, number_of_processes=None):
+                  clear_output=True, resolution=1e3, return_simulation_objects=False, number_of_processes=None,
+                  resolution_warning_threshold=0.1):
         """
         All of the required arguments can be either a value or a list of values to try.
         The product of all options will be taken and then iterated to generate simulations with all possible
@@ -108,9 +111,12 @@ class GpuNetworkSim:
         :param clear_output: Whether or not to clear output of the cell if run in a notebook
         :param resolution: Units are all converted to seconds and then multiplied by the resolution and then cast to an
         integer. Therefore a resolution of 1e3 means a resolution of 1ms.
+        Idea: I should make the function choose the optimal resolution based on the combination given so that it is not
+        too large that the simulations take forever and not too small that they do not give accurate results.
         :param return_simulation_objects: Setting this to true will return a list of simulations instead of the summary
-        file. Enabling this option will consume a huge amount of RAM since all of the simulations data is kept in
-        memory. Therefore only enable for a small number of simulations
+        file. Enabling this option may consume a huge amount of RAM since all of the simulations data is kept in
+        memory. Therefore only enable for a small number of simulations or for simulations that have units with
+        store_timeline option set to false.
         :param number_of_processes: The number of independent processes to spawn. If set to None then the total number
         of effective cores will be used. (Not implemented yet)
         Running all combinations of arguments can mean that hundreds of independent simulations
@@ -125,6 +131,13 @@ class GpuNetworkSim:
         {"resolution": resolution, "num_of_simulations": len(args_combinations), "args": [str(x) for x in args.items()],
         "results": results}
         """
+        # Define scaling functions based on the assumptions of the dag's units mentioned above
+        def scale_comp_units(value, gpu_rate):
+            """From nanoseconds to seconds to resolution units"""
+            return int(value * 1e-9 / gpu_rate * resolution)
+        def scale_comm_units(value, network_rate):
+            """From bytes to seconds to resolution units"""
+            return int(value * 1e-9 * 8 / network_rate * resolution)
         begin_time = time.time()
         constants = set()
         args = dict(gpu_rate=gpu_rate, network_rate=network_rate, gpu_scheduler=gpu_scheduler,
@@ -137,10 +150,52 @@ class GpuNetworkSim:
                 constants.add(k)
                 args[k] = [args[k]]
 
+        # Check if a combination is compromised with the resolution
+        total_zeros = dict(bp=0, fp=0, comm=0)
+        num_of_values = 0
+        warnings = list()
+        for comb in list(itertools.product(args["dag"], args["gpu_rate"], args["network_rate"])):
+            _dag, _gpu_rate, _network_rate = comb
+            local_zeros = dict(bp=0, fp=0, comm=0)
+            local_num_of_values = 0
+            def add_zeros(layer):
+                nonlocal local_num_of_values
+                local_num_of_values += 1
+                if layer.forward_pass_units != 0 and scale_comm_units(layer.forward_pass_units, _gpu_rate) == 0:
+                    local_zeros["fp"] += 1
+                if layer.backward_pass_units != 0 and scale_comm_units(layer.backward_pass_units, _gpu_rate) == 0:
+                    local_zeros["bp"] += 1
+                if layer.communication_units != 0 and scale_comm_units(layer.communication_units, _network_rate) == 0:
+                    local_zeros["comm"] += 1
+            _dag.traverse_BFS(processing_function=add_zeros)
+            for key in local_zeros:
+                total_zeros[key] += local_zeros[key]
+                zeros_perc = local_zeros[key] / local_num_of_values
+                if zeros_perc > resolution_warning_threshold:
+                    warnings.append((comb, key, zeros_perc))
+            num_of_values += local_num_of_values
+        if len(warnings) > 0:
+            exception_msg = "Resolution Error\n"
+            exception_msg += "The following combinations are compromised with the current resolution:\n"
+            for warning in warnings:
+                comb, key, zeros_perc = warning
+                _dag, _gpu_rate, _network_rate = comb
+                exception_msg += ("Compromised unit: '{:4}' Resolution inflicted zeros: {:.2f}%\n"
+                                  "Combination: (dag:{}, gpu_rate: {}, network_rate: {}\n").format(
+                    key, zeros_perc*100, _dag, _gpu_rate, _network_rate)
+            exception_msg += "Consider increasing the resolution or changing the arguments.\n"
+            exception_msg += "To suppress this warning and continue increase the resolution_warning_threshold."
+            raise Exception(exception_msg)
         def print_header():
             print("Resolution: {}".format(resolution))
+            print("Resolution inflicted zeros: fp_units: {:.2f}% bp_units: {:.2f}% comm_units: {:.2f}%".format(
+                total_zeros["fp"] / num_of_values * 100,
+                total_zeros["bp"] / num_of_values * 100,
+                total_zeros["comm"] / num_of_values * 100,
+            ))
             print("Constant arguments: {}".format(constants))
             print("Variable arguments: {}".format(args.keys() - constants))
+            print("-"*100)
         if not clear_output:
             print_header()
         args_combinations = list(itertools.product(*args.values()))
@@ -173,21 +228,18 @@ class GpuNetworkSim:
                 # a huge amount of time since we would be essentially running with a very high resolution)
                 patch = dict()
                 sub_args["dag"] = sub_args["dag"].copy()
-                communication_units_scale = 1e-9 * 8 / (sub_args["network_rate"])  # From bytes to seconds
-                # Since the rate won't be passed on to the simulation processing units and it won't appear in the
+                def scale_units(layer):
+                    layer.communication_units = scale_comm_units(layer.communication_units, sub_args["network_rate"])
+                    layer.forward_pass_units = scale_comm_units(layer.forward_pass_units, sub_args["gpu_rate"])
+                    layer.backward_pass_units = scale_comm_units(layer.backward_pass_units, sub_args["gpu_rate"])
+                sub_args["dag"].traverse_BFS(processing_function=scale_units)
+                # Since the rates won't be passed on to the simulation processing units and it won't appear in the
                 # summary, let us save it now and add it later to the summary below
                 patch["comm_units_scaling_rate"] = sub_args["network_rate"]
+                patch["comp_units_scaling_rate"] = sub_args["gpu_rate"]
                 # Since we effectively applied the rate by scaling the units we can set the processing rate to 1
                 sub_args["network_rate"] = 1
-                computation_units_scale = 1e-9 / (sub_args["gpu_rate"])  # From nanoseconds to seconds
-                patch["comp_units_scaling_rate"] = sub_args["gpu_rate"]
                 sub_args["gpu_rate"] = 1
-
-                def scale_units(layer):
-                    layer.communication_units = int(layer.communication_units * resolution * communication_units_scale)
-                    layer.forward_pass_units = int(layer.forward_pass_units * resolution * computation_units_scale)
-                    layer.backward_pass_units = int(layer.backward_pass_units * resolution * computation_units_scale)
-                sub_args["dag"].traverse_BFS(processing_function=scale_units)
                 # ------------------------------------------------------------------------------------------------------
                 # Create, run, and append simulation
                 simulation = GpuNetworkSim(**sub_args)
