@@ -10,7 +10,7 @@ import simpy
 import numpy as np
 import itertools
 import time
-
+import json
 
 class GpuNetworkSim:
     def __init__(self, gpu_rate, network_rate, gpu_scheduler, network_scheduler, dag, batch_size, n_of_batches):
@@ -64,6 +64,13 @@ class GpuNetworkSim:
         for cost_name, description in dag_layer_costs_description.items():
             for subkey in description:
                 summary["{}.{}".format(cost_name, subkey)] = description[subkey]
+        # Dag extras:
+        for ek, ev in self.dag.extras.items():
+            try:
+                json.dumps(ev)
+            except TypeError:
+                ev = str(ev)
+            summary["{}_{}".format("dag", ek)] = ev
         # General statistics. Add whatever you need here
         summary["gpu_util"] = self.gpu.get_utilization()
         summary["net_util"] = self.network.get_utilization()
@@ -189,7 +196,11 @@ class GpuNetworkSim:
             for key, value in args.items():
                 new_value = list()
                 for v in value:
-                    new_value.append(str(v))
+                    try:
+                        json.dumps(v)
+                    except TypeError:
+                        v = str(v)
+                    new_value.append(v)
                 args[key] = new_value
             return {"resolution": resolution,
                     "num_of_simulations": len(args_combinations),

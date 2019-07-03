@@ -8,7 +8,7 @@ class Distribution:
     It can define a constant, or any distribution
     Can be used for any numeric property to express some randomness.
     """
-    def __init__(self, distribution, integer=True, *args):
+    def __init__(self, distribution, integer=True, positive=True, *args):
         """
         :param distribution: The distribution function.
         See https://docs.scipy.org/doc/numpy/reference/routines.random.html#distributions for all distributions
@@ -18,12 +18,18 @@ class Distribution:
         self.distribution = distribution
         self.args = args
         self.integer = integer
+        self.positive = positive
 
     def __next__(self):
         if self.distribution is None:
-            return self.args
+            v = self.args
         else:
-            return self.distribution(*self.args)
+            v = self.distribution(*self.args)
+        if self.integer:
+            v = int(v)
+        if self.positive:
+            v = max(v, 0)
+        return v
 
     def generate_value(self):
         return self.__next__()

@@ -229,8 +229,8 @@ class HomogeneousLinearDAG(LinearDag):
     A DAG that consists of a linear graph of identical layers which all contain trainable parameters.
     Used for quick verification.
     """
-    def __init__(self, n_of_layers, layer_size, is_trainable=True, indexing_offset=0):
-        layer_factory = LayerFactory(layer_size, layer_size, layer_size, indexing_offset=indexing_offset)
+    def __init__(self, n_of_layers, fp_units, bp_units, comm_units, is_trainable=True, indexing_offset=0):
+        layer_factory = LayerFactory(fp_units, bp_units, comm_units, indexing_offset=indexing_offset)
         super().__init__(n_of_layers, layer_factory)
 
 
