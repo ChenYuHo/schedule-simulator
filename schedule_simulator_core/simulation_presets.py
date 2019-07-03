@@ -12,6 +12,7 @@ import itertools
 import time
 import json
 
+
 class GpuNetworkSim:
     def __init__(self, gpu_rate, network_rate, gpu_scheduler, network_scheduler, dag, batch_size, n_of_batches):
         self.args = dict(gpu_rate=gpu_rate, network_rate=network_rate, gpu_scheduler=str(gpu_scheduler),
@@ -130,7 +131,7 @@ class GpuNetworkSim:
                     network_scheduler=network_scheduler, dag=dag, batch_size=batch_size, n_of_batches=n_of_batches)
         for k, v in args.copy().items():
             try:
-                if len(v) == 0:
+                if len(v) == 1:
                     constants.add(k)
             except TypeError:
                 constants.add(k)
@@ -165,25 +166,39 @@ class GpuNetworkSim:
                 print("{:20}: {:<3}/{:<3}".format("Simulation", sim_i+1, len(args_combinations)))
                 for arg_key, arg_value in sub_args.items():
                     print("{:20}: {}".format(arg_key, arg_value))
-                # Scale & unify units (We apply rates here because if we apply them using the processing unit rate,
-                # the simulation will take a huge amount of time since we would be essentially running with a
-                # very high resolution)
+                # Scale & unify units
+                # This block mitigates a defect in the simulator and it should be edited once that defect is fixed !!
+                # ------------------------------------------------------------------------------------------------------
+                # (We apply rates here because if we apply them using the processing unit rate, the simulation will take
+                # a huge amount of time since we would be essentially running with a very high resolution)
+                patch = dict()
                 sub_args["dag"] = sub_args["dag"].copy()
                 communication_units_scale = 1e-9 * 8 / (sub_args["network_rate"])  # From bytes to seconds
+                # Since the rate won't be passed on to the simulation processing units and it won't appear in the
+                # summary, let us save it now and add it later to the summary below
+                patch["comm_units_scaling_rate"] = sub_args["network_rate"]
+                # Since we effectively applied the rate by scaling the units we can set the processing rate to 1
+                sub_args["network_rate"] = 1
                 computation_units_scale = 1e-9 / (sub_args["gpu_rate"])  # From nanoseconds to seconds
+                patch["comp_units_scaling_rate"] = sub_args["gpu_rate"]
+                sub_args["gpu_rate"] = 1
 
                 def scale_units(layer):
                     layer.communication_units = int(layer.communication_units * resolution * communication_units_scale)
                     layer.forward_pass_units = int(layer.forward_pass_units * resolution * computation_units_scale)
                     layer.backward_pass_units = int(layer.backward_pass_units * resolution * computation_units_scale)
                 sub_args["dag"].traverse_BFS(processing_function=scale_units)
+                # ------------------------------------------------------------------------------------------------------
                 # Create, run, and append simulation
                 simulation = GpuNetworkSim(**sub_args)
                 simulation.run(print_timeline=False, verbosity=0)
                 if return_simulation_objects:
                     simulations.append(simulation)
                 else:
-                    for key, value in simulation.summarize().items():
+                    sim_summary = simulation.summarize()
+                    # We add the network and gpu rates here as mentioned in the block above
+                    sim_summary.update(patch)
+                    for key, value in sim_summary.items():
                         if key in results:
                             results[key].append(value)
                         else:
