@@ -144,10 +144,12 @@ if __name__ == "__main__":
             sim_printer = SimPrinter(verbosity=0).print
             dag = HomogeneousLinearDAG(n_of_layers=6, fp_units=8, bp_units=8, comm_units=8)
 
-            gpu = ProcessingUnit(env=env, scheduler=FIFOScheduler(), rate=2, name="GPU", sim_printer=None)
+            gpu = ProcessingUnit(env=env, scheduler=FIFOScheduler(), rate=2, name="GPU", sim_printer=None,
+                                 store_timeline=True)
             gpu_process = env.process(gpu.main_process())
 
-            network = ProcessingUnit(env=env, scheduler=scheduler, rate=1, name="Network", sim_printer=None)
+            network = ProcessingUnit(env=env, scheduler=scheduler, rate=1, name="Network", sim_printer=None,
+                                     store_timeline=True)
             network_process = env.process(network.main_process())
 
             training_process = env.process(train(dag=dag, env=env, n_of_batches=10, batch_size=4,

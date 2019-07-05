@@ -312,7 +312,7 @@ if __name__ == "__main__":
     """
     An example usage
     """
-    dag = HomogeneousLinearDAG(5, 4)
+    dag = HomogeneousLinearDAG(5, 4, 4, 4)
     print(serialize_dag(dag))
     def p(node):
         print(node.extras['index'])

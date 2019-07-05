@@ -119,6 +119,7 @@ class ProcessingUnit:
                 while self.scheduler.count() > 0 and iteration_rate > 0:
                     job = self.scheduler.request()
                     to_process = min(iteration_rate, job.remaining_units)
+                    self.total_processed_units += to_process
                     iteration_rate -= to_process
                     job.remaining_units -= to_process
                     if job.remaining_units == 0:
@@ -128,19 +129,18 @@ class ProcessingUnit:
                         current_job = (job,to_process)
                 # Add timeline info
                 if self.store_timeline:
-                    time_line_list = list()
+                    timeline_list = list()
                     for job in will_finish_jobs:
-                        time_line_list.append(job)
+                        timeline_list.append(job)
                     if current_job is not None:
-                        time_line_list.append(current_job)
-                    if len(time_line_list) > 0:
-                        self.timeline[self.env.now] = time_line_list
+                        timeline_list.append(current_job)
+                    if len(timeline_list) > 0:
+                        self.timeline[self.env.now] = timeline_list
                 # Finalize finished jobs
                 # We do this before waiting to allow processes that are waiting for the job to be notified instantly
                 # in the next time step. Otherwise, the processes will always be delayed 1 time step
                 for job, processed_units in will_finish_jobs:
                     job.succeed()  # Fire job finished event
-                    self.total_processed_units += processed_units
                     if self.out_pipe is not None and job.result is not None:
                         self.out_pipe.queue(job.result)
                     self._print("Finished job {}".format(job), 2)
@@ -168,7 +168,7 @@ class ProcessingUnit:
         total_processed_units = 0
         duration = end - start + 1
         total_rate_units = self.rate * duration
-        if start is None and end is None and extras is None:
+        if not self.store_timeline or (start is None and end is None and extras is None):
             return self.total_processed_units / total_rate_units
         for t in self.timeline.keys():
             if t < start or t > end:
