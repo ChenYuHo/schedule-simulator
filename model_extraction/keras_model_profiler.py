@@ -419,10 +419,6 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
     return None, timings
 
 
-def timing_profile2():
-    pass
-
-
 def layer_input_output_profiling(model):
     layers = list()
     def process_layer(layer):
@@ -435,6 +431,10 @@ def layer_input_output_profiling(model):
         layers.append(layer_dict)
     traverse_keras_DFS(model=model, processing_function=process_layer)
     return layers
+
+
+def join_reports(list_of_files):
+    pass
 
 
 if __name__ == "__main__":

@@ -11,7 +11,8 @@ import numpy as np
 import itertools
 import time
 import json
-
+import argparse
+import datetime
 
 class GpuNetworkSim:
     def __init__(self, gpu_rate, network_rate, gpu_scheduler, network_scheduler, dag, batch_size, n_of_batches):
@@ -77,7 +78,7 @@ class GpuNetworkSim:
         # General statistics. Add whatever you need here
         summary["gpu_util"] = self.gpu.get_utilization()
         summary["net_util"] = self.network.get_utilization()
-        summary["time"] = self.env.now
+        summary["total_time_steps"] = self.env.now
         # Add options used
         summary.update(self.args)
         return summary
@@ -94,8 +95,8 @@ class GpuNetworkSim:
 
     @staticmethod
     def run_group(gpu_rate, network_rate, gpu_scheduler, network_scheduler, dag, batch_size, n_of_batches,
-                  clear_output=True, resolution=1e3, return_simulation_objects=False, number_of_processes=None,
-                  resolution_warning_threshold=0.1):
+                  clear_output=True, resolution=1e3, number_of_processes=None, save_timeline=False,
+                  output_file_name=None, saving_interval=5, resolution_warning_threshold=0.1):
         """
         All of the required arguments can be either a value or a list of values to try.
         The product of all options will be taken and then iterated to generate simulations with all possible
@@ -113,10 +114,6 @@ class GpuNetworkSim:
         integer. Therefore a resolution of 1e3 means a resolution of 1ms.
         Idea: I should make the function choose the optimal resolution based on the combination given so that it is not
         too large that the simulations take forever and not too small that they do not give accurate results.
-        :param return_simulation_objects: Setting this to true will return a list of simulations instead of the summary
-        file. Enabling this option may consume a huge amount of RAM since all of the simulations data is kept in
-        memory. Therefore only enable for a small number of simulations or for simulations that have units with
-        store_timeline option set to false.
         :param number_of_processes: The number of independent processes to spawn. If set to None then the total number
         of effective cores will be used. (Not implemented yet)
         Running all combinations of arguments can mean that hundreds of independent simulations
@@ -126,22 +123,17 @@ class GpuNetworkSim:
         For reference:
         https://askubuntu.com/questions/949437/python-interpreter-only-using-12-cpu-power
         https://docs.python.org/3.6/library/multiprocessing.html
+        :param saving_interval: Save report every x elapsed minutes.
         :return if return_simulation_objects is true then the function returns a list of all simulations run.
         Other wise a summary dict is returned
         {"resolution": resolution, "num_of_simulations": len(args_combinations), "args": [str(x) for x in args.items()],
         "results": results}
         """
-        # Define scaling functions based on the assumptions of the dag's units mentioned above
-        def scale_comp_units(value, gpu_rate):
-            """From nanoseconds to seconds to resolution units"""
-            return int(value * 1e-9 / gpu_rate * resolution)
-        def scale_comm_units(value, network_rate):
-            """From bytes to seconds to resolution units"""
-            return int(value * 1e-9 * 8 / network_rate * resolution)
-        begin_time = time.time()
-        constants = set()
+        if output_file_name is None:
+            output_file_name = "GpuNetworkSim_{}.simgroup.json".format(datetime.datetime.now().strftime("%m-%d-%H-%M"))
         args = dict(gpu_rate=gpu_rate, network_rate=network_rate, gpu_scheduler=gpu_scheduler,
                     network_scheduler=network_scheduler, dag=dag, batch_size=batch_size, n_of_batches=n_of_batches)
+        constants = set()
         for k, v in args.copy().items():
             try:
                 if len(v) == 1:
@@ -149,6 +141,14 @@ class GpuNetworkSim:
             except TypeError:
                 constants.add(k)
                 args[k] = [args[k]]
+        # Define scaling functions based on the assumptions of the dag's units mentioned above
+        def scale_comp_units(value, gpu_rate):
+            """From nanoseconds to seconds to resolution units"""
+            return int(value * 1e-9 / gpu_rate * resolution)
+
+        def scale_comm_units(value, network_rate):
+            """From bytes to seconds to resolution units"""
+            return int(value * 1e-9 * 8 / network_rate * resolution)
 
         # Check if a combination is compromised with the resolution
         total_zeros = dict(bp=0, fp=0, comm=0)
@@ -186,6 +186,7 @@ class GpuNetworkSim:
             exception_msg += "Consider increasing the resolution or changing the arguments.\n"
             exception_msg += "To suppress this warning and continue increase the resolution_warning_threshold."
             raise Exception(exception_msg)
+
         def print_header():
             print("Resolution: {}".format(resolution))
             print("Resolution inflicted zeros: fp_units: {:.2f}% bp_units: {:.2f}% comm_units: {:.2f}%".format(
@@ -199,9 +200,22 @@ class GpuNetworkSim:
         if not clear_output:
             print_header()
         args_combinations = list(itertools.product(*args.values()))
-        results = dict()
-        results["sim_index"] = list(range(len(args_combinations)))
-        simulations = list()
+        # Initialize summary dictionary
+        summary = dict(total_time_elapsed=0, total_num_of_simulations=len(args_combinations),
+                       finished_simulations=0, args=dict(), results=dict())
+        summary["args"]["resolution"] = resolution
+        for key, value in args.items():
+            new_value = list()
+            for v in value:
+                try:
+                    json.dumps(v)
+                except TypeError:
+                    v = str(v)
+                new_value.append(v)
+            summary["args"][key] = new_value
+        summary["results"]["sim_index"] = list(range(len(args_combinations)))
+        group_begin_time = time.time()
+        save_interval_begin_time = time.time()
         try:
             # Run a simulation for each argument combination
             for sim_i, args_combination in enumerate(args_combinations):
@@ -226,7 +240,6 @@ class GpuNetworkSim:
                 # ------------------------------------------------------------------------------------------------------
                 # (We apply rates here because if we apply them using the processing unit rate, the simulation will take
                 # a huge amount of time since we would be essentially running with a very high resolution)
-                patch = dict()
                 sub_args["dag"] = sub_args["dag"].copy()
                 def scale_units(layer):
                     layer.communication_units = scale_comm_units(layer.communication_units, sub_args["network_rate"])
@@ -235,6 +248,7 @@ class GpuNetworkSim:
                 sub_args["dag"].traverse_BFS(processing_function=scale_units)
                 # Since the rates won't be passed on to the simulation processing units and it won't appear in the
                 # summary, let us save it now and add it later to the summary below
+                patch = dict()
                 patch["comm_units_scaling_rate"] = sub_args["network_rate"]
                 patch["comp_units_scaling_rate"] = sub_args["gpu_rate"]
                 # Since we effectively applied the rate by scaling the units we can set the processing rate to 1
@@ -243,34 +257,31 @@ class GpuNetworkSim:
                 # ------------------------------------------------------------------------------------------------------
                 # Create, run, and append simulation
                 simulation = GpuNetworkSim(**sub_args)
+                sim_time_begin = time.time()
                 simulation.run(print_timeline=False, verbosity=0)
-                if return_simulation_objects:
-                    simulations.append(simulation)
-                else:
-                    sim_summary = simulation.summarize()
-                    # We add the network and gpu rates here as mentioned in the block above
-                    sim_summary.update(patch)
-                    for key, value in sim_summary.items():
-                        if key in results:
-                            results[key].append(value)
-                        else:
-                            results[key] = [value]
+                # Update summary --
+                sim_summary = simulation.summarize()
+                sim_summary["execution_duration"] = time.time() - sim_time_begin
+                # We add the network and gpu rates here as mentioned in the block above
+                sim_summary.update(patch)
+                for key, value in sim_summary.items():
+                    if key in summary["results"]:
+                        summary["results"][key].append(value)
+                    else:
+                        summary["results"][key] = [value]
+                summary["total_time_elapsed"] = time.time() - group_begin_time
+                summary["finished_simulations"] = sim_i + 1
+                if time.time() - save_interval_begin_time > saving_interval * 60:
+                    save_interval_begin_time = time.time()
+                    with open(output_file_name, "w") as output_file:
+                        json.dump(summary, output_file, indent=4)
         except KeyboardInterrupt:
             print("Simulations stopped by user. Returning gathered results..")
-        if return_simulation_objects:
-            return simulations
-        else:
-            for key, value in args.items():
-                new_value = list()
-                for v in value:
-                    try:
-                        json.dumps(v)
-                    except TypeError:
-                        v = str(v)
-                    new_value.append(v)
-                args[key] = new_value
-            return {"resolution": resolution,
-                    "num_of_simulations": len(args_combinations),
-                    "time_elapsed": time.time() - begin_time,
-                    "args": args,
-                    "results": results}
+        with open(output_file_name, "w") as output_file:
+            json.dump(summary, output_file, indent=4)
+        return summary
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.parse_args()

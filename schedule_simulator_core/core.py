@@ -69,13 +69,21 @@ class ProcessingUnit:
     Needs a scheduler to operate.
     """
     def __init__(self, env: simpy.Environment, scheduler, rate=1, name=None, out_pipe=None, sim_printer=None,
-                 store_timeline=True):
+                 timeline_format="stepwise"):
         """
         :param env: The simpy environment used in this simulation.
         :param rate: The rate at which the unit consumes job units
         :param name: An arbitrary name for this unit. (Maybe removed later and replaced by an extras field)
         :param out_pipe: An optional output queue. Used for pipelining units.
         :param sim_printer: The print function that will be used to print the output of this unit
+        :param timeline_format:
+        "stepwise": dict(key: time step ,value: list of (job, processed units) tuples that were done in that time step)
+        It is a very inefficient format for simulations with a very large number of steps.
+        "chrome": This format uses the chrome trace format which can be found here
+        https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/edit?pli=1
+        It is much more memory efficient than stepwise & it can be visualized using the chrome://tracing tool.
+        None: If the format is set to None then no timeline is kept. Can be useful when only the final results of the
+        simulation are relevant.
         """
         self.name = name
         self.rate = rate
@@ -84,12 +92,10 @@ class ProcessingUnit:
         self.out_pipe = out_pipe
         self.processing = False
         self._sim_printer = sim_printer
-        # The utilization structure:
-        # Key: time step
-        # Value: list of (job, processed units) tuples that were done in that time step
-        self.timeline = dict()
+        self.timeline_format = timeline_format
+        if self.timeline_format is not None:
+            self.timeline = dict()
         self.total_processed_units = 0
-        self.store_timeline = store_timeline
 
     def queue(self, job):
         """
@@ -128,7 +134,7 @@ class ProcessingUnit:
                     else:
                         current_job = (job,to_process)
                 # Add timeline info
-                if self.store_timeline:
+                if self.timeline_format == "stepwise":
                     timeline_list = list()
                     for job in will_finish_jobs:
                         timeline_list.append(job)
@@ -136,6 +142,8 @@ class ProcessingUnit:
                         timeline_list.append(current_job)
                     if len(timeline_list) > 0:
                         self.timeline[self.env.now] = timeline_list
+                elif self.timeline_format == "chrome":
+                    pass
                 # Finalize finished jobs
                 # We do this before waiting to allow processes that are waiting for the job to be notified instantly
                 # in the next time step. Otherwise, the processes will always be delayed 1 time step
