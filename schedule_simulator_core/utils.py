@@ -220,6 +220,8 @@ def generate_chrome_trace_timeline(processing_unit, group_labels=None, row_label
     A special 'unit_name' key can be passed to group based on the processing_unit
     If an empty list is passed or None, then one row is used for the all events
     :param cell_labels: A combination of the extras keys to use in naming the cells.
+    :param utilization_bins: The number of bins of the utilization histogram. Set to None to disable.
+    Setting this to a very high number can be very slow.
     :return: A json formatted string in the chrome trace format
     """
     if not processing_unit.timeline_format == "jobwise":
@@ -272,43 +274,45 @@ def generate_chrome_trace_timeline(processing_unit, group_labels=None, row_label
             event_dict = dict(**event, name=job_name, ph="X", pid=pid, tid=tid, args=job.extras)
             events.append(event_dict)
     # Add utilization info
-    util_info = list()
     total_utilization = processing_unit.get_utilization()
-    bins = list(range(start, end, int((end - start) / utilization_bins)))
-    if (end - start) % utilization_bins == 0:
-        bins.append(end)
-    else:
-        bins[-1] = end
-    bins.append(end)  # Append end again just to insert a 0 utilization at the end of the report
-    for i in range(len(bins)-1):
-        util = processing_unit.get_utilization(start=bins[i], end=bins[i+1])
-        counter_dict = dict(pid=final_pid, name="{:.2f}%".format(total_utilization*100), ph="C", ts=bins[i],
-                            args={"util": util})
-        util_info.append(counter_dict)
-    metadata.append(dict(pid=final_pid, name="process_name", ph="M",
-                         args=dict(name="{}_utilization".format(processing_unit.name))))
+    if utilization_bins is not None:
+        util_info = list()
+        bins = list(range(start, end, int((end - start) / utilization_bins)))
+        if (end - start) % utilization_bins == 0:
+            bins.append(end)
+        else:
+            bins[-1] = end
+        bins.append(end)  # Append end again just to insert a 0 utilization at the end of the report
+        for i in range(len(bins)-1):
+            util = processing_unit.get_utilization(start=bins[i], end=bins[i+1])
+            counter_dict = dict(pid=final_pid, name="{:.2f}%".format(total_utilization*100), ph="C", ts=bins[i],
+                                args={"util": util})
+            util_info.append(counter_dict)
+        metadata.append(dict(pid=final_pid, name="process_name", ph="M",
+                             args=dict(name="{}_utilization".format(processing_unit.name))))
+        events.extend(util_info)
     # Concatenate and format final trace
     events.extend(metadata)
-    events.extend(util_info)
     chrome_trace = dict(traceEvents=events, final_pid=final_pid, final_tid=final_tid)
+    chrome_trace["{}.{}".format(processing_unit.name, "util")] = total_utilization
     return json.dumps(chrome_trace, indent=4)
 
 
 def join_chrome_traces(traces_list, sort_process_ids=True):
     base_trace = json.loads(traces_list[0])
-    final_pid = base_trace["final_pid"]
-    final_tid = base_trace["final_tid"]
     for trace in traces_list[1:]:
         trace = json.loads(trace)
         for event in trace["traceEvents"]:
             if "pid" in event:
-                event["pid"] += final_pid + 1
+                event["pid"] += base_trace["final_pid"] + 1
             if "tid" in event:
-                event["tid"] += final_tid + 1
+                event["tid"] += base_trace["final_tid"] + 1
         base_trace["traceEvents"].extend(trace["traceEvents"])
-        final_pid += trace["final_pid"] + 1
-        final_tid += trace["final_tid"] + 1
+        base_trace["final_pid"] += trace["final_pid"] + 1
+        base_trace["final_tid"] += trace["final_tid"] + 1
+        for key in trace.keys() - {"final_pid", "final_tid", "traceEvents"}:
+            base_trace[key] = trace[key]
     if sort_process_ids:
-        for i in range(final_pid+1):
+        for i in range(base_trace["final_pid"]+1):
             base_trace["traceEvents"].append(dict(ph="M", pid=i, name="process_sort_index", args=dict(sort_index=i)))
     return json.dumps(base_trace, indent=4)
