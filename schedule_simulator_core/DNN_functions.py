@@ -111,6 +111,7 @@ def backward_pass(dag: DAG, env: simpy.Environment, computation_queue, communica
         # Create job
         comp_extras = {**layer.extras, **job_extras}  # add layer extras to custom extras passed to the function
         comm_extras = comp_extras.copy()
+        del comm_extras["sample"]
         comp_extras["type"] = "backward_pass"
         comp_job = Job(env, layer.backward_pass_units, source=layer, **comp_extras)
         if send_gradients:
@@ -135,39 +136,39 @@ if __name__ == "__main__":
     from schedule_simulator_core.DAGs import HomogeneousLinearDAG
     from schedule_simulator_core.core import ProcessingUnit
     from schedule_simulator_core.schedulers import FIFOScheduler, TopologicalPriorityScheduler
-    from schedule_simulator_core.utils import SimPrinter, generate_ascii_timeline
+    from schedule_simulator_core.utils import SimPrinter, generate_chrome_trace_timeline, join_chrome_traces
     schedulers = [FIFOScheduler(),TopologicalPriorityScheduler(preemptive=False),
                   TopologicalPriorityScheduler(preemptive=True)]
-    with open("DNN_functions_example_report.txt", "w") as file:
-        for scheduler in schedulers:
-            env = simpy.Environment()
-            sim_printer = SimPrinter(verbosity=0).print
-            dag = HomogeneousLinearDAG(n_of_layers=6, fp_units=8, bp_units=8, comm_units=8)
+    units = list()
+    for scheduler in schedulers:
+        env = simpy.Environment()
+        sim_printer = SimPrinter(verbosity=0).print
+        dag = HomogeneousLinearDAG(n_of_layers=6, fp_units=8, bp_units=8, comm_units=8)
 
-            gpu = ProcessingUnit(env=env, scheduler=FIFOScheduler(), rate=2, name="GPU", sim_printer=None,
-                                 store_timeline=True)
-            gpu_process = env.process(gpu.main_process())
+        gpu = ProcessingUnit(env=env, scheduler=FIFOScheduler(), rate=2, name="GPU_{}".format(scheduler),
+                             sim_printer=None, timeline_format="jobwise")
+        gpu_process = env.process(gpu.main_process())
 
-            network = ProcessingUnit(env=env, scheduler=scheduler, rate=1, name="Network", sim_printer=None,
-                                     store_timeline=True)
-            network_process = env.process(network.main_process())
+        network = ProcessingUnit(env=env, scheduler=scheduler, rate=1, name="Network_{}".format(scheduler),
+                                 sim_printer=None, timeline_format="jobwise")
+        network_process = env.process(network.main_process())
 
-            training_process = env.process(train(dag=dag, env=env, n_of_batches=10, batch_size=4,
-                                                 computation_queue=gpu, communication_queue=network))
+        training_process = env.process(train(dag=dag, env=env, n_of_batches=10, batch_size=4,
+                                             computation_queue=gpu, communication_queue=network))
 
-            def close():
-                yield training_process
-                print("Finishing simulation..")
-                gpu_process.interrupt()
-                network_process.interrupt()
-            closing_process = env.process(close())
-            print("Starting simulation..")
-            env.run()
-            units = [gpu, network]
-            for unit in units:
-                report = generate_ascii_timeline(unit, time_grouping=1, row_labels=["type"], cell_labels=["index"],
-                                                 group_name_width=30, cell_width=4)
-                print(report)
-                print("")
-                file.write(report)
-                file.write("\n\n\n")
+        def close():
+            yield training_process
+            print("Finishing simulation..")
+            gpu_process.interrupt()
+            network_process.interrupt()
+        closing_process = env.process(close())
+        print("Starting simulation..")
+        env.run()
+        units.extend([gpu, network])
+    traces = list()
+    for unit in units:
+        traces.append(generate_chrome_trace_timeline(unit, group_labels=["unit_name"], row_labels=["type"],
+                                                     cell_labels=["index"], utilization_bins=500))
+    final_trace = join_chrome_traces(traces)
+    with open("DNN_functions_example_trace.json", "w") as file:
+        file.write(final_trace)

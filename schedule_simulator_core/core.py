@@ -58,8 +58,15 @@ class Job(simpy.Event):
     def __str__(self):
         s = "Units: {:2}/{:<2} ".format(self.units - self.remaining_units, self.units)
         for item in self.extras.items():
-            s += "{}: {} ".format(item[0],item[1])
+            s += "{}: {} ".format(item[0], item[1])
         return s
+
+    def match_extras(self, extras):
+        if extras is not None:
+            for key in extras.keys():
+                if key not in self.extras or self.extras[key] != extras[key]:
+                    return False
+        return True
 
 
 class ProcessingUnit:
@@ -69,7 +76,7 @@ class ProcessingUnit:
     Needs a scheduler to operate.
     """
     def __init__(self, env: simpy.Environment, scheduler, rate=1, name=None, out_pipe=None, sim_printer=None,
-                 timeline_format="stepwise"):
+                 timeline_format="jobwise"):
         """
         :param env: The simpy environment used in this simulation.
         :param rate: The rate at which the unit consumes job units
@@ -78,10 +85,11 @@ class ProcessingUnit:
         :param sim_printer: The print function that will be used to print the output of this unit
         :param timeline_format:
         "stepwise": dict(key: time step ,value: list of (job, processed units) tuples that were done in that time step)
-        It is a very inefficient format for simulations with a very large number of steps.
-        "chrome": This format uses the chrome trace format which can be found here
-        https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/edit?pli=1
-        It is much more memory efficient than stepwise & it can be visualized using the chrome://tracing tool.
+        It is a very inefficient format for simulations with a very large number of steps. This format can be used to
+        generate an ASCII timeline table using the generate_ascii_timeline method in utils
+        "jobwise": dict(key: job, value: list of {"ts": starting time step, "dur": duration, "pu": processed_units}
+        This format is much more memory efficient but slightly less cpu efficient. It can be used to generate a chrome
+        trace using the generate_chrome_trace_timeline method in utils.
         None: If the format is set to None then no timeline is kept. Can be useful when only the final results of the
         simulation are relevant.
         """
@@ -132,18 +140,31 @@ class ProcessingUnit:
                         will_finish_jobs.append((job, to_process))
                         self.scheduler.remove(job)
                     else:
-                        current_job = (job,to_process)
+                        current_job = (job, to_process)
                 # Add timeline info
-                if self.timeline_format == "stepwise":
-                    timeline_list = list()
-                    for job in will_finish_jobs:
-                        timeline_list.append(job)
+                if self.timeline_format is not None:
+                    timeline_list = will_finish_jobs.copy()
                     if current_job is not None:
                         timeline_list.append(current_job)
-                    if len(timeline_list) > 0:
-                        self.timeline[self.env.now] = timeline_list
-                elif self.timeline_format == "chrome":
-                    pass
+                    if self.timeline_format == "stepwise":
+                        if len(timeline_list) > 0:
+                            self.timeline[self.env.now] = timeline_list
+                    elif self.timeline_format == "jobwise":
+                        for job, processed_units in timeline_list:
+                            if job in self.timeline:
+                                found_event = None
+                                for event in self.timeline[job]:
+                                    # Should we extend this event?
+                                    if event["ts"] + event["dur"] == self.env.now:
+                                        found_event = event
+                                        break
+                                if found_event is None:
+                                    self.timeline[job].append(dict(ts=self.env.now, dur=1, pu=processed_units))
+                                else:
+                                    found_event["dur"] += 1
+                                    found_event["pu"] += processed_units
+                            else:
+                                self.timeline[job] = [dict(ts=self.env.now, dur=1, pu=processed_units)]
                 # Finalize finished jobs
                 # We do this before waiting to allow processes that are waiting for the job to be notified instantly
                 # in the next time step. Otherwise, the processes will always be delayed 1 time step
@@ -176,20 +197,37 @@ class ProcessingUnit:
         total_processed_units = 0
         duration = end - start + 1
         total_rate_units = self.rate * duration
-        if not self.store_timeline or (start is None and end is None and extras is None):
-            return self.total_processed_units / total_rate_units
-        for t in self.timeline.keys():
-            if t < start or t > end:
-                continue
-            for job, processed_units in self.timeline[t]:
-                include = True
-                if extras is not None:
-                    for key in extras.keys():
-                        if key not in job.extras or job.extras[key] != extras[key]:
-                            include = False
-                            break
-                if include:
-                    total_processed_units += processed_units
+        if self.timeline_format is None:
+            if start is None and end is None and extras is None:
+                return self.total_processed_units / total_rate_units
+            else:
+                raise Exception("Cannot pass start, end, or extras options with a unit that stores no timeline.")
+        if self.timeline_format == "stepwise":
+            for t in self.timeline.keys():
+                if t < start or t > end:
+                    continue
+                for job, processed_units in self.timeline[t]:
+                    if job.match_extras(extras):
+                        total_processed_units += processed_units
+        elif self.timeline_format == "jobwise":
+            """
+            Since jobwise format does not keep per step information like the stepwise format. We can only average the
+            processed units over the duration of the job event to get the per time step units. This is a good
+            approximation however it is not fully accurate.
+            """
+            for job, events in self.timeline.items():
+                if not job.match_extras(extras):
+                    continue
+                for event in events:
+                    # Find overlapping interval
+                    os = max(start, event["ts"])
+                    oe = min(end, event["ts"] + event["dur"])
+                    if os >= oe:  # No overlap
+                        continue
+                    total_processed_units += event["pu"]/event["dur"] * (oe-os)
+
+        else:
+            raise Exception("Timeline format not supported")
         return total_processed_units / total_rate_units
 
     def _print(self, msg, verbosity):
@@ -204,11 +242,11 @@ if __name__ == '__main__':
     """
     An example usage of the processing unit
     """
-    from schedule_simulator_core.utils import SimPrinter, generate_ascii_timeline
+    from schedule_simulator_core.utils import SimPrinter, generate_ascii_timeline, generate_chrome_trace_timeline
     import random
     env = simpy.Environment()
-    gpu = ProcessingUnit(env, schedulers.FIFOScheduler(),
-                         rate=1, name="GPU:1", sim_printer=SimPrinter(verbosity=0).print)
+    gpu = ProcessingUnit(env, schedulers.FIFOScheduler(), timeline_format="stepwise",
+                         rate=2, name="GPU:1", sim_printer=SimPrinter(verbosity=0).print)
     gpu_process = env.process(gpu.main_process())
     for i in range(10):
         job = Job(env, units=random.randint(1, 10), custom_attr_1=i, custom_attr_2=i % 3)

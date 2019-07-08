@@ -1,4 +1,6 @@
 import math
+import itertools
+import json
 
 
 class SimPrinter:
@@ -80,9 +82,9 @@ def generate_ascii_timeline(processing_unit, start=0, end=None,
     :param cell_width: Specifies the width of each cell in the table
     :param group_name_width: Specifies the width of the first column in the table which contains the group name.
     """
-    if not processing_unit.store_timeline:
-        raise Exception("The processing unit given did not keep a timeline. Consider enabling that option and trying"
-                        "again.")
+    if not processing_unit.timeline_format == "stepwise":
+        raise Exception("The ASCII timeline generation is currently only enabled for units which have the 'stepwise' "
+                        "timeline format. Consider changing the format and trying again.")
     report = []
     duration = (processing_unit.env.now if end is None else end) - start
     if not time_grouping:
@@ -201,5 +203,112 @@ def generate_ascii_timeline(processing_unit, start=0, end=None,
     return '\n'.join(report)
 
 
-def generate_chrome_trace_timeline():
-    pass
+def generate_chrome_trace_timeline(processing_unit, group_labels=None, row_labels=None, cell_labels=None,
+                                   utilization_bins=10):
+    """
+    Unit must have kept its timeline using the jobwise format
+    The generated chrome trace format is documented here
+    https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/edit?pli=1
+    It can be visualized using the chrome://tracing tool.
+    It is the users responsibility to choose row_labels/group_labels so that no overlapping in the cells occurs.
+    Unlike the ASCII timeline, different jobs cannot share or be grouped into one cell.
+    :param processing_unit: The unit to generate the trace for.
+    :param group_labels: Group rows using none or a combination of the extras keys.
+    Special 'unit_name' key can be passed to group based on the processing_unit
+    If an empty list is passed or None, then one group is used for the all events
+    :param row_labels: Group rows using none or a combination of the extras keys.
+    A special 'unit_name' key can be passed to group based on the processing_unit
+    If an empty list is passed or None, then one row is used for the all events
+    :param cell_labels: A combination of the extras keys to use in naming the cells.
+    :return: A json formatted string in the chrome trace format
+    """
+    if not processing_unit.timeline_format == "jobwise":
+        raise Exception("The Chrome trace generation is currently only enabled for units which have the 'jobwise' "
+                        "timeline format. Consider changing the format and trying again.")
+    start = 0
+    end = processing_unit.env.now
+    # Create groups
+    def get_job_labels(job, labels):
+        if labels is None or len(labels) == 0:
+            return tuple()
+        extras = job.extras.copy()
+        extras["unit_name"] = processing_unit.name
+        group = list()
+        for label in labels:
+            if label in extras:
+                group.append(extras[label])
+            else:
+                group.append(None)
+        return tuple(group)
+    grouping_args = {"group_labels": group_labels, "row_labels": row_labels}
+    groupings = {"group_labels": set(), "row_labels": set()}
+    for key in groupings:
+        for job in processing_unit.timeline:
+            groupings[key].add(get_job_labels(job, grouping_args[key]))
+    # Add group metadata mappings
+    metadata = list()
+    super_group_mapping = dict()
+    pid = 0
+    for group in groupings["group_labels"]:
+        group_name = ",".join([str(x) for x in group])
+        metadata.append(dict(ph="M", name="process_name", pid=pid, args=dict(name=group_name)))
+        tid = 0
+        for row in groupings["row_labels"]:
+            super_group_mapping[(group, row)] = (pid, tid)
+            row_name = ",".join([str(x) for x in row])
+            metadata.append(dict(ph="M", name="thread_name", pid=pid, tid=tid, args=dict(name=row_name)))
+            tid += 1
+        pid += 1
+    final_pid = pid
+    final_tid = tid-1
+    # Add events
+    events = list()
+    for job in processing_unit.timeline:
+        job_grouping = {"group_labels": get_job_labels(job, grouping_args["group_labels"]),
+                        "row_labels": get_job_labels(job, grouping_args["row_labels"])}
+        pid, tid = super_group_mapping[(job_grouping["group_labels"], job_grouping["row_labels"])]
+        job_name = ",".join([str(x) for x in get_job_labels(job, cell_labels)])
+        for event in processing_unit.timeline[job]:
+            event_dict = dict(**event, name=job_name, ph="X", pid=pid, tid=tid, args=job.extras)
+            events.append(event_dict)
+    # Add utilization info
+    util_info = list()
+    total_utilization = processing_unit.get_utilization()
+    bins = list(range(start, end, int((end - start) / utilization_bins)))
+    if (end - start) % utilization_bins == 0:
+        bins.append(end)
+    else:
+        bins[-1] = end
+    bins.append(end)  # Append end again just to insert a 0 utilization at the end of the report
+    for i in range(len(bins)-1):
+        util = processing_unit.get_utilization(start=bins[i], end=bins[i+1])
+        counter_dict = dict(pid=final_pid, name="{:.2f}%".format(total_utilization*100), ph="C", ts=bins[i],
+                            args={"util": util})
+        util_info.append(counter_dict)
+    metadata.append(dict(pid=final_pid, name="process_name", ph="M",
+                         args=dict(name="{}_utilization".format(processing_unit.name))))
+    # Concatenate and format final trace
+    events.extend(metadata)
+    events.extend(util_info)
+    chrome_trace = dict(traceEvents=events, final_pid=final_pid, final_tid=final_tid)
+    return json.dumps(chrome_trace, indent=4)
+
+
+def join_chrome_traces(traces_list, sort_process_ids=True):
+    base_trace = json.loads(traces_list[0])
+    final_pid = base_trace["final_pid"]
+    final_tid = base_trace["final_tid"]
+    for trace in traces_list[1:]:
+        trace = json.loads(trace)
+        for event in trace["traceEvents"]:
+            if "pid" in event:
+                event["pid"] += final_pid + 1
+            if "tid" in event:
+                event["tid"] += final_tid + 1
+        base_trace["traceEvents"].extend(trace["traceEvents"])
+        final_pid += trace["final_pid"] + 1
+        final_tid += trace["final_tid"] + 1
+    if sort_process_ids:
+        for i in range(final_pid+1):
+            base_trace["traceEvents"].append(dict(ph="M", pid=i, name="process_sort_index", args=dict(sort_index=i)))
+    return json.dumps(base_trace, indent=4)
