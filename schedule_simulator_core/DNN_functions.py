@@ -23,21 +23,18 @@ def train(dag: DAG, env: simpy.Environment, n_of_batches, batch_size, computatio
     last_forward_pass_output = None
     last_backward_pass_output = None
     for batch in range(n_of_batches):
-        for sample in range(batch_size):
-            extras = job_extras.copy()
-            extras['batch'] = batch
-            extras['sample'] = sample
-            last_forward_pass_output = yield env.process(forward_pass(dag=dag, env=env,
-                                                                      computation_queue=computation_queue,
-                                                                      communication_queue=communication_queue,
-                                                                      dependent_layer_jobs=last_backward_pass_output,
-                                                                      **extras))
-            send_gradients = sample == batch_size-1  # Only send gradients on the last backward pass in the batch
-            last_backward_pass_output = yield env.process(backward_pass(dag=dag, env=env,
-                                                                        computation_queue=computation_queue,
-                                                                        communication_queue=communication_queue,
-                                                                        dependent_layer_jobs=last_forward_pass_output,
-                                                                        send_gradients=send_gradients, **extras))
+        extras = job_extras.copy()
+        extras['batch'] = batch
+        last_forward_pass_output = yield env.process(forward_pass(dag=dag, env=env, batch_size=batch_size,
+                                                                  computation_queue=computation_queue,
+                                                                  communication_queue=communication_queue,
+                                                                  dependent_layer_jobs=last_backward_pass_output,
+                                                                  **extras))
+        last_backward_pass_output = yield env.process(backward_pass(dag=dag, env=env, batch_size=batch_size,
+                                                                    computation_queue=computation_queue,
+                                                                    communication_queue=communication_queue,
+                                                                    dependent_layer_jobs=last_forward_pass_output,
+                                                                    send_gradients=True, **extras))
     # Finish any impending processes
     for process in last_backward_pass_output.values():
         yield process
@@ -45,7 +42,7 @@ def train(dag: DAG, env: simpy.Environment, n_of_batches, batch_size, computatio
         yield process
 
 
-def forward_pass(dag: DAG, env: simpy.Environment, computation_queue, communication_queue, dependent_layer_jobs=None,
+def forward_pass(dag: DAG, env: simpy.Environment, batch_size, computation_queue, communication_queue, dependent_layer_jobs=None,
                  **job_extras):
     """
     :param dag: The architecture to use
@@ -68,7 +65,7 @@ def forward_pass(dag: DAG, env: simpy.Environment, computation_queue, communicat
         # Create job
         extras = {**layer.extras, **job_extras}  # add layer extras to custom extras passed to the function
         extras["type"] = "forward_pass"
-        job = Job(env, layer.forward_pass_units, source=layer, **extras)
+        job = Job(env, layer.forward_pass_units*batch_size, source=layer, **extras)
         forward_pass_output[layer] = job
         # Queue job
         computation_queue.queue(job)
@@ -84,7 +81,7 @@ def forward_pass(dag: DAG, env: simpy.Environment, computation_queue, communicat
     return forward_pass_output
 
 
-def backward_pass(dag: DAG, env: simpy.Environment, computation_queue, communication_queue, dependent_layer_jobs=None,
+def backward_pass(dag: DAG, env: simpy.Environment, batch_size, computation_queue, communication_queue, dependent_layer_jobs=None,
                   send_gradients=False, **job_extras):
     """
     :param dag: The architecture to use
@@ -111,9 +108,8 @@ def backward_pass(dag: DAG, env: simpy.Environment, computation_queue, communica
         # Create job
         comp_extras = {**layer.extras, **job_extras}  # add layer extras to custom extras passed to the function
         comm_extras = comp_extras.copy()
-        del comm_extras["sample"]
         comp_extras["type"] = "backward_pass"
-        comp_job = Job(env, layer.backward_pass_units, source=layer, **comp_extras)
+        comp_job = Job(env, layer.backward_pass_units*batch_size, source=layer, **comp_extras)
         if send_gradients:
             comm_extras["type"] = "parameter_communication"
             comm_job = Job(env, layer.communication_units, source=layer, **comm_extras)
@@ -145,7 +141,7 @@ if __name__ == "__main__":
         sim_printer = SimPrinter(verbosity=0).print
         dag = HomogeneousLinearDAG(n_of_layers=6, fp_units=8, bp_units=8, comm_units=8)
 
-        gpu = ProcessingUnit(env=env, scheduler=FIFOScheduler(), rate=2, name="GPU_{}".format(scheduler),
+        gpu = ProcessingUnit(env=env, scheduler=FIFOScheduler(), rate=4, name="GPU_{}".format(scheduler),
                              sim_printer=None, timeline_format="jobwise")
         gpu_process = env.process(gpu.main_process())
 
@@ -153,7 +149,7 @@ if __name__ == "__main__":
                                  sim_printer=None, timeline_format="jobwise")
         network_process = env.process(network.main_process())
 
-        training_process = env.process(train(dag=dag, env=env, n_of_batches=10, batch_size=4,
+        training_process = env.process(train(dag=dag, env=env, n_of_batches=10, batch_size=2,
                                              computation_queue=gpu, communication_queue=network))
 
         def close():
