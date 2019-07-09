@@ -229,8 +229,7 @@ class RunCost(tf.keras.callbacks.LambdaCallback):
 
 
 def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8, trials=1,
-                   log_stream=None, device="gpu", use_tracer=True, skip_untrainable_layers=False,
-                   suppress_tensorflow_messages=True):
+                   verbosity=1, device="gpu", use_tracer=True, skip_untrainable_layers=False):
     """
     The function takes a model and profiles the cost that each layer contributes to the total training time.
     The function's method is to build the model layer by layer and observe the cost changes each layer introduces. The
@@ -247,8 +246,11 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
     :param device: cpu or gpu ?
     :param loss: The loss function for the model
     :param optimizer: The optimizer used for the model
-    :param log_stream: A stream to direct the output of the profiling. Useful to keep track of the current step.
-    If none then no logging happens
+    :param verbosity:
+    0: Suppress all output
+    1: Show profiler output
+    2: Show tensorflow log messages
+    3: Show tensorflow function progress
     :param use_tracer: Whether to use the tensorflow tracer to get the time instead of the time module. Can be more
     accurate to use with gpus however it only stores the information of the last batch.
     :param skip_untrainable_layers: Whether to skip profiling layers that have no trainable parameters
@@ -262,24 +264,25 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
     from tensorflow.python.keras.layers.merge import _Merge
     from tensorflow.python.keras.models import Model
     # Disable annoying tensorflow messages
-    if suppress_tensorflow_messages:
+    if verbosity < 2:
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = "999"
         # Supressing deprectation messages is not working
         import tensorflow.python.util.deprecation as deprecation
         deprecation._PRINT_DEPRECATION_WARNINGS = False
+    def log_msg(msg):
+        if verbosity >= 1:
+            print(msg)
     # Check device
     if device == "cpu":
         # This seems to be the most effective method. Other methods include using the tf.device("/cpu:0")
         # context manager or setting ConfigProto(device_count={'GPU':0}. But both these methods use the GPU a little bit
         # Update: This does not work for eager execution
         os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
-        if log_stream:
-            log_stream.write("Running on CPU\n")
+        log_msg("Running on CPU")
     elif device == "gpu":
         if not tf.test.is_gpu_available():
             raise Exception("No GPUs are available!. Change --device parameter to use cpu.")
-        if log_stream:
-            log_stream.write("Running on GPU\n")
+        log_msg("Running on GPU")
     # Produce layer topological order
     topological_layer_order = list()
     traverse_keras_DFS(input_model, topological_layer_order.append, order="post-order", top_to_bottom=True)
@@ -310,21 +313,18 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
             else:
                 timings[original_layer.name][cost["name"]] = list()
     # Build and profile model layer by layer using the topological order
-    if log_stream:
-        log_stream.write("Start profiling...\n")
+    log_msg("Start profiling...")
     try:
         for trial in range(trials):
             session_context = contextlib.nullcontext() if tf.executing_eagerly() else tf.Session()
             device_context = tf.device("/{}:0".format(device))
             if not tf.executing_eagerly():
                 tf.reset_default_graph()
-            if log_stream:
-                log_stream.write("Trial: {}\n".format(trial))
+            log_msg("Trial: {}".format(trial))
             input_layers = list()
             added_layers = dict()
             with device_context, session_context:
-                if log_stream:
-                    log_stream.write("Executing eagerly: {}\n".format(tf.executing_eagerly()))
+                log_msg("Executing eagerly: {}".format(tf.executing_eagerly()))
                 for original_layer in topological_layer_order:
                     # Add new layer to cloned network ------------------------------------------------------------------
                     # Get the layer's parents to check what the cloned layer needs to connect to
@@ -359,8 +359,7 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
                     added_layers[current_layer.name] = current_layer
                     # Should we go on with profiling ?
                     if skip_untrainable_layers and current_layer.count_params() == 0:
-                        if log_stream:
-                            log_stream.write("Skip profiling of {}\n".format(current_layer.name))
+                        log_msg("Skip profiling of {}".format(current_layer.name))
                         continue
                     # Find output layers. Output layers need to be updated with every iteration since we are building
                     # the model from a top to bottom fashion.
@@ -380,7 +379,7 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
                     else:
                         cloned_model.compile(optimizer=optimizer, loss=loss)
                     # Start profiling ----------------------------------------------------------------------------------
-                    print_format = "[{}:{:4}/{:<4}] Layer: {:16} {{key:30}}: {{value}}\n".format(
+                    print_format = "[{}:{:4}/{:<4}] Layer: {:16} {{key:30}}: {{value}}".format(
                         input_model.name, len(cloned_model.layers), len(input_model.layers), current_layer.name)
                     # Generate input output data
                     t = time.time_ns()
@@ -389,8 +388,7 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
                     if tf.executing_eagerly():
                         # print(input_data[0].device)
                         timings[current_layer.name]["data_generation_cost"].append(tc)
-                        if log_stream:
-                            log_stream.write(print_format.format(key="data_generation_cost", value=tc))
+                        log_msg(print_format.format(key="data_generation_cost", value=tc))
                     for i, cost in enumerate(accumulative_costs):
                         name = cost["name"]
                         func = getattr(cloned_model, cost["func"])
@@ -404,9 +402,8 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
                         rmd = run_metadata if use_tracer else None
                         run_cost = RunCost(run_metadata=rmd)
                         func(**args, **global_func_args, callbacks=[run_cost])
-                        if log_stream:
-                            v = run_cost.durations if not use_tracer else run_cost.durations, run_cost.total_time_costs
-                            log_stream.write(print_format.format(key=name, value=v))
+                        v = run_cost.durations if not use_tracer else run_cost.durations, run_cost.total_time_costs
+                        log_msg(print_format.format(key=name, value=v))
                         if use_tracer:
                             timings[current_layer.name][name]["durations"].extend(run_cost.durations)
                             timings[current_layer.name][name]["total_time_costs"].extend(run_cost.total_time_costs)
@@ -421,6 +418,7 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
 
 def layer_input_output_profiling(model):
     layers = list()
+
     def process_layer(layer):
         layer_dict = dict()
         layer_dict["name"] = layer.name
@@ -462,22 +460,14 @@ if __name__ == "__main__":
                         help="Whether or not to use the tensorflow tracer to calculate the time costs.")
     parser.add_argument("--out",
                         help="Stream to write the timings to in json format if any. File | stdout | stderr | suppress")
-    parser.add_argument("--log",
-                        help="Stream to write status messages to if any. File | stdout | stderr | suppress")
+    parser.add_argument("-v", "--verbosity", type=int, default=1,
+                        help="0: Suppress all output\n"
+                             "1: Show profiler output\n"
+                             "2: Show tensorflow log messages\n"
+                             "3: Show tensorflow function progress")
     args = parser.parse_args()
     if args.eager:
         tf.enable_eager_execution()
-    if args.log is not None:
-        if args.log == "stdout":
-            log = sys.__stdout__
-        elif args.log == "stderr":
-            log = sys.__stderr__
-        elif args.log == "suppress":
-            log = False
-        else:
-            log = open(args.log, "w")
-    else:
-        log = sys.__stdout__
     try:
         model_func_name = "{}_model".format(args.model)
         if model_func_name in dir(sys.modules[__name__]):
@@ -488,24 +478,19 @@ if __name__ == "__main__":
             model = getattr(module, args.model)
             model = model(weights=None, include_top=True)
     except AttributeError:
-        msg = "'{}' is not a valid dummy or keras model.\n".format(args.model)
-        if log:
-            log.write(msg)
-            sys.exit()
-        else:
-            print(msg)
-    exception, timings = timing_profile(input_model=model, batch_size=args.batch_size,
-                                        num_of_batches=args.num_of_batches, loss=args.loss, optimizer=args.optimizer,
-                                        device=args.device, log_stream=log, use_tracer=not args.use_python_timing,
-                                        trials=args.trials, skip_untrainable_layers=args.skip)
+        raise Exception("'{}' is not a valid dummy or keras model.\n".format(args.model))
+    exception, timings = model_reconstruct_timing_profile(input_model=model, batch_size=args.batch_size,
+                                                          num_of_batches=args.num_of_batches, loss=args.loss,
+                                                          optimizer=args.optimizer, device=args.device,
+                                                          verbosity=args.verbosity, trials=args.trials,
+                                                          use_tracer=not args.use_python_timing,
+                                                          skip_untrainable_layers=args.skip)
     if exception is not None:
         if isinstance(exception, KeyboardInterrupt):
-            if log:
-                log.write("Profiling stopped by user. Attempting to write gathered data...\n")
+            print("Profiling stopped by user. Attempting to write gathered data...")
             exception = None
         else:
-            if log:
-                log.write("Unexpected error occurred. Attempting to write gathered data...\n")
+            print("Unexpected error occurred. Attempting to write gathered data...")
     if args.out is not None:
         if args.out == "stdout":
             out = sys.__stdout__
