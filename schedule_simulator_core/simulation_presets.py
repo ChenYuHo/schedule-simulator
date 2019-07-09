@@ -5,7 +5,7 @@ This module provides preset simulation setups for quick reuse
 from schedule_simulator_core.core import ProcessingUnit
 from schedule_simulator_core.schedulers import FIFOScheduler
 from schedule_simulator_core.DNN_functions import train
-from schedule_simulator_core.utils import SimPrinter, generate_ascii_timeline, group_dict
+from schedule_simulator_core.utils import SimPrinter, generate_ascii_timeline, trim
 import simpy
 import numpy as np
 import itertools
@@ -13,19 +13,26 @@ import time
 import json
 import argparse
 import datetime
+import multiprocessing
+import threading
+from queue import Empty
+import os
+import traceback
+
 
 class GpuNetworkSim:
-    def __init__(self, gpu_rate, network_rate, gpu_scheduler, network_scheduler, dag, batch_size, n_of_batches):
+    def __init__(self, gpu_rate, network_rate, gpu_scheduler, network_scheduler, dag, batch_size, n_of_batches,
+                 timeline_format="jobwise"):
         self.args = dict(gpu_rate=gpu_rate, network_rate=network_rate, gpu_scheduler=str(gpu_scheduler),
                          network_scheduler=str(network_scheduler), dag=str(dag), batch_size=batch_size,
-                         n_of_batches=n_of_batches)
+                         n_of_batches=n_of_batches, timeline_format=timeline_format)
         self.dag = dag
         self.env = simpy.Environment()
         self.gpu = ProcessingUnit(env=self.env, scheduler=gpu_scheduler, rate=gpu_rate, name="GPU",
-                                  store_timeline=False)
+                                  timeline_format=timeline_format)
         self.gpu_process = self.env.process(self.gpu.main_process())
         self.network = ProcessingUnit(env=self.env, scheduler=network_scheduler, rate=network_rate, name="Network",
-                                      store_timeline=False)
+                                      timeline_format=timeline_format)
         self.network_process = self.env.process(self.network.main_process())
         self.training_process = self.env.process(train(dag=self.dag, env=self.env, n_of_batches=n_of_batches,
                                                        batch_size=batch_size, computation_queue=self.gpu,
@@ -95,8 +102,8 @@ class GpuNetworkSim:
 
     @staticmethod
     def run_group(gpu_rate, network_rate, gpu_scheduler, network_scheduler, dag, batch_size, n_of_batches,
-                  clear_output=True, resolution=1e3, number_of_processes=None, save_timeline=False,
-                  output_file_name=None, saving_interval=5, resolution_warning_threshold=0.1):
+                  clear_output=True, resolution=1e3, number_of_processes=None, save_timeline=False, print_interval=2,
+                  output_file_name="default", saving_interval=5, resolution_warning_threshold=0.1):
         """
         All of the required arguments can be either a value or a list of values to try.
         The product of all options will be taken and then iterated to generate simulations with all possible
@@ -123,13 +130,16 @@ class GpuNetworkSim:
         For reference:
         https://askubuntu.com/questions/949437/python-interpreter-only-using-12-cpu-power
         https://docs.python.org/3.6/library/multiprocessing.html
-        :param saving_interval: Save report every x elapsed minutes.
+        :param saving_interval: Save report every x elapsed minutes. Set to None to disable interval saving
+        :param output_file_name: The name to save to, if set to 'default', then a default timestamped name is used.
+        If set to None, then no saving will occur neither on intervals nor on the end of running.
         :return if return_simulation_objects is true then the function returns a list of all simulations run.
         Other wise a summary dict is returned
         {"resolution": resolution, "num_of_simulations": len(args_combinations), "args": [str(x) for x in args.items()],
         "results": results}
         """
-        if output_file_name is None:
+        # Parse and generate argument combinations ---------------------------------------------------------------------
+        if output_file_name == "default":
             output_file_name = "GpuNetworkSim_{}.simgroup.json".format(datetime.datetime.now().strftime("%m-%d-%H-%M"))
         args = dict(gpu_rate=gpu_rate, network_rate=network_rate, gpu_scheduler=gpu_scheduler,
                     network_scheduler=network_scheduler, dag=dag, batch_size=batch_size, n_of_batches=n_of_batches)
@@ -141,7 +151,9 @@ class GpuNetworkSim:
             except TypeError:
                 constants.add(k)
                 args[k] = [args[k]]
-        # Define scaling functions based on the assumptions of the dag's units mentioned above
+        args_combinations = list(itertools.product(*args.values()))
+
+        # Define scaling functions based on the assumptions of the dag's units mentioned above -------------------------
         def scale_comp_units(value, gpu_rate):
             """From nanoseconds to seconds to resolution units"""
             return int(value * 1e-9 / gpu_rate * resolution)
@@ -150,7 +162,7 @@ class GpuNetworkSim:
             """From bytes to seconds to resolution units"""
             return int(value * 1e-9 * 8 / network_rate * resolution)
 
-        # Check if a combination is compromised with the resolution
+        # Check if a combination is compromised with the resolution ----------------------------------------------------
         total_zeros = dict(bp=0, fp=0, comm=0)
         num_of_values = 0
         warnings = list()
@@ -187,6 +199,7 @@ class GpuNetworkSim:
             exception_msg += "To suppress this warning and continue increase the resolution_warning_threshold."
             raise Exception(exception_msg)
 
+        # Define printing functions ------------------------------------------------------------------------------------
         def print_header():
             print("Resolution: {}".format(resolution))
             print("Resolution inflicted zeros: fp_units: {:.2f}% bp_units: {:.2f}% comm_units: {:.2f}%".format(
@@ -197,10 +210,44 @@ class GpuNetworkSim:
             print("Constant arguments: {}".format(constants))
             print("Variable arguments: {}".format(args.keys() - constants))
             print("-"*100)
+
+        def print_state():
+            nonlocal clear_output
+            # If we are running in a notebook then clear the output if specified
+            if clear_output:
+                try:
+                    from IPython.display import clear_output
+                    clear_output(wait=True)
+                except:
+                    pass
+                print_header()
+            # Update the running combinations
+            while not running_queue.empty():
+                pid, sim_i = running_queue.get_nowait()
+                running_sim_indexes.update({pid: sim_i})
+            # Print the current combinations of arguments
+            print("{:20}: {:<3}/{:<3}".format("Simulations Finished", output_counter, len(args_combinations)))
+            sub_args = dict(pid=list(), sim_index=list(), sims_finished=list())
+            for pid, sim_i in running_sim_indexes.items():
+                args_combination = args_combinations[sim_i]
+                sub_args["pid"].append(pid)
+                sub_args["sims_finished"].append(
+                    finished_sims_per_process[pid] if pid in finished_sims_per_process else 0)
+                sub_args["sim_index"].append(sim_i)
+                for i, key in enumerate(args.keys()):
+                    if key in sub_args:
+                        sub_args[key].append(args_combination[i])
+                    else:
+                        sub_args[key] = [args_combination[i]]
+            for arg_key, arg_value in sub_args.items():
+                values = ""
+                for v in arg_value:
+                    values += "{:10} ".format(trim(str(v), 10))
+                print("{:20}: {}".format(arg_key, values))
         if not clear_output:
             print_header()
-        args_combinations = list(itertools.product(*args.values()))
-        # Initialize summary dictionary
+
+        # Initialize summary dictionary --------------------------------------------------------------------------------
         summary = dict(total_time_elapsed=0, total_num_of_simulations=len(args_combinations),
                        finished_simulations=0, args=dict(), results=dict())
         summary["args"]["resolution"] = resolution
@@ -213,72 +260,120 @@ class GpuNetworkSim:
                     v = str(v)
                 new_value.append(v)
             summary["args"][key] = new_value
-        summary["results"]["sim_index"] = list(range(len(args_combinations)))
         group_begin_time = time.time()
         save_interval_begin_time = time.time()
+
+        # Create worker processes --------------------------------------------------------------------------------------
+        def run_simulations(input_queue, running_queue, output_queue):
+            print("pid[{}] starting process..".format(os.getpid()))
+            while not input_queue.empty():
+                sim_i, args_combination = input_queue.get()
+                try:
+                    running_queue.put((os.getpid(), sim_i))
+                    # Map combination to argument names
+                    sub_args = dict()
+                    for i, key in enumerate(args.keys()):
+                        sub_args[key] = args_combination[i]
+                    # Scale & unify units
+                    # (We apply rates here because if we apply them using the processing unit rate, the simulation will take
+                    # a huge amount of time since we would be essentially running with a very high resolution)
+                    sub_args["dag"] = sub_args["dag"].copy()
+                    def scale_units(layer):
+                        layer.communication_units = scale_comm_units(layer.communication_units, sub_args["network_rate"])
+                        layer.forward_pass_units = scale_comm_units(layer.forward_pass_units, sub_args["gpu_rate"])
+                        layer.backward_pass_units = scale_comm_units(layer.backward_pass_units, sub_args["gpu_rate"])
+                    sub_args["dag"].traverse_BFS(processing_function=scale_units)
+                    # Since the rates won't be passed on to the simulation processing units and it won't appear in the
+                    # summary, let us save it now and add it later to the summary below
+                    patch = dict()
+                    patch["comm_units_scaling_rate"] = sub_args["network_rate"]
+                    patch["comp_units_scaling_rate"] = sub_args["gpu_rate"]
+                    # Since we effectively applied the rate by scaling the units we can set the processing rate to 1
+                    sub_args["network_rate"] = 1
+                    sub_args["gpu_rate"] = 1
+                    # Restore locks for schedulers
+                    sub_args["gpu_scheduler"]._lock = threading.Lock()
+                    sub_args["network_scheduler"]._lock = threading.Lock()
+                    # Create, run, and append simulation
+                    simulation = GpuNetworkSim(**sub_args)
+                    sim_time_begin = time.time()
+                    simulation.run(print_timeline=False, verbosity=0)
+                    # Update summary --
+                    sim_summary = simulation.summarize()
+                    sim_summary["execution_duration"] = time.time() - sim_time_begin
+                    sim_summary["sim_index"] = sim_i
+                    # We add the network and gpu rates here as mentioned in the block above
+                    sim_summary.update(patch)
+                    output_queue.put((os.getpid(), sim_i, sim_summary))
+                except Exception as e:
+                    traceback.print_exc()
+                    print(e)
+                    print("pid[{}] Simulation {} with args {} failed to run. Skipping it..".format(
+                        os.getpid(), sim_i, args_combination))
+                    output_queue.put((os.getpid(), sim_i, None))  # To signify the failure of this simulation
+                except KeyboardInterrupt:
+                    print("pid[{}] process closed by user".format(os.getpid()))
+                    break
+            print("pid[{}] finished process..".format(os.getpid()))
+
+        # Pickling is the main method used to communicate objects between processes. An object is teared down and
+        # recreated each time it is passed between two processes. However, Locks cannot be pickled therefore we must
+        # remove them from all schedulers.
+        for sch in args["gpu_scheduler"]:
+            sch._lock = None
+        for sch in args["network_scheduler"]:
+            sch._lock = None
+        input_queue = multiprocessing.Queue()
+        for sim_i, args_combination in enumerate(args_combinations):
+            input_queue.put((sim_i, args_combination))
+        output_queue = multiprocessing.Queue()
+        running_queue = multiprocessing.Queue()
+        running_sim_indexes = dict()
+        finished_sims_per_process = dict()
+        worker_pool = multiprocessing.Pool(number_of_processes, initargs=[input_queue, running_queue, output_queue],
+                                           initializer=run_simulations)
+        worker_pool.close()  # Do not receive anymore requests
+        # Run main process loop ----------------------------------------------------------------------------------------
+        print("pid[{}] Main process loop starting".format(os.getpid()))
+        output_counter = 0
+        print_timer = time.time()
         try:
-            # Run a simulation for each argument combination
-            for sim_i, args_combination in enumerate(args_combinations):
-                # Map combination to argument names
-                sub_args = dict()
-                for i, key in enumerate(args.keys()):
-                    sub_args[key] = args_combination[i]
-                # If we are running in a notebook then clear the output if specified
-                if clear_output:
-                    try:
-                        from IPython.display import clear_output
-                        clear_output(wait=True)
-                    except:
-                        pass
-                    print_header()
-                # Print the current combination of arguments
-                print("{:20}: {:<3}/{:<3}".format("Simulation", sim_i+1, len(args_combinations)))
-                for arg_key, arg_value in sub_args.items():
-                    print("{:20}: {}".format(arg_key, arg_value))
-                # Scale & unify units
-                # This block mitigates a defect in the simulator and it should be edited once that defect is fixed !!
-                # ------------------------------------------------------------------------------------------------------
-                # (We apply rates here because if we apply them using the processing unit rate, the simulation will take
-                # a huge amount of time since we would be essentially running with a very high resolution)
-                sub_args["dag"] = sub_args["dag"].copy()
-                def scale_units(layer):
-                    layer.communication_units = scale_comm_units(layer.communication_units, sub_args["network_rate"])
-                    layer.forward_pass_units = scale_comm_units(layer.forward_pass_units, sub_args["gpu_rate"])
-                    layer.backward_pass_units = scale_comm_units(layer.backward_pass_units, sub_args["gpu_rate"])
-                sub_args["dag"].traverse_BFS(processing_function=scale_units)
-                # Since the rates won't be passed on to the simulation processing units and it won't appear in the
-                # summary, let us save it now and add it later to the summary below
-                patch = dict()
-                patch["comm_units_scaling_rate"] = sub_args["network_rate"]
-                patch["comp_units_scaling_rate"] = sub_args["gpu_rate"]
-                # Since we effectively applied the rate by scaling the units we can set the processing rate to 1
-                sub_args["network_rate"] = 1
-                sub_args["gpu_rate"] = 1
-                # ------------------------------------------------------------------------------------------------------
-                # Create, run, and append simulation
-                simulation = GpuNetworkSim(**sub_args)
-                sim_time_begin = time.time()
-                simulation.run(print_timeline=False, verbosity=0)
-                # Update summary --
-                sim_summary = simulation.summarize()
-                sim_summary["execution_duration"] = time.time() - sim_time_begin
-                # We add the network and gpu rates here as mentioned in the block above
-                sim_summary.update(patch)
+            while output_counter != len(args_combinations):
+                try:
+                    output = output_queue.get(timeout=print_interval)
+                except Empty:
+                    continue
+                pid, sim_i, sim_summary = output
+                output_counter += 1
+                if pid in finished_sims_per_process:
+                    finished_sims_per_process[pid] += 1
+                else:
+                    finished_sims_per_process[pid] = 1
+                if sim_summary is None:
+                    continue
                 for key, value in sim_summary.items():
                     if key in summary["results"]:
                         summary["results"][key].append(value)
                     else:
                         summary["results"][key] = [value]
                 summary["total_time_elapsed"] = time.time() - group_begin_time
-                summary["finished_simulations"] = sim_i + 1
-                if time.time() - save_interval_begin_time > saving_interval * 60:
+                summary["finished_simulations"] = output_counter
+                if saving_interval is not None and output_file_name is not None and \
+                        time.time() - save_interval_begin_time > saving_interval * 60:
                     save_interval_begin_time = time.time()
                     with open(output_file_name, "w") as output_file:
                         json.dump(summary, output_file, indent=4)
+                if time.time() - print_timer > print_interval:
+                    print_timer = time.time()
+                    print_state()
+            print_state()
         except KeyboardInterrupt:
-            print("Simulations stopped by user. Returning gathered results..")
-        with open(output_file_name, "w") as output_file:
-            json.dump(summary, output_file, indent=4)
+            print("pid[{}] Main process loop closed by user".format(os.getpid()))
+        worker_pool.join()
+        print("pid[{}] Main process is saving and returning results".format(os.getpid()))
+        if output_file_name is not None:
+            with open(output_file_name, "w") as output_file:
+                json.dump(summary, output_file, indent=4)
         return summary
 
 

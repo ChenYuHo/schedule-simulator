@@ -316,3 +316,11 @@ def join_chrome_traces(traces_list, sort_process_ids=True):
         for i in range(base_trace["final_pid"]+1):
             base_trace["traceEvents"].append(dict(ph="M", pid=i, name="process_sort_index", args=dict(sort_index=i)))
     return json.dumps(base_trace, indent=4)
+
+
+def trim(string, length):
+    string = str(string)
+    if len(string) > length:
+        return string[:length-2] + ".."
+    else:
+        return string
