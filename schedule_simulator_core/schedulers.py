@@ -108,11 +108,3 @@ class TopologicalPriorityScheduler(Scheduler):
 
     def __str__(self):
         return "{}:{}".format(super().__str__(), "Preemptive" if self.preemptive else "Non-preemptive")
-
-
-class TICScheduler:
-    pass
-
-
-class TACScheduler:
-    pass

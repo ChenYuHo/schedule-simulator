@@ -1,15 +1,5 @@
 """
-A script for getting layer wise timings of any Keras model. It uses an inefficient approach where the model is built
-layer by layer and the timing difference introduced by each layer is assumed to be that layer's cost.
-
-Tested versions:
-keras                     2.2.4                         0
-keras-applications        1.0.8                      py_0
-keras-base                2.2.4                    py37_0
-keras-preprocessing       1.1.0                      py_1
-tensorflow                1.13.1          mkl_py37h54b294f_0
-tensorflow-base           1.13.1          mkl_py37h7ce6ba3_0
-tensorflow-estimator      1.13.0                     py_0
+A script for getting layer wise timings and other information about any Keras model.
 """
 
 import argparse
@@ -228,8 +218,9 @@ class RunCost(tf.keras.callbacks.LambdaCallback):
                          on_test_batch_begin=on_batch_begin, on_test_batch_end=on_batch_end)
 
 
-def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8, trials=1,
-                   verbosity=1, device="gpu", use_tracer=True, skip_untrainable_layers=False):
+def model_reconstruct_layerwise_costs_profiling(input_model, loss, optimizer, batch_size=32, num_of_batches=8, trials=1,
+                                                verbosity=1, device="gpu", use_tracer=True,
+                                                skip_untrainable_layers=False):
     """
     The function takes a model and profiles the cost that each layer contributes to the total training time.
     The function's method is to build the model layer by layer and observe the cost changes each layer introduces. The
@@ -416,6 +407,10 @@ def timing_profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8
     return None, timings
 
 
+def full_model_layerwise_costs_profiling():
+    pass
+
+
 def layer_input_output_profiling(model):
     layers = list()
 
@@ -479,12 +474,12 @@ if __name__ == "__main__":
             model = model(weights=None, include_top=True)
     except AttributeError:
         raise Exception("'{}' is not a valid dummy or keras model.\n".format(args.model))
-    exception, timings = model_reconstruct_timing_profile(input_model=model, batch_size=args.batch_size,
-                                                          num_of_batches=args.num_of_batches, loss=args.loss,
-                                                          optimizer=args.optimizer, device=args.device,
-                                                          verbosity=args.verbosity, trials=args.trials,
-                                                          use_tracer=not args.use_python_timing,
-                                                          skip_untrainable_layers=args.skip)
+    exception, timings = model_reconstruct_layerwise_costs_profiling(input_model=model, batch_size=args.batch_size,
+                                                                     num_of_batches=args.num_of_batches, loss=args.loss,
+                                                                     optimizer=args.optimizer, device=args.device,
+                                                                     verbosity=args.verbosity, trials=args.trials,
+                                                                     use_tracer=not args.use_python_timing,
+                                                                     skip_untrainable_layers=args.skip)
     if exception is not None:
         if isinstance(exception, KeyboardInterrupt):
             print("Profiling stopped by user. Attempting to write gathered data...")

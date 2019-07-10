@@ -11,7 +11,6 @@ import numpy as np
 import itertools
 import time
 import json
-import argparse
 import datetime
 import multiprocessing
 import threading
@@ -378,5 +377,25 @@ class GpuNetworkSim:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.parse_args()
+    """
+    Example usage
+    """
+
+    from schedule_simulator_core.schedulers import FIFOScheduler, TopologicalPriorityScheduler
+    from schedule_simulator_core.DAGs import deserialize_dag
+    with open("../model_extraction/dags/VGG16.dag") as dag_file:
+        base_dag = deserialize_dag(dag_file.read())
+    schedulers = [FIFOScheduler(), TopologicalPriorityScheduler(preemptive=False),
+                  TopologicalPriorityScheduler(preemptive=True)]
+    bandwidths = list(np.arange(0.10, 0.21, 0.01))
+    summary = GpuNetworkSim.run_group(gpu_rate=1,
+                                      network_rate=bandwidths,
+                                      gpu_scheduler=FIFOScheduler(),
+                                      dag=base_dag,
+                                      network_scheduler=schedulers,
+                                      batch_size=[1, 4, 16, 32],
+                                      n_of_batches=8,
+                                      resolution=1e1,
+                                      resolution_warning_threshold=0.1,
+                                      number_of_processes=None,
+                                      )

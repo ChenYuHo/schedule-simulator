@@ -150,7 +150,7 @@ if __name__ == "__main__":
     from schedule_simulator_core.DAGs import serialize_dag, deserialize_dag
     model = VGG16(weights=None, include_top=True)
     dag = keras_model_to_DAG(model, skipped_layer_types=[InputLayer, Pooling1D, Pooling2D, Pooling3D])
-    with open("timings/VGG16_06-27-15-20.timings.json") as report_file:
+    with open("model_reconstruction_profiling_reports/VGG16_06-27-15-20.timings.json") as report_file:
         model_profiling_report = json.load(report_file)
     apply_timing_profile_to_dag(dag, model_profiling_report, suppress_negatives=1, scaling_factor=1)
     with open("dags/VGG16.dag", "w") as output_file:

@@ -13,7 +13,7 @@ trace = None
 
 
 def label_layer(x):
-    return x
+    return tf.add(x, tf.constant(0.1), name="Coco")
     # y = tf.timestamp()
     # with tf.control_dependencies([y]):
     #     return tf.identity(x, name="Coco")
@@ -40,16 +40,19 @@ callback = k.callbacks.LambdaCallback(
 )
 
 model = k.models.Sequential()
-model.add(k.layers.InputLayer(input_shape=(20,)))
-model.add(k.layers.Dense(32))
-model.add(k.layers.Lambda(label_layer))
+model.add(k.layers.InputLayer(input_shape=(20, 20, 1)))
+model.add(k.layers.Conv2D(8,4, name="Layer0"))
+model.add(k.layers.MaxPooling2D(name="Layer1"))
+model.add(k.layers.Flatten(name="Layer2"))
+model.add(k.layers.Dense(32, name="Layer3"))
+model.add(k.layers.Dense(32, name="Layer4"))
 model.summary()
-model.compile(optimizer="sgd", loss="mean_squared_error",options=options, run_metadata=metadata)
-x, y = get_dummy_input_output(model, 10)
+model.compile(optimizer="sgd", loss="mean_squared_error", options=options, run_metadata=metadata)
+x, y = get_dummy_input_output(model, 100000)
 
 
-model.predict(x=x, steps=2, callbacks=[callback])
-model.evaluate(x=x, y=y, steps=2, callbacks=[callback])
-model.fit(x=x, y=y, steps_per_epoch=2, callbacks=[callback], epochs=1)
+# model.predict(x=x, steps=2, callbacks=[callback])
+# model.evaluate(x=x, y=y, steps=2, callbacks=[callback])
+model.fit(x=x, y=y, steps_per_epoch=4, callbacks=[callback], epochs=1)
 with open("lambda_layer_profiling_trace.json", "w") as file:
     json.dump(trace, file, indent=4)
