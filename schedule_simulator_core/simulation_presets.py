@@ -1,11 +1,7 @@
 """
 This module provides preset simulation setups for quick reuse
+Todo generalize the functions used in GpuNetworkSim so that they can be reused with other simulations
 """
-
-from schedule_simulator_core.core import ProcessingUnit
-from schedule_simulator_core.schedulers import FIFOScheduler
-from schedule_simulator_core.DNN_functions import train
-from schedule_simulator_core.utils import SimPrinter, generate_ascii_timeline, trim
 import simpy
 import numpy as np
 import itertools
@@ -17,6 +13,13 @@ import threading
 from queue import Empty
 import os
 import traceback
+import sys
+sys.path.append("..")
+from schedule_simulator_core.schedulers import FIFOScheduler, TopologicalPriorityScheduler
+from schedule_simulator_core.core import ProcessingUnit
+from schedule_simulator_core.DNN_functions import train
+from schedule_simulator_core.utils import SimPrinter, generate_ascii_timeline, trim
+from schedule_simulator_core.DAGs import deserialize_dag
 
 
 class GpuNetworkSim:
@@ -100,6 +103,75 @@ class GpuNetworkSim:
         return group_summary
 
     @staticmethod
+    def _scale_comp_units(value, gpu_rate, resolution):
+        """From nanoseconds to seconds to resolution units"""
+        return int(value * 1e-9 / gpu_rate * resolution)
+
+    @staticmethod
+    def _scale_comm_units(value, network_rate, resolution):
+        """From bytes to seconds to resolution units"""
+        return int(value * 1e-9 * 8 / network_rate * resolution)
+
+    @staticmethod
+    def _run_sub_group_process(input_queue, running_queue, output_queue, args, resolution):
+        print("pid[{}] starting process..".format(os.getpid()))
+        while not input_queue.empty():
+            sim_i, args_combination = input_queue.get()
+            try:
+                running_queue.put((os.getpid(), sim_i))
+                # Map combination to argument names
+                sub_args = dict()
+                for i, key in enumerate(args.keys()):
+                    sub_args[key] = args_combination[i]
+                # Scale & unify units
+                # FIXME
+                # (We apply rates here because if we apply them using the processing unit rate, the simulation will take
+                # a huge amount of time since we would be essentially running with a very high resolution)
+                sub_args["dag"] = sub_args["dag"].copy()
+
+                def scale_units(layer):
+                    layer.communication_units = GpuNetworkSim._scale_comm_units(
+                        layer.communication_units, sub_args["network_rate"], resolution)
+                    layer.forward_pass_units = GpuNetworkSim._scale_comp_units(
+                        layer.forward_pass_units, sub_args["gpu_rate"], resolution)
+                    layer.backward_pass_units = GpuNetworkSim._scale_comp_units(
+                        layer.backward_pass_units, sub_args["gpu_rate"], resolution)
+
+                sub_args["dag"].traverse_BFS(processing_function=scale_units)
+                # Since the rates won't be passed on to the simulation processing units and it won't appear in the
+                # summary, let us save it now and add it later to the summary below
+                patch = dict()
+                patch["comm_units_scaling_rate"] = sub_args["network_rate"]
+                patch["comp_units_scaling_rate"] = sub_args["gpu_rate"]
+                # Since we effectively applied the rate by scaling the units we can set the processing rate to 1
+                sub_args["network_rate"] = 1
+                sub_args["gpu_rate"] = 1
+                # Restore locks for schedulers
+                sub_args["gpu_scheduler"]._lock = threading.Lock()
+                sub_args["network_scheduler"]._lock = threading.Lock()
+                # Create, run, and append simulation
+                simulation = GpuNetworkSim(**sub_args)
+                sim_time_begin = time.time()
+                simulation.run(print_timeline=False, verbosity=0)
+                # Update summary --
+                sim_summary = simulation.summarize()
+                sim_summary["execution_duration"] = time.time() - sim_time_begin
+                sim_summary["sim_index"] = sim_i
+                # We add the network and gpu rates here as mentioned in the block above
+                sim_summary.update(patch)
+                output_queue.put((os.getpid(), sim_i, sim_summary))
+            except Exception as e:
+                traceback.print_exc()
+                print(e)
+                print("pid[{}] Simulation {} with args {} failed to run. Skipping it..".format(
+                    os.getpid(), sim_i, args_combination))
+                output_queue.put((os.getpid(), sim_i, None))  # To signify the failure of this simulation
+            except KeyboardInterrupt:
+                print("pid[{}] process closed by user".format(os.getpid()))
+                break
+        print("pid[{}] finished process..".format(os.getpid()))
+
+    @staticmethod
     def run_group(gpu_rate, network_rate, gpu_scheduler, network_scheduler, dag, batch_size, n_of_batches,
                   clear_output=True, resolution=1e3, number_of_processes=None, save_timeline=False, print_interval=2,
                   output_file_name="default", saving_interval=5, resolution_warning_threshold=0.1):
@@ -152,15 +224,6 @@ class GpuNetworkSim:
                 args[k] = [args[k]]
         args_combinations = list(itertools.product(*args.values()))
 
-        # Define scaling functions based on the assumptions of the dag's units mentioned above -------------------------
-        def scale_comp_units(value, gpu_rate):
-            """From nanoseconds to seconds to resolution units"""
-            return int(value * 1e-9 / gpu_rate * resolution)
-
-        def scale_comm_units(value, network_rate):
-            """From bytes to seconds to resolution units"""
-            return int(value * 1e-9 * 8 / network_rate * resolution)
-
         # Check if a combination is compromised with the resolution ----------------------------------------------------
         total_zeros = dict(bp=0, fp=0, comm=0)
         num_of_values = 0
@@ -172,11 +235,14 @@ class GpuNetworkSim:
             def add_zeros(layer):
                 nonlocal local_num_of_values
                 local_num_of_values += 1
-                if layer.forward_pass_units != 0 and scale_comm_units(layer.forward_pass_units, _gpu_rate) == 0:
+                if layer.forward_pass_units != 0 and GpuNetworkSim._scale_comm_units(
+                        layer.forward_pass_units, _gpu_rate, resolution) == 0:
                     local_zeros["fp"] += 1
-                if layer.backward_pass_units != 0 and scale_comm_units(layer.backward_pass_units, _gpu_rate) == 0:
+                if layer.backward_pass_units != 0 and GpuNetworkSim._scale_comp_units(
+                        layer.backward_pass_units, _gpu_rate, resolution) == 0:
                     local_zeros["bp"] += 1
-                if layer.communication_units != 0 and scale_comm_units(layer.communication_units, _network_rate) == 0:
+                if layer.communication_units != 0 and GpuNetworkSim._scale_comp_units(
+                        layer.communication_units, _network_rate, resolution) == 0:
                     local_zeros["comm"] += 1
             _dag.traverse_BFS(processing_function=add_zeros)
             for key in local_zeros:
@@ -215,6 +281,7 @@ class GpuNetworkSim:
             # If we are running in a notebook then clear the output if specified
             if clear_output:
                 try:
+                    os.system('cls' if os.name == 'nt' else 'clear')
                     from IPython.display import clear_output
                     clear_output(wait=True)
                 except:
@@ -263,61 +330,10 @@ class GpuNetworkSim:
         save_interval_begin_time = time.time()
 
         # Create worker processes --------------------------------------------------------------------------------------
-        def run_simulations(input_queue, running_queue, output_queue):
-            print("pid[{}] starting process..".format(os.getpid()))
-            while not input_queue.empty():
-                sim_i, args_combination = input_queue.get()
-                try:
-                    running_queue.put((os.getpid(), sim_i))
-                    # Map combination to argument names
-                    sub_args = dict()
-                    for i, key in enumerate(args.keys()):
-                        sub_args[key] = args_combination[i]
-                    # Scale & unify units
-                    # (We apply rates here because if we apply them using the processing unit rate, the simulation will take
-                    # a huge amount of time since we would be essentially running with a very high resolution)
-                    sub_args["dag"] = sub_args["dag"].copy()
-                    def scale_units(layer):
-                        layer.communication_units = scale_comm_units(layer.communication_units, sub_args["network_rate"])
-                        layer.forward_pass_units = scale_comm_units(layer.forward_pass_units, sub_args["gpu_rate"])
-                        layer.backward_pass_units = scale_comm_units(layer.backward_pass_units, sub_args["gpu_rate"])
-                    sub_args["dag"].traverse_BFS(processing_function=scale_units)
-                    # Since the rates won't be passed on to the simulation processing units and it won't appear in the
-                    # summary, let us save it now and add it later to the summary below
-                    patch = dict()
-                    patch["comm_units_scaling_rate"] = sub_args["network_rate"]
-                    patch["comp_units_scaling_rate"] = sub_args["gpu_rate"]
-                    # Since we effectively applied the rate by scaling the units we can set the processing rate to 1
-                    sub_args["network_rate"] = 1
-                    sub_args["gpu_rate"] = 1
-                    # Restore locks for schedulers
-                    sub_args["gpu_scheduler"]._lock = threading.Lock()
-                    sub_args["network_scheduler"]._lock = threading.Lock()
-                    # Create, run, and append simulation
-                    simulation = GpuNetworkSim(**sub_args)
-                    sim_time_begin = time.time()
-                    simulation.run(print_timeline=False, verbosity=0)
-                    # Update summary --
-                    sim_summary = simulation.summarize()
-                    sim_summary["execution_duration"] = time.time() - sim_time_begin
-                    sim_summary["sim_index"] = sim_i
-                    # We add the network and gpu rates here as mentioned in the block above
-                    sim_summary.update(patch)
-                    output_queue.put((os.getpid(), sim_i, sim_summary))
-                except Exception as e:
-                    traceback.print_exc()
-                    print(e)
-                    print("pid[{}] Simulation {} with args {} failed to run. Skipping it..".format(
-                        os.getpid(), sim_i, args_combination))
-                    output_queue.put((os.getpid(), sim_i, None))  # To signify the failure of this simulation
-                except KeyboardInterrupt:
-                    print("pid[{}] process closed by user".format(os.getpid()))
-                    break
-            print("pid[{}] finished process..".format(os.getpid()))
-
         # Pickling is the main method used to communicate objects between processes. An object is teared down and
         # recreated each time it is passed between two processes. However, Locks cannot be pickled therefore we must
-        # remove them from all schedulers.
+        # remove them from all schedulers. In addition, local functions cannot be pickled, therefore we defined the
+        # worker process as a static function above this one.
         for sch in args["gpu_scheduler"]:
             sch._lock = None
         for sch in args["network_scheduler"]:
@@ -329,8 +345,8 @@ class GpuNetworkSim:
         running_queue = multiprocessing.Queue()
         running_sim_indexes = dict()
         finished_sims_per_process = dict()
-        worker_pool = multiprocessing.Pool(number_of_processes, initargs=[input_queue, running_queue, output_queue],
-                                           initializer=run_simulations)
+        worker_pool = multiprocessing.Pool(number_of_processes, initializer=GpuNetworkSim._run_sub_group_process,
+                                           initargs=[input_queue, running_queue, output_queue, args, resolution])
         worker_pool.close()  # Do not receive anymore requests
         # Run main process loop ----------------------------------------------------------------------------------------
         print("pid[{}] Main process loop starting".format(os.getpid()))
@@ -380,22 +396,12 @@ if __name__ == "__main__":
     """
     Example usage
     """
-
-    from schedule_simulator_core.schedulers import FIFOScheduler, TopologicalPriorityScheduler
-    from schedule_simulator_core.DAGs import deserialize_dag
     with open("../model_extraction/dags/VGG16.dag") as dag_file:
         base_dag = deserialize_dag(dag_file.read())
     schedulers = [FIFOScheduler(), TopologicalPriorityScheduler(preemptive=False),
                   TopologicalPriorityScheduler(preemptive=True)]
-    bandwidths = list(np.arange(0.10, 0.21, 0.01))
-    summary = GpuNetworkSim.run_group(gpu_rate=1,
-                                      network_rate=bandwidths,
-                                      gpu_scheduler=FIFOScheduler(),
-                                      dag=base_dag,
-                                      network_scheduler=schedulers,
-                                      batch_size=[1, 4, 16, 32],
-                                      n_of_batches=8,
-                                      resolution=1e1,
-                                      resolution_warning_threshold=0.1,
-                                      number_of_processes=None,
-                                      )
+    bandwidths = [0.001] + list(np.arange(0.01, 0.31, 0.01))
+    summary = GpuNetworkSim.run_group(gpu_rate=1, network_rate=bandwidths, gpu_scheduler=FIFOScheduler(),
+                                      dag=base_dag, network_scheduler=schedulers, batch_size=[1, 4, 16, 32],
+                                      n_of_batches=8, resolution=1e1, resolution_warning_threshold=1,
+                                      number_of_processes=None, clear_output=True)
