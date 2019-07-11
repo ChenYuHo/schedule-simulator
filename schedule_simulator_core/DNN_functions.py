@@ -165,7 +165,7 @@ if __name__ == "__main__":
     traces = list()
     for unit in units:
         traces.append(generate_chrome_trace_timeline(unit, group_labels=["unit_name"], row_labels=["type"],
-                                                     cell_labels=["index"], utilization_bins=500))
+                                                     cell_labels=["name"], utilization_bins=500))
     final_trace = join_chrome_traces(traces)
     with open("DNN_functions_example_trace.json", "w") as file:
         file.write(final_trace)

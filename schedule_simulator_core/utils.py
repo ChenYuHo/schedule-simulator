@@ -216,7 +216,7 @@ def generate_ascii_timeline(processing_unit, start=0, end=None,
 
 
 def generate_chrome_trace_timeline(processing_unit, group_labels=None, row_labels=None, cell_labels=None,
-                                   utilization_bins=10):
+                                   utilization_bins=10, return_dict=False):
     """
     Unit must have kept its timeline using the jobwise format
     The generated chrome trace format is documented here
@@ -307,13 +307,14 @@ def generate_chrome_trace_timeline(processing_unit, group_labels=None, row_label
     events.extend(metadata)
     chrome_trace = dict(traceEvents=events, final_pid=final_pid, final_tid=final_tid)
     chrome_trace["{}.{}".format(processing_unit.name, "util")] = total_utilization
-    return json.dumps(chrome_trace, indent=4)
+    return chrome_trace if return_dict else json.dumps(chrome_trace, indent=4)
 
 
-def join_chrome_traces(traces_list, sort_process_ids=True):
-    base_trace = json.loads(traces_list[0])
+def join_chrome_traces(traces_list, sort_process_ids=True, use_trace_dict=False):
+    base_trace = traces_list[0] if use_trace_dict else json.loads(traces_list[0])
     for trace in traces_list[1:]:
-        trace = json.loads(trace)
+        if not use_trace_dict:
+            trace = json.loads(trace)
         for event in trace["traceEvents"]:
             if "pid" in event:
                 event["pid"] += base_trace["final_pid"] + 1
@@ -327,7 +328,7 @@ def join_chrome_traces(traces_list, sort_process_ids=True):
     if sort_process_ids:
         for i in range(base_trace["final_pid"]+1):
             base_trace["traceEvents"].append(dict(ph="M", pid=i, name="process_sort_index", args=dict(sort_index=i)))
-    return json.dumps(base_trace, indent=4)
+    return base_trace if use_trace_dict else json.dumps(base_trace, indent=4)
 
 
 def trim(string, length):

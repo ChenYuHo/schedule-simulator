@@ -222,14 +222,8 @@ def model_reconstruct_layerwise_costs_profiling(input_model, loss, optimizer, ba
                                                 verbosity=1, device="gpu", use_tracer=True,
                                                 skip_untrainable_layers=False):
     """
-    The function takes a model and profiles the cost that each layer contributes to the total training time.
-    The function's method is to build the model layer by layer and observe the cost changes each layer introduces. The
-    change is the assumed to be that layer's cost.
-    The cost can be separated into 4 categories:
-    1- Forward pass (Prediction)
-    2- Calculate loss
-    3- Calculate gradient (Taking the derivative of 1, 2)
-    4- Apply the gradient (Taking the calculated gradient and applying it using an optimizer)
+    The function takes a keras model and attempts to estimate the cost of each layer in the model in terms of
+    the fitting evaluating and predicting.
     :param input_model: The model to profile
     :param batch_size: The batch size used for all functions.
     :param num_of_batches: The number of batches to run
@@ -407,8 +401,16 @@ def model_reconstruct_layerwise_costs_profiling(input_model, loss, optimizer, ba
     return None, timings
 
 
-def full_model_layerwise_costs_profiling():
-    pass
+def full_model_layerwise_costs_profiling(input_model, loss, optimizer, batch_size=32, num_of_batches=8, trials=1,
+                                         verbosity=1, device="gpu", skip_untrainable_layers=False):
+    """
+    The function takes a keras model and attempts to estimate the cost of each layer in the model in terms of
+    the forward pass and backward pass.
+    :return: An (exception,dict) tuple the exception slot is to detect if an exception has occurred and the dict
+    contains the information. The dict has key=layer.name and value=dict with
+    keys=(forward_pass_cost, gradient_calculation_cost, gradient_application_cost, loss_calculation_cost)
+    """
+
 
 
 def layer_input_output_profiling(model):

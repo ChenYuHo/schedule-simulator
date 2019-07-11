@@ -22,6 +22,9 @@ from schedule_simulator_core.utils import SimPrinter, generate_ascii_timeline, t
 from schedule_simulator_core.DAGs import deserialize_dag
 from schedule_simulator_core.utils import sort_table
 
+SIM_GROUP_REPORT_POSTFIX = ".simgroup.json"
+
+
 class GpuNetworkSim:
     def __init__(self, gpu_rate, network_rate, gpu_scheduler, network_scheduler, dag, batch_size, n_of_batches,
                  timeline_format="jobwise"):
@@ -45,20 +48,11 @@ class GpuNetworkSim:
             self.network_process.interrupt()
         self.closing_process = self.env.process(close())
 
-    def run(self, print_timeline=True, verbosity=1, time_line_args=None):
-        results = dict()
+    def run(self, verbosity=1, time_line_args=None):
         printer = SimPrinter(verbosity=verbosity).print
         self.gpu._sim_printer = printer
         self.network._sim_printer = printer
         self.env.run()
-        if print_timeline:
-            args = dict(time_grouping=1, row_labels=["type"], cell_labels=["index"], group_name_width=30, cell_width=4)
-            if time_line_args is not None:
-                args.update(time_line_args)
-            for unit in [self.gpu, self.network]:
-                report = generate_ascii_timeline(unit, **args)
-                print(report)
-                print("")
 
     def summarize(self):
         if self.env.now == 0:
@@ -113,7 +107,7 @@ class GpuNetworkSim:
         return int(value * 1e-9 * 8 / network_rate * resolution)
 
     @staticmethod
-    def _run_sub_group_process(input_queue, running_queue, output_queue, args, resolution):
+    def _run_sub_group_process(input_queue, running_queue, output_queue, args, resolution, output_trace_file_name):
         print("pid[{}] starting process..".format(os.getpid()))
         while not input_queue.empty():
             sim_i, args_combination = input_queue.get()
@@ -149,16 +143,30 @@ class GpuNetworkSim:
                 # Restore locks for schedulers
                 sub_args["gpu_scheduler"]._lock = threading.Lock()
                 sub_args["network_scheduler"]._lock = threading.Lock()
+                if output_trace_file_name is None:
+                    sub_args["timeline_format"] = None
                 # Create, run, and append simulation
                 simulation = GpuNetworkSim(**sub_args)
                 sim_time_begin = time.time()
-                simulation.run(print_timeline=False, verbosity=0)
+                simulation.run(verbosity=0)
                 # Update summary --
                 sim_summary = simulation.summarize()
                 sim_summary["execution_duration"] = time.time() - sim_time_begin
                 sim_summary["sim_index"] = sim_i
                 # We add the network and gpu rates here as mentioned in the block above
                 sim_summary.update(patch)
+                if output_trace_file_name is not None:
+                    from schedule_simulator_core.utils import generate_chrome_trace_timeline, join_chrome_traces
+                    traces = list()
+                    for unit in [simulation.gpu, simulation.network]:
+                        traces.append(
+                            generate_chrome_trace_timeline(unit, group_labels=["unit_name"], row_labels=["type"],
+                                                           cell_labels=["name"], utilization_bins=500,
+                                                           return_dict=True))
+                    final_trace = join_chrome_traces(traces, use_trace_dict=True)
+                    final_trace.update(sim_summary)
+                    with open("{}_sim{}_.chrometrace.json".format(output_trace_file_name, sim_i), "w") as f:
+                        json.dump(final_trace, f, indent=4)
                 output_queue.put((os.getpid(), sim_i, sim_summary))
             except Exception as e:
                 traceback.print_exc()
@@ -173,8 +181,9 @@ class GpuNetworkSim:
 
     @staticmethod
     def run_group(gpu_rate, network_rate, gpu_scheduler, network_scheduler, dag, batch_size, n_of_batches,
-                  clear_output=True, resolution=1e3, number_of_processes=None, save_timeline=False, print_interval=2,
-                  output_file_name="default", saving_interval=5, resolution_warning_threshold=0.1):
+                  clear_output=True, resolution=1e3, number_of_processes=None, print_interval=2,
+                  save_chrome_traces=False, output_file_name="default", saving_interval=5,
+                  resolution_warning_threshold=0.1):
         """
         All of the required arguments can be either a value or a list of values to try.
         The product of all options will be taken and then iterated to generate simulations with all possible
@@ -211,7 +220,7 @@ class GpuNetworkSim:
         """
         # Parse and generate argument combinations ---------------------------------------------------------------------
         if output_file_name == "default":
-            output_file_name = "GpuNetworkSim_{}.simgroup.json".format(datetime.datetime.now().strftime("%m-%d-%H-%M"))
+            output_file_name = "GpuNetworkSim_{}".format(datetime.datetime.now().strftime("%m-%d-%H-%M"))
         args = dict(gpu_rate=gpu_rate, network_rate=network_rate, gpu_scheduler=gpu_scheduler,
                     network_scheduler=network_scheduler, dag=dag, batch_size=batch_size, n_of_batches=n_of_batches)
         constants = set()
@@ -346,7 +355,8 @@ class GpuNetworkSim:
         running_sim_indexes = dict()
         finished_sims_per_process = dict()
         worker_pool = multiprocessing.Pool(number_of_processes, initializer=GpuNetworkSim._run_sub_group_process,
-                                           initargs=[input_queue, running_queue, output_queue, args, resolution])
+                                           initargs=[input_queue, running_queue, output_queue, args, resolution,
+                                                     output_file_name if save_chrome_traces else None])
         worker_pool.close()  # Do not receive anymore requests
         # Run main process loop ----------------------------------------------------------------------------------------
         print("pid[{}] Main process loop starting".format(os.getpid()))
@@ -376,7 +386,7 @@ class GpuNetworkSim:
                 if saving_interval is not None and output_file_name is not None and \
                         time.time() - save_interval_begin_time > saving_interval * 60:
                     save_interval_begin_time = time.time()
-                    with open(output_file_name, "w") as output_file:
+                    with open("{}{}".format(output_file_name, SIM_GROUP_REPORT_POSTFIX), "w") as output_file:
                         json.dump(summary, output_file, indent=4)
                 if time.time() - print_timer > print_interval:
                     print_timer = time.time()
@@ -388,7 +398,7 @@ class GpuNetworkSim:
         print("pid[{}] Main process is saving and returning results".format(os.getpid()))
         sort_table(summary["results"], key="sim_index")
         if output_file_name is not None:
-            with open(output_file_name, "w") as output_file:
+            with open("{}{}".format(output_file_name, SIM_GROUP_REPORT_POSTFIX), "w") as output_file:
                 json.dump(summary, output_file, indent=4)
         return summary
 
