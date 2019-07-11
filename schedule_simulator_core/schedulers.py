@@ -74,6 +74,7 @@ class TopologicalPriorityScheduler(Scheduler):
         else:
             self.preemptive = False
         self._current_job = None
+        self.new_job_received = False
 
     def count(self):
         with self._lock:
@@ -84,10 +85,11 @@ class TopologicalPriorityScheduler(Scheduler):
         with self._lock:
             priority = len(job.source._forward_dependencies)
             self._queue.append((priority, job))
+            self.new_job_received = True
 
     def request(self, **kwargs):
         with self._lock:
-            if self.preemptive or self._current_job is None:
+            if (self.new_job_received and self.preemptive) or self._current_job is None:
                 min_priority = None
                 min_job = None
                 for priority, job in self._queue:
@@ -95,6 +97,7 @@ class TopologicalPriorityScheduler(Scheduler):
                         min_priority = priority
                         min_job = job
                 self._current_job = min_job
+                self.new_job_received = False
         return self._current_job
 
     def remove(self, job, **kwargs):

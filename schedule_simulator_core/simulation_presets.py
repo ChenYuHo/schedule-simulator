@@ -20,7 +20,7 @@ from schedule_simulator_core.core import ProcessingUnit
 from schedule_simulator_core.DNN_functions import train
 from schedule_simulator_core.utils import SimPrinter, generate_ascii_timeline, trim
 from schedule_simulator_core.DAGs import deserialize_dag
-
+from schedule_simulator_core.utils import sort_table
 
 class GpuNetworkSim:
     def __init__(self, gpu_rate, network_rate, gpu_scheduler, network_scheduler, dag, batch_size, n_of_batches,
@@ -386,6 +386,7 @@ class GpuNetworkSim:
             print("pid[{}] Main process loop closed by user".format(os.getpid()))
         worker_pool.join()
         print("pid[{}] Main process is saving and returning results".format(os.getpid()))
+        sort_table(summary["results"], key="sim_index")
         if output_file_name is not None:
             with open(output_file_name, "w") as output_file:
                 json.dump(summary, output_file, indent=4)

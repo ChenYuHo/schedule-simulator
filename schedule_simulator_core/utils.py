@@ -52,6 +52,18 @@ def group_dict(dictionary, key_indices, extend_existing_lists=True):
     return result
 
 
+def sort_table(table, key):
+    """
+    :param table: dict(key="row_name", value=list of values)
+    :param key: The row_name to sort by
+    """
+    for row_name in table.keys():
+        if row_name == key:
+            continue
+        table[row_name] = [x for _, x in sorted(zip(table[key], table[row_name]))]
+    table[key].sort()
+
+
 def generate_ascii_timeline(processing_unit, start=0, end=None,
                             time_grouping=1, show_scaled_time=False,
                             row_labels=None, cell_labels=None,

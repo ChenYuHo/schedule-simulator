@@ -69,6 +69,7 @@ def forward_pass(dag: DAG, env: simpy.Environment, batch_size, computation_queue
         forward_pass_output[layer] = job
         # Queue job
         computation_queue.queue(job)
+        # FIXME
         # Waiting for the job before queueing the next makes sense because the next job depends on this one.
         # A problem arises however when the processing rate can accommodate more than a job at a time step.
         # Since the next job won't be queued until the next time step, we will not be able to utilize the processing
