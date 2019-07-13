@@ -1,5 +1,4 @@
 import math
-import itertools
 import json
 
 
@@ -62,6 +61,77 @@ def sort_table(table, key):
             continue
         table[row_name] = [x for _, x in sorted(zip(table[key], table[row_name]))]
     table[key].sort()
+
+
+def join_overlapping_intervals(intervals_list):
+    """
+    :param intervals_list: A list of (begin, end) tuples that represent intervals
+    :return: A mutually exclusive (No overlapping) reduced list of intervals.
+    """
+    intervals_list.sort(key=lambda x: x[0])
+    reduced_intervals_stack = list()
+    for interval in intervals_list:
+        if len(reduced_intervals_stack) == 0:
+            reduced_intervals_stack.append(interval)
+            continue
+        last_start, last_end = reduced_intervals_stack[-1]
+        current_start, current_end = interval
+        if current_start <= last_end:
+            reduced_intervals_stack[-1] = (last_start, max(current_end, last_end))
+        else:
+            reduced_intervals_stack.append(interval)
+    return reduced_intervals_stack
+
+
+def get_interval_gaps(intervals_list):
+    """
+    :param intervals_list: A list of (begin, end) tuples that represent intervals
+    :return: A mutually exclusive (No overlapping) list of gaps between the intervals.
+    """
+    intervals_list.sort(key=lambda x: x[0])
+    gaps_list = [(intervals_list[0][0], max(intervals_list, key=lambda x: x[1])[1])]
+    for interval in intervals_list:
+        if len(gaps_list) == 0:
+            break
+        last_gap_start, last_gap_end = gaps_list[-1]
+        current_interval_start, current_interval_end = interval
+        if current_interval_start >= last_gap_end:
+            break
+        if current_interval_end > last_gap_start:
+            if current_interval_start > last_gap_start:
+                first_gap = (last_gap_start, current_interval_start)
+                second_gap = (current_interval_end, last_gap_end)
+                gaps_list[-1] = first_gap
+                if second_gap[1] - second_gap[0] > 0:
+                    gaps_list.append(second_gap)
+            else:
+                if current_interval_end == last_gap_end:
+                    gaps_list.pop()
+                else:
+                    gaps_list[-1] = (current_interval_end, last_gap_end)
+    return gaps_list
+
+
+def trim(string, length):
+    string = str(string)
+    if len(string) > length:
+        return string[:length-2] + ".."
+    else:
+        return string
+
+
+def get_job_group(job, extras_keys, **patch_extras):
+    if extras_keys is None or len(extras_keys) == 0:
+        return tuple()
+    extras = job.extras.copy()
+    extras.update(patch_extras)
+    group = list()
+    for key in extras_keys:
+        if key in extras:
+            group.append(extras[key])
+        else:
+            group.append(None)
+    return tuple(group)
 
 
 def generate_ascii_timeline(processing_unit, start=0, end=None,
@@ -237,28 +307,16 @@ def generate_chrome_trace_timeline(processing_unit, group_labels=None, row_label
     :return: A json formatted string in the chrome trace format
     """
     if not processing_unit.timeline_format == "jobwise":
-        raise Exception("The Chrome trace generation is currently only enabled for units which have the 'jobwise' "
+        raise Exception("The Chrome trace generation is currently only available for units which have the 'jobwise' "
                         "timeline format. Consider changing the format and trying again.")
     start = 0
     end = processing_unit.env.now
     # Create groups
-    def get_job_labels(job, labels):
-        if labels is None or len(labels) == 0:
-            return tuple()
-        extras = job.extras.copy()
-        extras["unit_name"] = processing_unit.name
-        group = list()
-        for label in labels:
-            if label in extras:
-                group.append(extras[label])
-            else:
-                group.append(None)
-        return tuple(group)
     grouping_args = {"group_labels": group_labels, "row_labels": row_labels}
     groupings = {"group_labels": set(), "row_labels": set()}
     for key in groupings:
         for job in processing_unit.timeline:
-            groupings[key].add(get_job_labels(job, grouping_args[key]))
+            groupings[key].add(get_job_group(job, grouping_args[key], unit_name=processing_unit.name))
     # Add group metadata mappings
     metadata = list()
     super_group_mapping = dict()
@@ -278,10 +336,10 @@ def generate_chrome_trace_timeline(processing_unit, group_labels=None, row_label
     # Add events
     events = list()
     for job in processing_unit.timeline:
-        job_grouping = {"group_labels": get_job_labels(job, grouping_args["group_labels"]),
-                        "row_labels": get_job_labels(job, grouping_args["row_labels"])}
+        job_grouping = {"group_labels": get_job_group(job, grouping_args["group_labels"], unit_name=processing_unit.name),
+                        "row_labels": get_job_group(job, grouping_args["row_labels"], unit_name=processing_unit.name)}
         pid, tid = super_group_mapping[(job_grouping["group_labels"], job_grouping["row_labels"])]
-        job_name = ",".join([str(x) for x in get_job_labels(job, cell_labels)])
+        job_name = ",".join([str(x) for x in get_job_group(job, cell_labels, unit_name=processing_unit.name)])
         for event in processing_unit.timeline[job]:
             event_dict = dict(**event, name=job_name, ph="X", pid=pid, tid=tid, args=job.extras)
             events.append(event_dict)
@@ -331,9 +389,25 @@ def join_chrome_traces(traces_list, sort_process_ids=True, use_trace_dict=False)
     return base_trace if use_trace_dict else json.dumps(base_trace, indent=4)
 
 
-def trim(string, length):
-    string = str(string)
-    if len(string) > length:
-        return string[:length-2] + ".."
+def stepwise_to_jobwise_timeline(processing_unit):
+    pass
+
+
+def get_gap_durations(processing_unit, group_labels=None):
+    if processing_unit.timeline_format == "stepwise":
+        raise Exception("The only supported timeline formats for getting gap durations are 'jobwise'.")
+    elif processing_unit.timeline_format == "jobwise":
+        grouped_intervals = dict()
+        for job, events in processing_unit.timeline.items():
+            group = get_job_group(job, group_labels)
+            if group not in grouped_intervals.keys():
+                grouped_intervals[group] = list()
+            for event in events:
+                interval = (event["ts"], event["ts"] + event["dur"])
+                grouped_intervals[group].append(interval)
+        grouped_interval_durations = dict()
+        for group, intervals in grouped_intervals.items():
+            grouped_interval_durations[group] = [e-b for b, e in get_interval_gaps(intervals)]
+        return grouped_interval_durations
     else:
-        return string
+        raise Exception("The only supported timeline formats for getting gap durations are 'jobwise'.")

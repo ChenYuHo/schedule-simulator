@@ -18,10 +18,8 @@ sys.path.append("..")
 from schedule_simulator_core.schedulers import FIFOScheduler, TopologicalPriorityScheduler
 from schedule_simulator_core.core import ProcessingUnit
 from schedule_simulator_core.DNN_functions import train
-from schedule_simulator_core.utils import SimPrinter, generate_ascii_timeline, trim
+from schedule_simulator_core.utils import SimPrinter, trim, sort_table, get_gap_durations
 from schedule_simulator_core.DAGs import deserialize_dag
-from schedule_simulator_core.utils import sort_table
-
 SIM_GROUP_REPORT_POSTFIX = ".simgroup.json"
 
 
@@ -33,11 +31,12 @@ class GpuNetworkSim:
                          n_of_batches=n_of_batches, timeline_format=timeline_format)
         self.dag = dag
         self.env = simpy.Environment()
+        self.timeline_format = timeline_format
         self.gpu = ProcessingUnit(env=self.env, scheduler=gpu_scheduler, rate=gpu_rate, name="GPU",
-                                  timeline_format=timeline_format)
+                                  timeline_format=self.timeline_format)
         self.gpu_process = self.env.process(self.gpu.main_process())
         self.network = ProcessingUnit(env=self.env, scheduler=network_scheduler, rate=network_rate, name="Network",
-                                      timeline_format=timeline_format)
+                                      timeline_format=self.timeline_format)
         self.network_process = self.env.process(self.network.main_process())
         self.training_process = self.env.process(train(dag=self.dag, env=self.env, n_of_batches=n_of_batches,
                                                        batch_size=batch_size, computation_queue=self.gpu,
@@ -48,13 +47,13 @@ class GpuNetworkSim:
             self.network_process.interrupt()
         self.closing_process = self.env.process(close())
 
-    def run(self, verbosity=1, time_line_args=None):
+    def run(self, verbosity=1):
         printer = SimPrinter(verbosity=verbosity).print
         self.gpu._sim_printer = printer
         self.network._sim_printer = printer
         self.env.run()
 
-    def summarize(self):
+    def summarize(self, include_gaps=True):
         if self.env.now == 0:
             raise Exception("Cannot summarize before running the simulation!")
         summary = dict()
@@ -84,6 +83,15 @@ class GpuNetworkSim:
         summary["total_time_steps"] = self.env.now
         # Add options used
         summary.update(self.args)
+        if include_gaps:
+            summary["$list$gpu_gaps_durations"] = get_gap_durations(self.gpu)[tuple()]
+            summary["$list$network_gaps_durations"] = get_gap_durations(self.network)[tuple()]
+            grouped_gaps = get_gap_durations(self.gpu, group_labels=["type", "batch"])
+            forward_pass_gaps_durations = list()
+            for group in grouped_gaps.keys():
+                if group[0] == "forward_pass":
+                    forward_pass_gaps_durations.extend(grouped_gaps[group])
+            summary["$list$forward_pass_gaps_durations"] = forward_pass_gaps_durations
         return summary
 
     @staticmethod
@@ -107,7 +115,8 @@ class GpuNetworkSim:
         return int(value * 1e-9 * 8 / network_rate * resolution)
 
     @staticmethod
-    def _run_sub_group_process(input_queue, running_queue, output_queue, args, resolution, output_trace_file_name):
+    def _run_sub_group_process(input_queue, running_queue, output_queue, args, resolution, output_trace_file_name,
+                               include_gaps):
         print("pid[{}] starting process..".format(os.getpid()))
         while not input_queue.empty():
             sim_i, args_combination = input_queue.get()
@@ -143,18 +152,20 @@ class GpuNetworkSim:
                 # Restore locks for schedulers
                 sub_args["gpu_scheduler"]._lock = threading.Lock()
                 sub_args["network_scheduler"]._lock = threading.Lock()
-                if output_trace_file_name is None:
+                if output_trace_file_name is None and not include_gaps:
                     sub_args["timeline_format"] = None
                 # Create, run, and append simulation
                 simulation = GpuNetworkSim(**sub_args)
                 sim_time_begin = time.time()
                 simulation.run(verbosity=0)
                 # Update summary --
-                sim_summary = simulation.summarize()
-                sim_summary["execution_duration"] = time.time() - sim_time_begin
-                sim_summary["sim_index"] = sim_i
+                sim_summary = simulation.summarize(include_gaps=include_gaps)
+                final_summary = dict()
+                final_summary["sim_index"] = sim_i
+                final_summary["execution_duration"] = time.time() - sim_time_begin
                 # We add the network and gpu rates here as mentioned in the block above
-                sim_summary.update(patch)
+                final_summary.update(patch)
+                final_summary.update(sim_summary)
                 if output_trace_file_name is not None:
                     from schedule_simulator_core.utils import generate_chrome_trace_timeline, join_chrome_traces
                     traces = list()
@@ -164,13 +175,12 @@ class GpuNetworkSim:
                                                            cell_labels=["name"], utilization_bins=500,
                                                            return_dict=True))
                     final_trace = join_chrome_traces(traces, use_trace_dict=True)
-                    final_trace.update(sim_summary)
+                    final_trace.update(final_summary)
                     with open("{}_sim{}_.chrometrace.json".format(output_trace_file_name, sim_i), "w") as f:
                         json.dump(final_trace, f, indent=4)
-                output_queue.put((os.getpid(), sim_i, sim_summary))
+                output_queue.put((os.getpid(), sim_i, final_summary))
             except Exception as e:
                 traceback.print_exc()
-                print(e)
                 print("pid[{}] Simulation {} with args {} failed to run. Skipping it..".format(
                     os.getpid(), sim_i, args_combination))
                 output_queue.put((os.getpid(), sim_i, None))  # To signify the failure of this simulation
@@ -181,9 +191,9 @@ class GpuNetworkSim:
 
     @staticmethod
     def run_group(gpu_rate, network_rate, gpu_scheduler, network_scheduler, dag, batch_size, n_of_batches,
-                  clear_output=True, resolution=1e3, number_of_processes=None, print_interval=2,
-                  save_chrome_traces=False, output_file_name="default", saving_interval=5,
-                  resolution_warning_threshold=0.1):
+                  resolution=1e3, resolution_zeros_tolerance=0.1, number_of_processes=None, saving_interval=5 * 60,
+                  print_interval=2, clear_output=True, save_chrome_traces=False, include_gaps=False,
+                  output_file_name="default"):
         """
         All of the required arguments can be either a value or a list of values to try.
         The product of all options will be taken and then iterated to generate simulations with all possible
@@ -196,13 +206,15 @@ class GpuNetworkSim:
         communication units is assumed to be in bytes. (Value or list of values)
         :param batch_size: How many forward, backward passes should we do before communicating? (Value or list of values)
         :param n_of_batches: How many batches or iterations should we run? (Value or list of values)
-        :param clear_output: Whether or not to clear output of the cell if run in a notebook
         :param resolution: Units are all converted to seconds and then multiplied by the resolution and then cast to an
         integer. Therefore a resolution of 1e3 means a resolution of 1ms.
-        Idea: I should make the function choose the optimal resolution based on the combination given so that it is not
+        TODO I should make the function choose the optimal resolution based on the combination given so that it is not
         too large that the simulations take forever and not too small that they do not give accurate results.
+        :param resolution_zeros_tolerance: The percentage of resolution caused zeros that we can tolerate. If the
+        resolution causes more zeros than this percentage, then an exception is thrown. The check happens before all
+        simulations take place.
         :param number_of_processes: The number of independent processes to spawn. If set to None then the total number
-        of effective cores will be used. (Not implemented yet)
+        of effective cores will be used.
         Running all combinations of arguments can mean that hundreds of independent simulations
         will be run. However, a python interpreter spawns a single process which can only use one effective core which
         prevents us of using the full capacity of a multi-core processor. Which is why launching the simulations in a
@@ -210,7 +222,16 @@ class GpuNetworkSim:
         For reference:
         https://askubuntu.com/questions/949437/python-interpreter-only-using-12-cpu-power
         https://docs.python.org/3.6/library/multiprocessing.html
-        :param saving_interval: Save report every x elapsed minutes. Set to None to disable interval saving
+        :param saving_interval: Save report every x elapsed seconds. Set to None to disable interval saving
+        :param print_interval: Print status at a maximum of every x elapsed seconds. If the simulator does not have any
+        updates over the last print statement it will not print even after the interval.
+        :param clear_output: Whether or not to clear output before each status print.
+        :param save_chrome_traces: Whether or not we should save chrome traces of all simulations. This will choose to
+        save timelines of the simulations in the 'jobwise' format.
+        :param include_gaps: Whether or not we should include the gap durations of each simulation in the data. This
+        also requires that timelines of the simulations are saved in 'jobwise' format.
+        If both include_gaps and save_chrome_traces are set to false, then no timeline is kept for the simulations which
+        can make them run faster.
         :param output_file_name: The name to save to, if set to 'default', then a default timestamped name is used.
         If set to None, then no saving will occur neither on intervals nor on the end of running.
         :return if return_simulation_objects is true then the function returns a list of all simulations run.
@@ -257,7 +278,7 @@ class GpuNetworkSim:
             for key in local_zeros:
                 total_zeros[key] += local_zeros[key]
                 zeros_perc = local_zeros[key] / local_num_of_values
-                if zeros_perc > resolution_warning_threshold:
+                if zeros_perc > resolution_zeros_tolerance:
                     warnings.append((comb, key, zeros_perc))
             num_of_values += local_num_of_values
         if len(warnings) > 0:
@@ -270,7 +291,7 @@ class GpuNetworkSim:
                                   "Combination: (dag:{}, gpu_rate: {}, network_rate: {}\n").format(
                     key, zeros_perc*100, _dag, _gpu_rate, _network_rate)
             exception_msg += "Consider increasing the resolution or changing the arguments.\n"
-            exception_msg += "To suppress this warning and continue increase the resolution_warning_threshold."
+            exception_msg += "To suppress this warning and continue increase the resolution_zeros_tolerance."
             raise Exception(exception_msg)
 
         # Define printing functions ------------------------------------------------------------------------------------
@@ -301,12 +322,16 @@ class GpuNetworkSim:
                 pid, sim_i = running_queue.get_nowait()
                 running_sim_indexes.update({pid: sim_i})
             # Print the current combinations of arguments
-            print("{:20}: {:<3}/{:<3}".format("Simulations Finished", output_counter, len(args_combinations)))
-            sub_args = dict(pid=list(), sim_index=list(), sims_finished=list())
+            print("{:20}: {:<.2f}%".format("progress", output_counter/len(args_combinations)*100))
+            print("{:20}: {:<3}/{:<3}".format("successful_sims", output_counter - failed_simulations,
+                                              len(args_combinations)))
+            print("{:20}: {:<3}/{:<3}".format("failed_sims", failed_simulations, len(args_combinations)))
+            print("{}{}{}".format("-" * 44, " Processes ", "-"*45))
+            sub_args = dict(pid=list(), sim_index=list(), sims_processed=list())
             for pid, sim_i in running_sim_indexes.items():
                 args_combination = args_combinations[sim_i]
                 sub_args["pid"].append(pid)
-                sub_args["sims_finished"].append(
+                sub_args["sims_processed"].append(
                     finished_sims_per_process[pid] if pid in finished_sims_per_process else 0)
                 sub_args["sim_index"].append(sim_i)
                 for i, key in enumerate(args.keys()):
@@ -337,7 +362,6 @@ class GpuNetworkSim:
             summary["args"][key] = new_value
         group_begin_time = time.time()
         save_interval_begin_time = time.time()
-
         # Create worker processes --------------------------------------------------------------------------------------
         # Pickling is the main method used to communicate objects between processes. An object is teared down and
         # recreated each time it is passed between two processes. However, Locks cannot be pickled therefore we must
@@ -356,11 +380,12 @@ class GpuNetworkSim:
         finished_sims_per_process = dict()
         worker_pool = multiprocessing.Pool(number_of_processes, initializer=GpuNetworkSim._run_sub_group_process,
                                            initargs=[input_queue, running_queue, output_queue, args, resolution,
-                                                     output_file_name if save_chrome_traces else None])
+                                                     output_file_name if save_chrome_traces else None, include_gaps])
         worker_pool.close()  # Do not receive anymore requests
         # Run main process loop ----------------------------------------------------------------------------------------
         print("pid[{}] Main process loop starting".format(os.getpid()))
         output_counter = 0
+        failed_simulations = 0
         print_timer = time.time()
         try:
             while output_counter != len(args_combinations):
@@ -375,6 +400,7 @@ class GpuNetworkSim:
                 else:
                     finished_sims_per_process[pid] = 1
                 if sim_summary is None:
+                    failed_simulations += 1
                     continue
                 for key, value in sim_summary.items():
                     if key in summary["results"]:
@@ -384,7 +410,7 @@ class GpuNetworkSim:
                 summary["total_time_elapsed"] = time.time() - group_begin_time
                 summary["finished_simulations"] = output_counter
                 if saving_interval is not None and output_file_name is not None and \
-                        time.time() - save_interval_begin_time > saving_interval * 60:
+                        time.time() - save_interval_begin_time > saving_interval:
                     save_interval_begin_time = time.time()
                     with open("{}{}".format(output_file_name, SIM_GROUP_REPORT_POSTFIX), "w") as output_file:
                         json.dump(summary, output_file, indent=4)
@@ -411,8 +437,18 @@ if __name__ == "__main__":
         base_dag = deserialize_dag(dag_file.read())
     schedulers = [FIFOScheduler(), TopologicalPriorityScheduler(preemptive=False),
                   TopologicalPriorityScheduler(preemptive=True)]
-    bandwidths = [0.001] + list(np.arange(0.01, 0.31, 0.01))
-    summary = GpuNetworkSim.run_group(gpu_rate=1, network_rate=bandwidths, gpu_scheduler=FIFOScheduler(),
-                                      dag=base_dag, network_scheduler=schedulers, batch_size=[1, 4, 16, 32],
-                                      n_of_batches=8, resolution=1e1, resolution_warning_threshold=1,
-                                      number_of_processes=None, clear_output=True)
+    bandwidths = [0.12,0.13]
+    summary = GpuNetworkSim.run_group(gpu_rate=1,
+                                      network_rate= bandwidths,
+                                      gpu_scheduler=FIFOScheduler(),
+                                      dag=base_dag,
+                                      network_scheduler=schedulers,
+                                      batch_size=4,
+                                      n_of_batches=8,
+                                      resolution=1e1,
+                                      resolution_zeros_tolerance=1,
+                                      clear_output=False,
+                                      number_of_processes=None,
+                                      save_chrome_traces=True,
+                                      include_gaps=True
+                                     )
