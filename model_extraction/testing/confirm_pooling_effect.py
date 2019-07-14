@@ -5,7 +5,7 @@ import numpy as np
 import json
 import time
 from model_extraction.keras_model_profiler import clone_layer
-
+import itertools
 
 def get_trace_duration(trace_dict):
     """
@@ -65,20 +65,33 @@ class RunCost(tf.keras.callbacks.LambdaCallback):
                          on_predict_batch_begin=on_batch_begin, on_predict_batch_end=on_batch_end,
                          on_test_batch_begin=on_batch_begin, on_test_batch_end=on_batch_end)
 
-model = k.models.Sequential()
-model.add(k.layers.Conv2D(64, 8, padding="same", input_shape=(224, 224, 3)))
-model.add(k.layers.Conv2D(64, 16, padding="same"))
-model.add(k.layers.MaxPooling2D(4))
-options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-metadata = tf.RunMetadata()
-run_cost = RunCost(metadata)
-model.compile(optimizer="sgd", loss="mean_squared_error",options=options, run_metadata=metadata)
-x = tf.random_uniform(shape=(32, 224, 224, 3))
-y = tf.random_uniform(shape=(32, 56, 56, 64))
-for i in range(2):
-    model.fit(x=x, y=y, callbacks=[run_cost], steps_per_epoch=10)
-with open("full_trace_with_pooling.json", "w") as f:
-    json.dump(run_cost.trace, f, indent=4)
-print(run_cost.costs)
-print(np.mean(run_cost.costs[1:]))
-print(np.std(run_cost.costs[1:]))
+
+with_pooling = True
+with_optimization = False
+store_trace = False
+for with_pooling, with_optimization in [(True, True), (True, False), (False, True), (False, False)]:
+    if with_optimization:
+        sess = tf.Session()
+    else:
+        sess = tf.Session(config=tf.ConfigProto(graph_options=tf.GraphOptions(
+            optimizer_options=tf.OptimizerOptions(opt_level=tf.OptimizerOptions.L0))))
+    with sess:
+        model = k.models.Sequential()
+        model.add(k.layers.Conv2D(64, 8, padding="same", input_shape=(48, 48, 3)))
+        model.add(k.layers.Conv2D(64, 16, padding="same"))
+        if with_pooling:
+            model.add(k.layers.MaxPooling2D(4))
+        model.summary()
+        options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+        metadata = tf.RunMetadata()
+        run_cost = RunCost(metadata)
+        model.compile(optimizer="sgd", loss="mean_squared_error", options=options, run_metadata=metadata)
+        x = tf.random_uniform(shape=(32, 48, 48, 3))
+        output_s = 12 if with_pooling else 48
+        y = tf.random_uniform(shape=(32, output_s, output_s, 64))
+        for i in range(2):
+            model.fit(x=x, y=y, callbacks=[run_cost], steps_per_epoch=10)
+        if store_trace:
+            with open("opt:{}_pooling:{}.json".format(with_optimization, with_pooling), "w") as f:
+                json.dump(run_cost.trace, f, indent=4)
+        print(run_cost.costs)
