@@ -212,7 +212,7 @@ class RunCost(tf.keras.callbacks.LambdaCallback):
                 self.total_time_costs.append(total_costs * 1e3)
             else:
                 tc = time.time_ns() - self.tmp
-                self.durations.append(tc * 1e3)
+                self.durations.append(tc)
         super().__init__(on_train_batch_begin=on_batch_begin, on_train_batch_end=on_batch_end,
                          on_predict_batch_begin=on_batch_begin, on_predict_batch_end=on_batch_end,
                          on_test_batch_begin=on_batch_begin, on_test_batch_end=on_batch_end)

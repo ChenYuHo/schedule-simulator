@@ -69,15 +69,8 @@ def forward_pass(dag: DAG, env: simpy.Environment, batch_size, computation_queue
         forward_pass_output[layer] = job
         # Queue job
         computation_queue.queue(job)
-        # FIXME
-        # Waiting for the job before queueing the next makes sense because the next job depends on this one.
-        # A problem arises however when the processing rate can accommodate more than a job at a time step.
-        # Since the next job won't be queued until the next time step, we will not be able to utilize the processing
-        # unit fully. To solve this we have a couple of options:
-        # - (X) Peek into the processing unit to learn how many jobs it can execute in the next time step.
-        # - Always make job units divisible by the rate
-        # - Implement job chaining where dependent jobs are linked together through the job result field
-        # - Add a dependencies field to the Job class and force schedulers to respect those dependencies.
+        # Wait for job to finish before queueing next one
+        # Another option would be to queue all jobs however include their dependencies.
         yield job
     return forward_pass_output
 
@@ -119,7 +112,6 @@ def backward_pass(dag: DAG, env: simpy.Environment, batch_size, computation_queu
             backward_pass_output[layer] = comp_job
         # We only wait for the computational job.
         computation_queue.queue(comp_job)
-        # Same problem of waiting as mentioned in the comments in forward pass function
         yield comp_job
         if send_gradients:
             communication_queue.queue(comm_job)
@@ -134,23 +126,23 @@ if __name__ == "__main__":
     from schedule_simulator_core.core import ProcessingUnit
     from schedule_simulator_core.schedulers import FIFOScheduler, TopologicalPriorityScheduler
     from schedule_simulator_core.utils import SimPrinter, generate_chrome_trace_timeline, join_chrome_traces
-    schedulers = [FIFOScheduler(),TopologicalPriorityScheduler(preemptive=False),
+    schedulers = [FIFOScheduler(), TopologicalPriorityScheduler(preemptive=False),
                   TopologicalPriorityScheduler(preemptive=True)]
     units = list()
     for scheduler in schedulers:
         env = simpy.Environment()
-        sim_printer = SimPrinter(verbosity=0).print
+        sim_printer = SimPrinter(verbosity=1).print
         dag = HomogeneousLinearDAG(n_of_layers=6, fp_units=8, bp_units=8, comm_units=8)
 
-        gpu = ProcessingUnit(env=env, scheduler=FIFOScheduler(), rate=4, name="GPU_{}".format(scheduler),
-                             sim_printer=None, timeline_format="jobwise")
+        gpu = ProcessingUnit(env=env, scheduler=FIFOScheduler(), rate=4.3, name="GPU_{}".format(scheduler),
+                             sim_printer=sim_printer, keep_timeline=True)
         gpu_process = env.process(gpu.main_process())
 
-        network = ProcessingUnit(env=env, scheduler=scheduler, rate=1, name="Network_{}".format(scheduler),
-                                 sim_printer=None, timeline_format="jobwise")
+        network = ProcessingUnit(env=env, scheduler=scheduler, rate=1.1, name="Network_{}".format(scheduler),
+                                 sim_printer=sim_printer, keep_timeline=True)
         network_process = env.process(network.main_process())
 
-        training_process = env.process(train(dag=dag, env=env, n_of_batches=10, batch_size=2,
+        training_process = env.process(train(dag=dag, env=env, n_of_batches=4, batch_size=2,
                                              computation_queue=gpu, communication_queue=network))
 
         def close():
@@ -165,7 +157,7 @@ if __name__ == "__main__":
     traces = list()
     for unit in units:
         traces.append(generate_chrome_trace_timeline(unit, group_labels=["unit_name"], row_labels=["type"],
-                                                     cell_labels=["name"], utilization_bins=500))
+                                                     cell_labels=["index"], utilization_bins=500, display_unit="ns"))
     final_trace = join_chrome_traces(traces)
-    with open("DNN_functions_example_trace.json", "w") as file:
+    with open("DNN_functions_example.chrometrace.json", "w") as file:
         file.write(final_trace)

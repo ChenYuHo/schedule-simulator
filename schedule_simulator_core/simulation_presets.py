@@ -18,25 +18,25 @@ sys.path.append("..")
 from schedule_simulator_core.schedulers import FIFOScheduler, TopologicalPriorityScheduler
 from schedule_simulator_core.core import ProcessingUnit
 from schedule_simulator_core.DNN_functions import train
-from schedule_simulator_core.utils import SimPrinter, trim, sort_table, get_gap_durations
+from schedule_simulator_core.utils import SimPrinter, trim, sort_table, get_gap_durations, Mbps_to_Bpns
 from schedule_simulator_core.DAGs import deserialize_dag
 SIM_GROUP_REPORT_POSTFIX = ".simgroup.json"
 
 
 class GpuNetworkSim:
-    def __init__(self, gpu_rate, network_rate, gpu_scheduler, network_scheduler, dag, batch_size, n_of_batches,
-                 timeline_format="jobwise"):
-        self.args = dict(gpu_rate=gpu_rate, network_rate=network_rate, gpu_scheduler=str(gpu_scheduler),
-                         network_scheduler=str(network_scheduler), dag=str(dag), batch_size=batch_size,
-                         n_of_batches=n_of_batches, timeline_format=timeline_format)
+    def __init__(self, network_bandwidth, gpu_scheduler, network_scheduler, dag, batch_size, n_of_batches,
+                 keep_timeline=True):
+        self.args = dict(network_bandwidth=network_bandwidth, gpu_rate=1, network_rate=Mbps_to_Bpns(network_bandwidth),
+                         gpu_scheduler=str(gpu_scheduler), network_scheduler=str(network_scheduler), dag=str(dag),
+                         batch_size=batch_size, n_of_batches=n_of_batches, keep_timeline=keep_timeline)
         self.dag = dag
         self.env = simpy.Environment()
-        self.timeline_format = timeline_format
-        self.gpu = ProcessingUnit(env=self.env, scheduler=gpu_scheduler, rate=gpu_rate, name="GPU",
-                                  timeline_format=self.timeline_format)
+        self.keep_timeline = keep_timeline
+        self.gpu = ProcessingUnit(env=self.env, scheduler=gpu_scheduler, rate=self.args["gpu_rate"], name="GPU",
+                                  keep_timeline=self.keep_timeline)
         self.gpu_process = self.env.process(self.gpu.main_process())
-        self.network = ProcessingUnit(env=self.env, scheduler=network_scheduler, rate=network_rate, name="Network",
-                                      timeline_format=self.timeline_format)
+        self.network = ProcessingUnit(env=self.env, scheduler=network_scheduler, rate=self.args["network_rate"],
+                                      name="Network", keep_timeline=self.keep_timeline)
         self.network_process = self.env.process(self.network.main_process())
         self.training_process = self.env.process(train(dag=self.dag, env=self.env, n_of_batches=n_of_batches,
                                                        batch_size=batch_size, computation_queue=self.gpu,
@@ -105,18 +105,7 @@ class GpuNetworkSim:
         return group_summary
 
     @staticmethod
-    def _scale_comp_units(value, gpu_rate, resolution):
-        """From nanoseconds to seconds to resolution units"""
-        return int(value * 1e-9 / gpu_rate * resolution)
-
-    @staticmethod
-    def _scale_comm_units(value, network_rate, resolution):
-        """From bytes to seconds to resolution units"""
-        return int(value * 1e-9 * 8 / network_rate * resolution)
-
-    @staticmethod
-    def _run_sub_group_process(input_queue, running_queue, output_queue, args, resolution, output_trace_file_name,
-                               include_gaps):
+    def _run_sub_group_process(input_queue, running_queue, output_queue, args, output_trace_file_name, include_gaps):
         print("pid[{}] starting process..".format(os.getpid()))
         while not input_queue.empty():
             sim_i, args_combination = input_queue.get()
@@ -126,34 +115,12 @@ class GpuNetworkSim:
                 sub_args = dict()
                 for i, key in enumerate(args.keys()):
                     sub_args[key] = args_combination[i]
-                # Scale & unify units
-                # FIXME
-                # (We apply rates here because if we apply them using the processing unit rate, the simulation will take
-                # a huge amount of time since we would be essentially running with a very high resolution)
-                sub_args["dag"] = sub_args["dag"].copy()
-
-                def scale_units(layer):
-                    layer.communication_units = GpuNetworkSim._scale_comm_units(
-                        layer.communication_units, sub_args["network_rate"], resolution)
-                    layer.forward_pass_units = GpuNetworkSim._scale_comp_units(
-                        layer.forward_pass_units, sub_args["gpu_rate"], resolution)
-                    layer.backward_pass_units = GpuNetworkSim._scale_comp_units(
-                        layer.backward_pass_units, sub_args["gpu_rate"], resolution)
-
-                sub_args["dag"].traverse_BFS(processing_function=scale_units)
-                # Since the rates won't be passed on to the simulation processing units and it won't appear in the
-                # summary, let us save it now and add it later to the summary below
-                patch = dict()
-                patch["comm_units_scaling_rate"] = sub_args["network_rate"]
-                patch["comp_units_scaling_rate"] = sub_args["gpu_rate"]
-                # Since we effectively applied the rate by scaling the units we can set the processing rate to 1
-                sub_args["network_rate"] = 1
-                sub_args["gpu_rate"] = 1
                 # Restore locks for schedulers
                 sub_args["gpu_scheduler"]._lock = threading.Lock()
                 sub_args["network_scheduler"]._lock = threading.Lock()
                 if output_trace_file_name is None and not include_gaps:
                     sub_args["timeline_format"] = None
+                # Compute rates to be used with simulation
                 # Create, run, and append simulation
                 simulation = GpuNetworkSim(**sub_args)
                 sim_time_begin = time.time()
@@ -163,8 +130,6 @@ class GpuNetworkSim:
                 final_summary = dict()
                 final_summary["sim_index"] = sim_i
                 final_summary["execution_duration"] = time.time() - sim_time_begin
-                # We add the network and gpu rates here as mentioned in the block above
-                final_summary.update(patch)
                 final_summary.update(sim_summary)
                 if output_trace_file_name is not None:
                     from schedule_simulator_core.utils import generate_chrome_trace_timeline, join_chrome_traces
@@ -173,7 +138,7 @@ class GpuNetworkSim:
                         traces.append(
                             generate_chrome_trace_timeline(unit, group_labels=["unit_name"], row_labels=["type"],
                                                            cell_labels=["name"], utilization_bins=500,
-                                                           return_dict=True))
+                                                           return_dict=True, multiplier=1e-3))
                     final_trace = join_chrome_traces(traces, use_trace_dict=True)
                     final_trace.update(final_summary)
                     with open("{}_sim{}_.chrometrace.json".format(output_trace_file_name, sim_i), "w") as f:
@@ -190,29 +155,20 @@ class GpuNetworkSim:
         print("pid[{}] finished process..".format(os.getpid()))
 
     @staticmethod
-    def run_group(gpu_rate, network_rate, gpu_scheduler, network_scheduler, dag, batch_size, n_of_batches,
-                  resolution=1e3, resolution_zeros_tolerance=0.1, number_of_processes=None, saving_interval=5 * 60,
-                  print_interval=2, clear_output=True, save_chrome_traces=False, include_gaps=False,
-                  output_file_name="default"):
+    def run_group(network_bandwidth, gpu_scheduler, network_scheduler, dag, batch_size, n_of_batches,
+                  number_of_processes=None, saving_interval=5 * 60, print_interval=2, clear_output=True,
+                  save_chrome_traces=False, include_gaps=False, output_file_name="default"):
         """
         All of the required arguments can be either a value or a list of values to try.
         The product of all options will be taken and then iterated to generate simulations with all possible
         combinations.
-        :param gpu_rate: (Value or list of values)
-        :param network_rate: (Value or list of values)
+        :param network_bandwidth: (Value or list of values) unit is Mbps
         :param gpu_scheduler: (Value or list of values)
         :param network_scheduler: (Value or list of values)
-        :param dag: The dag to run. forward & backward pass units are assumed to be in nanoseconds
+        :param dag: The dag to run. forward & backward pass units are assumed to be in nanoseconds.
         communication units is assumed to be in bytes. (Value or list of values)
         :param batch_size: How many forward, backward passes should we do before communicating? (Value or list of values)
         :param n_of_batches: How many batches or iterations should we run? (Value or list of values)
-        :param resolution: Units are all converted to seconds and then multiplied by the resolution and then cast to an
-        integer. Therefore a resolution of 1e3 means a resolution of 1ms.
-        TODO I should make the function choose the optimal resolution based on the combination given so that it is not
-        too large that the simulations take forever and not too small that they do not give accurate results.
-        :param resolution_zeros_tolerance: The percentage of resolution caused zeros that we can tolerate. If the
-        resolution causes more zeros than this percentage, then an exception is thrown. The check happens before all
-        simulations take place.
         :param number_of_processes: The number of independent processes to spawn. If set to None then the total number
         of effective cores will be used.
         Running all combinations of arguments can mean that hundreds of independent simulations
@@ -242,7 +198,7 @@ class GpuNetworkSim:
         # Parse and generate argument combinations ---------------------------------------------------------------------
         if output_file_name == "default":
             output_file_name = "GpuNetworkSim_{}".format(datetime.datetime.now().strftime("%m-%d-%H-%M"))
-        args = dict(gpu_rate=gpu_rate, network_rate=network_rate, gpu_scheduler=gpu_scheduler,
+        args = dict(network_bandwidth=network_bandwidth, gpu_scheduler=gpu_scheduler,
                     network_scheduler=network_scheduler, dag=dag, batch_size=batch_size, n_of_batches=n_of_batches)
         constants = set()
         for k, v in args.copy().items():
@@ -254,61 +210,14 @@ class GpuNetworkSim:
                 args[k] = [args[k]]
         args_combinations = list(itertools.product(*args.values()))
 
-        # Check if a combination is compromised with the resolution ----------------------------------------------------
-        total_zeros = dict(bp=0, fp=0, comm=0)
-        num_of_values = 0
-        warnings = list()
-        for comb in list(itertools.product(args["dag"], args["gpu_rate"], args["network_rate"])):
-            _dag, _gpu_rate, _network_rate = comb
-            local_zeros = dict(bp=0, fp=0, comm=0)
-            local_num_of_values = 0
-            def add_zeros(layer):
-                nonlocal local_num_of_values
-                local_num_of_values += 1
-                if layer.forward_pass_units != 0 and GpuNetworkSim._scale_comm_units(
-                        layer.forward_pass_units, _gpu_rate, resolution) == 0:
-                    local_zeros["fp"] += 1
-                if layer.backward_pass_units != 0 and GpuNetworkSim._scale_comp_units(
-                        layer.backward_pass_units, _gpu_rate, resolution) == 0:
-                    local_zeros["bp"] += 1
-                if layer.communication_units != 0 and GpuNetworkSim._scale_comp_units(
-                        layer.communication_units, _network_rate, resolution) == 0:
-                    local_zeros["comm"] += 1
-            _dag.traverse_BFS(processing_function=add_zeros)
-            for key in local_zeros:
-                total_zeros[key] += local_zeros[key]
-                zeros_perc = local_zeros[key] / local_num_of_values
-                if zeros_perc > resolution_zeros_tolerance:
-                    warnings.append((comb, key, zeros_perc))
-            num_of_values += local_num_of_values
-        if len(warnings) > 0:
-            exception_msg = "Resolution Error\n"
-            exception_msg += "The following combinations are compromised with the current resolution:\n"
-            for warning in warnings:
-                comb, key, zeros_perc = warning
-                _dag, _gpu_rate, _network_rate = comb
-                exception_msg += ("Compromised unit: '{:4}' Resolution inflicted zeros: {:.2f}%\n"
-                                  "Combination: (dag:{}, gpu_rate: {}, network_rate: {}\n").format(
-                    key, zeros_perc*100, _dag, _gpu_rate, _network_rate)
-            exception_msg += "Consider increasing the resolution or changing the arguments.\n"
-            exception_msg += "To suppress this warning and continue increase the resolution_zeros_tolerance."
-            raise Exception(exception_msg)
-
         # Define printing functions ------------------------------------------------------------------------------------
         def print_header():
-            print("Resolution: {}".format(resolution))
-            print("Resolution inflicted zeros: fp_units: {:.2f}% bp_units: {:.2f}% comm_units: {:.2f}%".format(
-                total_zeros["fp"] / num_of_values * 100,
-                total_zeros["bp"] / num_of_values * 100,
-                total_zeros["comm"] / num_of_values * 100,
-            ))
             print("Constant arguments: {}".format(constants))
             print("Variable arguments: {}".format(args.keys() - constants))
             print("-"*100)
 
         def print_state():
             nonlocal clear_output
-            # If we are running in a notebook then clear the output if specified
             if clear_output:
                 try:
                     os.system('cls' if os.name == 'nt' else 'clear')
@@ -350,7 +259,6 @@ class GpuNetworkSim:
         # Initialize summary dictionary --------------------------------------------------------------------------------
         summary = dict(total_time_elapsed=0, total_num_of_simulations=len(args_combinations),
                        finished_simulations=0, args=dict(), results=dict())
-        summary["args"]["resolution"] = resolution
         for key, value in args.items():
             new_value = list()
             for v in value:
@@ -379,7 +287,7 @@ class GpuNetworkSim:
         running_sim_indexes = dict()
         finished_sims_per_process = dict()
         worker_pool = multiprocessing.Pool(number_of_processes, initializer=GpuNetworkSim._run_sub_group_process,
-                                           initargs=[input_queue, running_queue, output_queue, args, resolution,
+                                           initargs=[input_queue, running_queue, output_queue, args,
                                                      output_file_name if save_chrome_traces else None, include_gaps])
         worker_pool.close()  # Do not receive anymore requests
         # Run main process loop ----------------------------------------------------------------------------------------
@@ -437,16 +345,13 @@ if __name__ == "__main__":
         base_dag = deserialize_dag(dag_file.read())
     schedulers = [FIFOScheduler(), TopologicalPriorityScheduler(preemptive=False),
                   TopologicalPriorityScheduler(preemptive=True)]
-    bandwidths = [0.12,0.13]
-    summary = GpuNetworkSim.run_group(gpu_rate=1,
-                                      network_rate= bandwidths,
+    bandwidths = [12, 13]
+    summary = GpuNetworkSim.run_group(network_bandwidth=bandwidths,
                                       gpu_scheduler=FIFOScheduler(),
                                       dag=base_dag,
                                       network_scheduler=schedulers,
                                       batch_size=4,
                                       n_of_batches=8,
-                                      resolution=1e1,
-                                      resolution_zeros_tolerance=1,
                                       clear_output=False,
                                       number_of_processes=None,
                                       save_chrome_traces=True,

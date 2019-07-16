@@ -30,7 +30,7 @@ def keras_model_to_DAG(model, skipped_layer_types=None):
             return
         param_count = keras_layer.count_params()
         comm_units = param_count * 4  # Each parameter is a 4 bytes
-        comp_units = param_count
+        comp_units = param_count * 4
         sim_layer = Layer(comp_units, comp_units, comm_units, name=keras_layer.name, type=type(keras_layer).__name__,
                           index=i)
         all_layers[keras_layer.name] = sim_layer
@@ -70,7 +70,8 @@ def keras_model_to_DAG(model, skipped_layer_types=None):
 
     for fun in [add_layer, connect_layer]:
         traverse_keras_DFS(model, processing_function=fun, order="pre-order", top_to_bottom=True)
-    return DAG(input_layers, name=model.name)
+    units = dict(comm_unit="B", forward_pass_unit="B", backward_pass_unit="B")
+    return DAG(input_layers, name=model.name, **units)
 
 
 def extract_cost_units_from_profile(profiling_report, suppress_negatives=0, scaling_factor=1.0,
@@ -131,10 +132,13 @@ def apply_timing_profile_to_dag(dag, profiling_report, suppress_negatives=0, sca
             return
         layer_timing = sim_timings[layer_name]
         if "forward_pass_units" in layer_timing:
+            dag.extras["forward_pass_unit"] = "ns"
             sim_layer.forward_pass_units = layer_timing["forward_pass_units"]
         if "backward_pass_units" in layer_timing:
+            dag.extras["backward_pass_unit"] = "ns"
             sim_layer.backward_pass_units = layer_timing["backward_pass_units"]
         if "communication_units" in layer_timing:
+            dag.extras["comm_unit"] = "ns"
             sim_layer.communication_units = layer_timing["communication_units"]
     dag.traverse_BFS(processing_function=apply_timing)
 
