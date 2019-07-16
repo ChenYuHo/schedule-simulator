@@ -1,5 +1,5 @@
-import math
 import json
+import numpy as np
 
 
 class SimPrinter:
@@ -8,7 +8,7 @@ class SimPrinter:
 
     def print(self, env, source, msg, verbosity):
         if self.verbosity >= verbosity:
-            print("t:{:<4}] {:<10}] {}".format(env.now, str(source), msg))
+            print("t:{:<6.2f}] {:<10}] {}".format(env.now, str(source), msg))
 
 
 def group_dict(dictionary, key_indices, extend_existing_lists=True):
@@ -49,6 +49,20 @@ def group_dict(dictionary, key_indices, extend_existing_lists=True):
             else:
                 result[filtered_key].append(value)
     return result
+
+
+TIME_UNITS = dict(d=60*60*24, h=60*60, m=60, s=1, ms=1e-3, us=1e-6, ns=1e-9, ps=1e-12)
+BYTE_UNITS = dict(kB=1e3, kiB=2**10, MB=1e6, MiB=2**20, GB=1e9, GiB=2**30, TB=1e12, TiB=2**40)
+BIT_UNITS = {k[:-1]+"b": v*8 for k, v in BYTE_UNITS.items()}
+
+
+def convert_time(value, from_unit, to_unit):
+    return value * (TIME_UNITS[from_unit] / TIME_UNITS[to_unit])
+
+
+def Mbps_to_Bpns(value):
+    # a = value / 8 > MBps, a = a * 1e6 > Bps, a = a * 1e-9 > Bpns
+    return value / 8 * 1e6 * 1e-9
 
 
 def sort_table(table, key):
@@ -173,8 +187,8 @@ def generate_ascii_timeline(processing_unit, start=0, end=None,
         time_grouping = int(duration)
     if not row_labels:
         row_labels = list()
-    scaled_start = int(math.floor(start/time_grouping))
-    scaled_end = int(math.ceil((processing_unit.env.now if end is None else end) / time_grouping))
+    scaled_start = int(np.floor(start/time_grouping))
+    scaled_end = int(np.ceil((processing_unit.env.now if end is None else end) / time_grouping))
     grouped_time_steps = range(scaled_start, scaled_end)
     total_util = 0
     # Generate groups
@@ -286,7 +300,7 @@ def generate_ascii_timeline(processing_unit, start=0, end=None,
 
 
 def generate_chrome_trace_timeline(processing_unit, group_labels=None, row_labels=None, cell_labels=None,
-                                   utilization_bins=10, return_dict=False):
+                                   multiplier=1, utilization_bins=10, return_dict=False, display_unit="ms"):
     """
     Unit must have kept its timeline using the jobwise format
     The generated chrome trace format is documented here
@@ -306,11 +320,8 @@ def generate_chrome_trace_timeline(processing_unit, group_labels=None, row_label
     Setting this to a very high number can be very slow.
     :return: A json formatted string in the chrome trace format
     """
-    if not processing_unit.timeline_format == "jobwise":
-        raise Exception("The Chrome trace generation is currently only available for units which have the 'jobwise' "
-                        "timeline format. Consider changing the format and trying again.")
-    start = 0
-    end = processing_unit.env.now
+    if processing_unit.timeline is None:
+        raise Exception("The given unit did not keep a timeline. A chrome trace cannot be generated.")
     # Create groups
     grouping_args = {"group_labels": group_labels, "row_labels": row_labels}
     groupings = {"group_labels": set(), "row_labels": set()}
@@ -335,19 +346,30 @@ def generate_chrome_trace_timeline(processing_unit, group_labels=None, row_label
     final_tid = tid-1
     # Add events
     events = list()
+    duration_warning_flag = False
     for job in processing_unit.timeline:
         job_grouping = {"group_labels": get_job_group(job, grouping_args["group_labels"], unit_name=processing_unit.name),
                         "row_labels": get_job_group(job, grouping_args["row_labels"], unit_name=processing_unit.name)}
         pid, tid = super_group_mapping[(job_grouping["group_labels"], job_grouping["row_labels"])]
         job_name = ",".join([str(x) for x in get_job_group(job, cell_labels, unit_name=processing_unit.name)])
         for event in processing_unit.timeline[job]:
-            event_dict = dict(**event, name=job_name, ph="X", pid=pid, tid=tid, args=job.extras)
+            scaled_event = dict()
+            for key in event:
+                scaled_event[key] = event[key] * multiplier
+            if scaled_event["dur"] < 1:
+                duration_warning_flag = True
+            event_dict = dict(**scaled_event, name=job_name, ph="X", pid=pid, tid=tid, args=job.extras)
             events.append(event_dict)
+    # if duration_warning_flag:
+    #     print("Warning! the trace contains events with durations less than 1. Consider scaling your units using the "
+    #           "mutliplier argument")
     # Add utilization info
+    start = 0
+    end = processing_unit.env.now
     total_utilization = processing_unit.get_utilization()
     if utilization_bins is not None:
         util_info = list()
-        bins = list(range(start, end, int((end - start) / utilization_bins)))
+        bins = list(np.arange(start, end, (end - start) / utilization_bins))
         if (end - start) % utilization_bins == 0:
             bins.append(end)
         else:
@@ -355,8 +377,8 @@ def generate_chrome_trace_timeline(processing_unit, group_labels=None, row_label
         bins.append(end)  # Append end again just to insert a 0 utilization at the end of the report
         for i in range(len(bins)-1):
             util = processing_unit.get_utilization(start=bins[i], end=bins[i+1])
-            counter_dict = dict(pid=final_pid, name="{:.2f}%".format(total_utilization*100), ph="C", ts=bins[i],
-                                args={"util": util})
+            counter_dict = dict(pid=final_pid, name="{:.2f}%".format(total_utilization*100), ph="C",
+                                ts=bins[i]*multiplier, args={"util": util})
             util_info.append(counter_dict)
         metadata.append(dict(pid=final_pid, name="process_name", ph="M",
                              args=dict(name="{}_utilization".format(processing_unit.name))))
@@ -365,6 +387,7 @@ def generate_chrome_trace_timeline(processing_unit, group_labels=None, row_label
     events.extend(metadata)
     chrome_trace = dict(traceEvents=events, final_pid=final_pid, final_tid=final_tid)
     chrome_trace["{}.{}".format(processing_unit.name, "util")] = total_utilization
+    chrome_trace["displayTimeUnit"] = display_unit
     return chrome_trace if return_dict else json.dumps(chrome_trace, indent=4)
 
 
@@ -389,14 +412,8 @@ def join_chrome_traces(traces_list, sort_process_ids=True, use_trace_dict=False)
     return base_trace if use_trace_dict else json.dumps(base_trace, indent=4)
 
 
-def stepwise_to_jobwise_timeline(processing_unit):
-    pass
-
-
 def get_gap_durations(processing_unit, group_labels=None):
-    if processing_unit.timeline_format == "stepwise":
-        raise Exception("The only supported timeline formats for getting gap durations are 'jobwise'.")
-    elif processing_unit.timeline_format == "jobwise":
+    if processing_unit.timeline is not None:
         grouped_intervals = dict()
         for job, events in processing_unit.timeline.items():
             group = get_job_group(job, group_labels)
@@ -410,4 +427,4 @@ def get_gap_durations(processing_unit, group_labels=None):
             grouped_interval_durations[group] = [e-b for b, e in get_interval_gaps(intervals)]
         return grouped_interval_durations
     else:
-        raise Exception("The only supported timeline formats for getting gap durations are 'jobwise'.")
+        raise Exception("The unit must have kept a timeline dictionary to extract gap information.")

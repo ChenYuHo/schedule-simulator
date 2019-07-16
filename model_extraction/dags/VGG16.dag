@@ -1,6 +1,9 @@
 {
     "extras": {
-        "name": "vgg16"
+        "name": "vgg16",
+        "comm_unit": "B",
+        "forward_pass_unit": "ns",
+        "backward_pass_unit": "ns"
     },
     "layers": {
         "0": {

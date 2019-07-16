@@ -71,28 +71,24 @@ class Job(simpy.Event):
 
 class ProcessingUnit:
     """
-    A processing unit base class that can simulate basically anything that processes units with a constant rate
+    A processing unit base class that can simulate basically anything that processes units with rate
     (ie. CPU, GPU, Aggregator, Network link ...etc)
     Needs a scheduler to operate.
     """
-    def __init__(self, env: simpy.Environment, scheduler, rate=1, name=None, out_pipe=None, sim_printer=None,
-                 timeline_format="jobwise"):
+    def __init__(self, env: simpy.Environment, scheduler, rate=1.0, name=None, out_pipe=None, sim_printer=None,
+                 keep_timeline=True):
         """
         :param env: The simpy environment used in this simulation.
         :param rate: The rate at which the unit consumes job units
         :param name: An arbitrary name for this unit. (Maybe removed later and replaced by an extras field)
         :param out_pipe: An optional output queue. Used for pipelining units.
         :param sim_printer: The print function that will be used to print the output of this unit
-        :param timeline_format:
-        "stepwise": dict(key: time step ,value: list of (job, processed units) tuples that were done in that time step)
-        It is a very inefficient format for simulations with a very large number of steps. This format can be used to
-        generate an ASCII timeline table using the generate_ascii_timeline method in utils
-        "jobwise": dict(key: job, value: list of {"ts": starting time step, "dur": duration, "pu": processed_units}
+        :param keep_timeline: Whether to keep a timeline or not. The timeline format is in the following format
+        dict(key: job, value: list of {"ts": starting time step, "dur": duration, "pu": processed_units}
         This format is much more memory efficient but slightly less cpu efficient. It can be used to generate a chrome
         trace using the generate_chrome_trace_timeline method in utils.
-        None: If the format is set to None then no timeline is kept. Can be useful when only the final results of the
-        simulation are relevant.
         """
+
         self.name = name
         self.rate = rate
         self.env = env
@@ -100,9 +96,12 @@ class ProcessingUnit:
         self.out_pipe = out_pipe
         self.processing = False
         self._sim_printer = sim_printer
-        self.timeline_format = timeline_format
-        if self.timeline_format is not None:
+        self.close_event = simpy.Event(self.env)
+        self.add_event = simpy.Event(self.env)
+        if keep_timeline is not None:
             self.timeline = dict()
+        else:
+            self.timeline = None
         self.total_processed_units = 0
 
     def queue(self, job):
@@ -113,6 +112,8 @@ class ProcessingUnit:
         """
         try:
             self.scheduler.queue(job)
+            if not self.add_event.triggered:
+                self.add_event.succeed()
         except AttributeError as e:
             print("[Error] Please make sure that you have provided a valid scheduler on {}".format(self))
             raise e
@@ -124,68 +125,66 @@ class ProcessingUnit:
         them according to its processing rate. The process continues indefinitely until it is interrupted.
         """
         self._print("Starting main process with processing rate: {}".format(self.rate), 1)
+        current_job = None
+        current_job_starting_time = None
+        finished = False
         try:
             while True:
-                # Finish as many jobs as you can given the rate per time step
-                iteration_rate = self.rate
-                will_finish_jobs = []
-                current_job = None
-                while self.scheduler.count() > 0 and iteration_rate > 0:
-                    job = self.scheduler.request()
-                    to_process = min(iteration_rate, job.remaining_units)
-                    self.total_processed_units += to_process
-                    iteration_rate -= to_process
-                    job.remaining_units -= to_process
-                    if job.remaining_units == 0:
-                        will_finish_jobs.append((job, to_process))
-                        self.scheduler.remove(job)
-                    else:
-                        current_job = (job, to_process)
-                # Add timeline info
-                if self.timeline_format is not None:
-                    timeline_list = will_finish_jobs.copy()
+                to_work_on = self.scheduler.request()
+                if to_work_on != current_job:
+                    # We will start working on something new or we finished the last job.
+                    # Let us update states to include the work that has been done on the last job.
                     if current_job is not None:
-                        timeline_list.append(current_job)
-                    if self.timeline_format == "stepwise":
-                        if len(timeline_list) > 0:
-                            self.timeline[self.env.now] = timeline_list
-                    elif self.timeline_format == "jobwise":
-                        for job, processed_units in timeline_list:
-                            if job in self.timeline:
-                                found_event = None
-                                for event in self.timeline[job]:
-                                    # Should we extend this event?
-                                    if event["ts"] + event["dur"] == self.env.now:
-                                        found_event = event
-                                        break
-                                if found_event is None:
-                                    self.timeline[job].append(dict(ts=self.env.now, dur=1, pu=processed_units))
-                                else:
-                                    found_event["dur"] += 1
-                                    found_event["pu"] += processed_units
+                        dur = self.env.now - current_job_starting_time
+                        pu = dur * self.rate
+                        if not finished:
+                            current_job.remaining_units -= pu
+                        else:
+                            # We set it to 0 instead of relying on subtraction because of floating point precision
+                            current_job.remaining_units = 0
+                            current_job.succeed()
+                            if current_job.result is not None and self.out_pipe is not None:
+                                self.out_pipe.queue(current_job.result)
+                            self._print("Finished job {}".format(current_job), 2)
+                        if self.timeline is not None:
+                            timeline_event = {"ts": current_job_starting_time, "dur": dur, "pu": pu}
+                            if current_job in self.timeline.keys():
+                                self.timeline[current_job].append(timeline_event)
                             else:
-                                self.timeline[job] = [dict(ts=self.env.now, dur=1, pu=processed_units)]
-                # Finalize finished jobs
-                # We do this before waiting to allow processes that are waiting for the job to be notified instantly
-                # in the next time step. Otherwise, the processes will always be delayed 1 time step
-                for job, processed_units in will_finish_jobs:
-                    job.succeed()  # Fire job finished event
-                    if self.out_pipe is not None and job.result is not None:
-                        self.out_pipe.queue(job.result)
-                    self._print("Finished job {}".format(job), 2)
-                # Step
-                yield self.env.timeout(1)
+                                self.timeline[current_job] = [timeline_event]
+                        self.total_processed_units += pu
+                        finished = False
+                    current_job = to_work_on
+                    current_job_starting_time = self.env.now
+                if current_job is None:
+                    # If we are not working then, wait until we get a new add event
+                    yield self.add_event
+                else:
+                    # If we are working then, wait until we finish or we get a new add event
+                    delay_needed = current_job.remaining_units / self.rate
+                    elapsed = self.env.now - current_job_starting_time
+                    yield simpy.AnyOf(self.env, [self.env.timeout(delay_needed-elapsed), self.add_event])
+                if self.add_event.triggered:
+                    # We have received a new job
+                    self.add_event = simpy.Event(self.env)
+                else:
+                    # We have finished the current job. Recording its info will happen in the next iteration.
+                    self.scheduler.remove(current_job)
+                    finished = True
         except Interrupt:
             self._print("Closed main process.", 1)
         except AttributeError as e:
             print("[Error] Please make sure that you have mounted a valid scheduler on {}".format(self))
             raise e
 
+    def close(self):
+        self.close_event.succeed()
+
     def get_utilization(self, start=None, end=None, extras=None):
         """
         A function for returning the utilization percentage of a single group using the timeline
         :param start: The utilization period start. If None then 0 is used.
-        :param end: The utilization period end. If None then the last time step in the environment is used.
+        :param end: The utilization period end. If None then last event time in the environment is used.
         :param extras: An extras dictionary that will be used to match each job's extras dictionary.
         Only if all the key,value pairs in this dict are present in the job.extras dict will the function include it
         :return: A 0-1 floating point value representing the utilization percentage
@@ -195,26 +194,16 @@ class ProcessingUnit:
         if end is None:
             end = self.env.now
         total_processed_units = 0
-        duration = end - start + 1
+        duration = end - start
+        if duration == 0:
+            return 0
         total_rate_units = self.rate * duration
-        if self.timeline_format is None:
+        if self.timeline is None:
             if start is None and end is None and extras is None:
                 return self.total_processed_units / total_rate_units
             else:
                 raise Exception("Cannot pass start, end, or extras options with a unit that stores no timeline.")
-        if self.timeline_format == "stepwise":
-            for t in self.timeline.keys():
-                if t < start or t > end:
-                    continue
-                for job, processed_units in self.timeline[t]:
-                    if job.match_extras(extras):
-                        total_processed_units += processed_units
-        elif self.timeline_format == "jobwise":
-            """
-            Since jobwise format does not keep per step information like the stepwise format. We can only average the
-            processed units over the duration of the job event to get the per time step units. This is a good
-            approximation however it is not fully accurate.
-            """
+        else:
             for job, events in self.timeline.items():
                 if not job.match_extras(extras):
                     continue
@@ -224,10 +213,7 @@ class ProcessingUnit:
                     oe = min(end, event["ts"] + event["dur"])
                     if os >= oe:  # No overlap
                         continue
-                    total_processed_units += event["pu"]/event["dur"] * (oe-os)
-
-        else:
-            raise Exception("Timeline format not supported")
+                    total_processed_units += self.rate * (oe-os)
         return total_processed_units / total_rate_units
 
     def _print(self, msg, verbosity):
@@ -245,11 +231,10 @@ if __name__ == '__main__':
     from schedule_simulator_core.utils import SimPrinter, generate_ascii_timeline, generate_chrome_trace_timeline
     import random
     env = simpy.Environment()
-    gpu = ProcessingUnit(env, schedulers.FIFOScheduler(), timeline_format="stepwise",
-                         rate=2, name="GPU:1", sim_printer=SimPrinter(verbosity=0).print)
+    gpu = ProcessingUnit(env, schedulers.FIFOScheduler(), keep_timeline=True,
+                         rate=1/3, name="GPU:1", sim_printer=SimPrinter(verbosity=3).print)
     gpu_process = env.process(gpu.main_process())
-    for i in range(10):
-        job = Job(env, units=random.randint(1, 10), custom_attr_1=i, custom_attr_2=i % 3)
+    for i in range(100):
+        job = Job(env, units=random.randint(1, 10)/1e50, custom_attr_1=i, custom_attr_2=i % 3)
         gpu.queue(job)
-    env.run(until=100)
-    print(generate_ascii_timeline(gpu, start=0, time_grouping=1, row_labels=["custom_attr_1"]))
+    env.run()
