@@ -3,7 +3,7 @@ This module provides preset simulation setups for quick reuse
 Todo generalize the functions used in GpuNetworkSim so that they can be reused with other simulations
 """
 import simpy
-import numpy as np
+import statistics
 import itertools
 import time
 import json
@@ -62,10 +62,15 @@ class GpuNetworkSim:
         dag_layer_costs_description = dict()
         for cost_name, costs in dag_layer_costs.items():
             stats = dict()
-            # We cast these values to ensure they are JSON serializable
-            stats["sum"] = int(np.sum(costs))
-            stats["mean"] = float(np.mean(costs))
-            stats["std"] = float(np.std(costs))
+            # numpy was used previously to calculate the stats in this block however it was replaced due to two
+            # problems:
+            # numpy results are not json serializable. Can be fixed by simply casting using float() or int().
+            # numpy uses int32 by default and was causing overflow errors silently. Can be fixed by specifying the type
+            # used with each function call (np.sum(array, dtype="float64") however even a float 64 value can overflow
+            # so we simply use built in python functions instead.
+            stats["sum"] = sum(costs)
+            stats["mean"] = statistics.mean(costs)
+            stats["std"] = statistics.stdev(costs)
             dag_layer_costs_description[cost_name] = stats
         for cost_name, description in dag_layer_costs_description.items():
             for subkey in description:
