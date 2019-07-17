@@ -1,0 +1,293 @@
+{
+    "extras": {
+        "name": "vgg16",
+        "$local$comm_unit": "B",
+        "$local$forward_pass_unit": "ns",
+        "$local$backward_pass_unit": "ns",
+        "$local$model_profiling_report_name": "VGG16_06-30-10-35.timings.json",
+        "$local$model_profiling_args": {
+            "model": "VGG16",
+            "loss": "binary_crossentropy",
+            "eager": false,
+            "optimizer": "sgd",
+            "device": "cpu",
+            "batch_size": 8,
+            "num_of_batches": 10,
+            "trials": 5,
+            "skip": false,
+            "use_python_timing": false,
+            "out": null,
+            "log": null
+        }
+    },
+    "layers": {
+        "0": {
+            "forward_pass_units": 196485540,
+            "backward_pass_units": 267063240,
+            "communication_units": 7168,
+            "input_layers": [],
+            "output_layers": [
+                1
+            ],
+            "extras": {
+                "name": "block1_conv1",
+                "type": "Conv2D",
+                "index": 0
+            }
+        },
+        "1": {
+            "forward_pass_units": 97471860,
+            "backward_pass_units": 676498120,
+            "communication_units": 147712,
+            "input_layers": [
+                0
+            ],
+            "output_layers": [
+                2
+            ],
+            "extras": {
+                "name": "block1_conv2",
+                "type": "Conv2D",
+                "index": 1
+            }
+        },
+        "2": {
+            "forward_pass_units": 82751240,
+            "backward_pass_units": 260858660,
+            "communication_units": 295424,
+            "input_layers": [
+                1
+            ],
+            "output_layers": [
+                3
+            ],
+            "extras": {
+                "name": "block2_conv1",
+                "type": "Conv2D",
+                "index": 2
+            }
+        },
+        "3": {
+            "forward_pass_units": 90039360,
+            "backward_pass_units": 367751380,
+            "communication_units": 590336,
+            "input_layers": [
+                2
+            ],
+            "output_layers": [
+                4
+            ],
+            "extras": {
+                "name": "block2_conv2",
+                "type": "Conv2D",
+                "index": 3
+            }
+        },
+        "4": {
+            "forward_pass_units": 66805960,
+            "backward_pass_units": 165639320,
+            "communication_units": 1180672,
+            "input_layers": [
+                3
+            ],
+            "output_layers": [
+                5
+            ],
+            "extras": {
+                "name": "block3_conv1",
+                "type": "Conv2D",
+                "index": 4
+            }
+        },
+        "5": {
+            "forward_pass_units": 83041340,
+            "backward_pass_units": 253895320,
+            "communication_units": 2360320,
+            "input_layers": [
+                4
+            ],
+            "output_layers": [
+                6
+            ],
+            "extras": {
+                "name": "block3_conv2",
+                "type": "Conv2D",
+                "index": 5
+            }
+        },
+        "6": {
+            "forward_pass_units": 88163760,
+            "backward_pass_units": 261557580,
+            "communication_units": 2360320,
+            "input_layers": [
+                5
+            ],
+            "output_layers": [
+                7
+            ],
+            "extras": {
+                "name": "block3_conv3",
+                "type": "Conv2D",
+                "index": 6
+            }
+        },
+        "7": {
+            "forward_pass_units": 53600340,
+            "backward_pass_units": 126959000,
+            "communication_units": 4720640,
+            "input_layers": [
+                6
+            ],
+            "output_layers": [
+                8
+            ],
+            "extras": {
+                "name": "block4_conv1",
+                "type": "Conv2D",
+                "index": 7
+            }
+        },
+        "8": {
+            "forward_pass_units": 89812820,
+            "backward_pass_units": 228046280,
+            "communication_units": 9439232,
+            "input_layers": [
+                7
+            ],
+            "output_layers": [
+                9
+            ],
+            "extras": {
+                "name": "block4_conv2",
+                "type": "Conv2D",
+                "index": 8
+            }
+        },
+        "9": {
+            "forward_pass_units": 92907260,
+            "backward_pass_units": 213567540,
+            "communication_units": 9439232,
+            "input_layers": [
+                8
+            ],
+            "output_layers": [
+                10
+            ],
+            "extras": {
+                "name": "block4_conv3",
+                "type": "Conv2D",
+                "index": 9
+            }
+        },
+        "10": {
+            "forward_pass_units": 25769420,
+            "backward_pass_units": 59632480,
+            "communication_units": 9439232,
+            "input_layers": [
+                9
+            ],
+            "output_layers": [
+                11
+            ],
+            "extras": {
+                "name": "block5_conv1",
+                "type": "Conv2D",
+                "index": 10
+            }
+        },
+        "11": {
+            "forward_pass_units": 21274720,
+            "backward_pass_units": 48262520,
+            "communication_units": 9439232,
+            "input_layers": [
+                10
+            ],
+            "output_layers": [
+                12
+            ],
+            "extras": {
+                "name": "block5_conv2",
+                "type": "Conv2D",
+                "index": 11
+            }
+        },
+        "12": {
+            "forward_pass_units": 23112560,
+            "backward_pass_units": 99054580,
+            "communication_units": 9439232,
+            "input_layers": [
+                11
+            ],
+            "output_layers": [
+                13
+            ],
+            "extras": {
+                "name": "block5_conv3",
+                "type": "Conv2D",
+                "index": 12
+            }
+        },
+        "13": {
+            "forward_pass_units": 0,
+            "backward_pass_units": 20979040,
+            "communication_units": 0,
+            "input_layers": [
+                12
+            ],
+            "output_layers": [
+                14
+            ],
+            "extras": {
+                "name": "flatten",
+                "type": "Flatten",
+                "index": 13
+            }
+        },
+        "14": {
+            "forward_pass_units": 23421200,
+            "backward_pass_units": 240030820,
+            "communication_units": 411058176,
+            "input_layers": [
+                13
+            ],
+            "output_layers": [
+                15
+            ],
+            "extras": {
+                "name": "fc1",
+                "type": "Dense",
+                "index": 14
+            }
+        },
+        "15": {
+            "forward_pass_units": 9732380,
+            "backward_pass_units": 24456140,
+            "communication_units": 67125248,
+            "input_layers": [
+                14
+            ],
+            "output_layers": [
+                16
+            ],
+            "extras": {
+                "name": "fc2",
+                "type": "Dense",
+                "index": 15
+            }
+        },
+        "16": {
+            "forward_pass_units": 1186480,
+            "backward_pass_units": 4844700,
+            "communication_units": 16388000,
+            "input_layers": [
+                15
+            ],
+            "output_layers": [],
+            "extras": {
+                "name": "predictions",
+                "type": "Dense",
+                "index": 16
+            }
+        }
+    }
+}

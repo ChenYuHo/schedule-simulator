@@ -18,8 +18,8 @@ sys.path.append("..")
 from schedule_simulator_core.schedulers import FIFOScheduler, TopologicalPriorityScheduler
 from schedule_simulator_core.core import ProcessingUnit
 from schedule_simulator_core.DNN_functions import train
-from schedule_simulator_core.utils import SimPrinter, trim, sort_table, get_gap_durations, Mbps_to_Bpns
-from schedule_simulator_core.DAGs import deserialize_dag
+from schedule_simulator_core.utils import SimPrinter, trim, sort_table, get_gaps, Mbps_to_Bpns, get_normalized_gap_durations
+from schedule_simulator_core.DAGs import deserialize_dag, LOCAL_EXTRA_PREFIX
 SIM_GROUP_REPORT_POSTFIX = ".simgroup.json"
 
 
@@ -77,6 +77,8 @@ class GpuNetworkSim:
                 summary["{}.{}".format(cost_name, subkey)] = description[subkey]
         # Dag extras:
         for ek, ev in self.dag.extras.items():
+            if ek.startswith(LOCAL_EXTRA_PREFIX):
+                continue
             try:
                 json.dumps(ev)
             except TypeError:
@@ -89,18 +91,24 @@ class GpuNetworkSim:
         # Add options used
         summary.update(self.args)
         if include_gaps:
-            summary["$list$gpu_gaps_durations"] = get_gap_durations(self.gpu)[tuple()]
-            summary["$list$network_gaps_durations"] = get_gap_durations(self.network)[tuple()]
-            grouped_gaps = get_gap_durations(self.gpu, group_labels=["type", "batch"])
-            forward_pass_gaps_durations = list()
+            gpu_gaps = get_gaps(self.gpu)[tuple()]
+            summary["$list$gpu_gaps_durations"] = [e-b for b, e in gpu_gaps]
+            summary["$list$network_gaps_durations"] = [e-b for b, e in get_gaps(self.network)[tuple()]]
+            grouped_gaps = get_gaps(self.gpu, group_labels=["type", "batch"])
+            forward_pass_gaps = list()
             for group in grouped_gaps.keys():
                 if group[0] == "forward_pass":
-                    forward_pass_gaps_durations.extend(grouped_gaps[group])
-            summary["$list$forward_pass_gaps_durations"] = forward_pass_gaps_durations
+                    forward_pass_gaps.extend(grouped_gaps[group])
+            summary["$list$forward_pass_gaps_durations"] = [e-b for b, e in forward_pass_gaps]
+            def cost(index):
+                return self.dag.topological_order[index].communication_units / self.network.rate
+            summary["$list$gpu_normalized_gaps_durations"] = get_normalized_gap_durations(self.gpu, gpu_gaps, cost)
+            summary["$list$forward_pass_normalized_gaps_durations"] = get_normalized_gap_durations(
+                self.gpu, forward_pass_gaps, cost)
         return summary
 
     @staticmethod
-    def summarize_group(simulations, include_simulation_indices=True):
+    def summarize_group(simulations):
         group_summary = dict()
         for key in simulations[0].summarize().keys():
             group_summary[key] = list()
@@ -110,7 +118,8 @@ class GpuNetworkSim:
         return group_summary
 
     @staticmethod
-    def _run_sub_group_process(input_queue, running_queue, output_queue, args, output_trace_file_name, include_gaps):
+    def _run_sub_group_process(input_queue, running_queue, output_queue, args, output_trace_file_name, include_gaps,
+                               include_util_in_trace=True):
         print("pid[{}] starting process..".format(os.getpid()))
         while not input_queue.empty():
             sim_i, args_combination = input_queue.get()
@@ -142,10 +151,15 @@ class GpuNetworkSim:
                     for unit in [simulation.gpu, simulation.network]:
                         traces.append(
                             generate_chrome_trace_timeline(unit, group_labels=["unit_name"], row_labels=["type"],
-                                                           cell_labels=["name"], utilization_bins=500,
+                                                           cell_labels=["name"],
+                                                           utilization_bins=500 if include_util_in_trace else None,
                                                            return_dict=True, multiplier=1e-3))
                     final_trace = join_chrome_traces(traces, use_trace_dict=True)
-                    final_trace.update(final_summary)
+                    trace_metadata = dict()
+                    for key in final_summary:
+                        if "$" not in key:
+                            trace_metadata[key] = final_summary[key]
+                    final_trace.update(trace_metadata)
                     with open("{}_sim{}_.chrometrace.json".format(output_trace_file_name, sim_i), "w") as f:
                         json.dump(final_trace, f, indent=4)
                 output_queue.put((os.getpid(), sim_i, final_summary))
@@ -162,7 +176,8 @@ class GpuNetworkSim:
     @staticmethod
     def run_group(network_bandwidth, gpu_scheduler, network_scheduler, dag, batch_size, n_of_batches,
                   number_of_processes=None, saving_interval=5 * 60, print_interval=2, clear_output=True,
-                  save_chrome_traces=False, include_gaps=False, output_file_name="default"):
+                  save_chrome_traces=False, join_traces_in_one_file = True, include_util_in_trace=True,
+                  include_gaps=False, output_file_name="default"):
         """
         All of the required arguments can be either a value or a list of values to try.
         The product of all options will be taken and then iterated to generate simulations with all possible
@@ -293,7 +308,8 @@ class GpuNetworkSim:
         finished_sims_per_process = dict()
         worker_pool = multiprocessing.Pool(number_of_processes, initializer=GpuNetworkSim._run_sub_group_process,
                                            initargs=[input_queue, running_queue, output_queue, args,
-                                                     output_file_name if save_chrome_traces else None, include_gaps])
+                                                     output_file_name if save_chrome_traces else None, include_gaps,
+                                                     include_util_in_trace])
         worker_pool.close()  # Do not receive anymore requests
         # Run main process loop ----------------------------------------------------------------------------------------
         print("pid[{}] Main process loop starting".format(os.getpid()))
@@ -335,10 +351,27 @@ class GpuNetworkSim:
             print("pid[{}] Main process loop closed by user".format(os.getpid()))
         worker_pool.join()
         print("pid[{}] Main process is saving and returning results".format(os.getpid()))
+        if len(summary["results"]) == 0:
+            raise Exception("All simulations have failed.")
         sort_table(summary["results"], key="sim_index")
         if output_file_name is not None:
             with open("{}{}".format(output_file_name, SIM_GROUP_REPORT_POSTFIX), "w") as output_file:
                 json.dump(summary, output_file, indent=4)
+            if save_chrome_traces and join_traces_in_one_file:
+                from schedule_simulator_core.utils import join_chrome_traces
+                prefixes = list()
+                traces = list()
+                for i in range(len(args_combinations)):
+                    try:
+                        file_name = "{}_sim{}_.chrometrace.json".format(output_file_name, i)
+                        with open(file_name) as trace_file:
+                            traces.append(trace_file.read())
+                            prefixes.append("sim{}".format(i))
+                        os.remove(file_name)
+                    except FileNotFoundError:
+                        print("Trace file for simulation {} was not found. ignoring it".format(i))
+                with open("{}.chrometrace.json".format(output_file_name), "w") as output:
+                    output.write(join_chrome_traces(traces, prefixes=prefixes))
         return summary
 
 
@@ -346,11 +379,11 @@ if __name__ == "__main__":
     """
     Example usage
     """
-    with open("../model_extraction/dags/VGG16.dag") as dag_file:
+    with open("../model_extraction/dags/VGG16_CPU.dag") as dag_file:
         base_dag = deserialize_dag(dag_file.read())
     schedulers = [FIFOScheduler(), TopologicalPriorityScheduler(preemptive=False),
                   TopologicalPriorityScheduler(preemptive=True)]
-    bandwidths = [12, 13]
+    bandwidths = [200]
     summary = GpuNetworkSim.run_group(network_bandwidth=bandwidths,
                                       gpu_scheduler=FIFOScheduler(),
                                       dag=base_dag,
@@ -360,5 +393,6 @@ if __name__ == "__main__":
                                       clear_output=False,
                                       number_of_processes=None,
                                       save_chrome_traces=True,
-                                      include_gaps=True
+                                      include_gaps=True,
+                                      include_util_in_trace=False
                                      )

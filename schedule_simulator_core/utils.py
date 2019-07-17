@@ -357,6 +357,7 @@ def generate_chrome_trace_timeline(processing_unit, group_labels=None, row_label
             for key in event:
                 scaled_event[key] = event[key] * multiplier
             if scaled_event["dur"] < 1:
+                continue
                 duration_warning_flag = True
             event_dict = dict(**scaled_event, name=job_name, ph="X", pid=pid, tid=tid, args=job.extras)
             events.append(event_dict)
@@ -391,28 +392,35 @@ def generate_chrome_trace_timeline(processing_unit, group_labels=None, row_label
     return chrome_trace if return_dict else json.dumps(chrome_trace, indent=4)
 
 
-def join_chrome_traces(traces_list, sort_process_ids=True, use_trace_dict=False):
-    base_trace = traces_list[0] if use_trace_dict else json.loads(traces_list[0])
-    for trace in traces_list[1:]:
+def join_chrome_traces(traces_list, sort_process_ids=True, use_trace_dict=False,
+                       prefixes=None):
+    joined_trace = dict(traceEvents=list(), final_pid=-1, final_tid=-1)
+    for i, trace in enumerate(traces_list):
         if not use_trace_dict:
             trace = json.loads(trace)
         for event in trace["traceEvents"]:
             if "pid" in event:
-                event["pid"] += base_trace["final_pid"] + 1
+                event["pid"] += joined_trace["final_pid"] + 1
             if "tid" in event:
-                event["tid"] += base_trace["final_tid"] + 1
-        base_trace["traceEvents"].extend(trace["traceEvents"])
-        base_trace["final_pid"] += trace["final_pid"] + 1
-        base_trace["final_tid"] += trace["final_tid"] + 1
+                event["tid"] += joined_trace["final_tid"] + 1
+            if prefixes is not None and "ph" in event:
+                if event["ph"] == "M" and event["name"] == "process_name":
+                    event["args"]["name"] = "{}_{}".format(prefixes[i], event["args"]["name"])
+        joined_trace["traceEvents"].extend(trace["traceEvents"])
+        joined_trace["final_pid"] += trace["final_pid"] + 1
+        joined_trace["final_tid"] += trace["final_tid"] + 1
         for key in trace.keys() - {"final_pid", "final_tid", "traceEvents"}:
-            base_trace[key] = trace[key]
+            if prefixes is None:
+                joined_trace[key] = trace[key]
+            else:
+                joined_trace["{}_{}".format(prefixes[i], key)] = trace[key]
     if sort_process_ids:
-        for i in range(base_trace["final_pid"]+1):
-            base_trace["traceEvents"].append(dict(ph="M", pid=i, name="process_sort_index", args=dict(sort_index=i)))
-    return base_trace if use_trace_dict else json.dumps(base_trace, indent=4)
+        for i in range(joined_trace["final_pid"]+1):
+            joined_trace["traceEvents"].append(dict(ph="M", pid=i, name="process_sort_index", args=dict(sort_index=i)))
+    return joined_trace if use_trace_dict else json.dumps(joined_trace, indent=4)
 
 
-def get_gap_durations(processing_unit, group_labels=None):
+def get_gaps(processing_unit, group_labels=None):
     if processing_unit.timeline is not None:
         grouped_intervals = dict()
         for job, events in processing_unit.timeline.items():
@@ -422,9 +430,42 @@ def get_gap_durations(processing_unit, group_labels=None):
             for event in events:
                 interval = (event["ts"], event["ts"] + event["dur"])
                 grouped_intervals[group].append(interval)
-        grouped_interval_durations = dict()
+        grouped_gaps = dict()
         for group, intervals in grouped_intervals.items():
-            grouped_interval_durations[group] = [e-b for b, e in get_interval_gaps(intervals)]
-        return grouped_interval_durations
+            grouped_gaps[group] = get_interval_gaps(intervals)
+        # try:
+        #     print("Unit: {}".format(processing_unit))
+        #     print(grouped_gaps[tuple()])
+        #     print([e-b for b, e in grouped_gaps[tuple()]])
+        # except:
+        #     pass
+        return grouped_gaps
     else:
         raise Exception("The unit must have kept a timeline dictionary to extract gap information.")
+
+
+def get_normalized_gap_durations(unit, gaps, cost_func):
+    """
+    This function assumes that if a layer starts doing work at the same time a gap has finished,
+    Then that gap was blocking the work.
+    """
+    normalized_gap_durations = list()
+    for gap in gaps:
+        found_index = None
+        for job in unit.timeline:
+            for event in unit.timeline[job]:
+                if event["ts"] == gap[1]:
+                    # We need to make sure that zero cost layers do not interfere
+                    gap_dur = gap[1] - gap[0]
+                    norm = gap_dur / cost_func(job.extras["index"])
+                    if found_index is not None:
+                        if job.extras["index"] < found_index:
+                            found_index = job.extras["index"]
+                            normalized_gap_durations[-1] = norm
+                    else:
+                        found_index = job.extras["index"]
+                        normalized_gap_durations.append(norm)
+    if len(normalized_gap_durations) != len(gaps):
+        print("Number of blocked layers: {} Number of gaps: {}".format(len(normalized_gap_durations), len(gaps)))
+        raise Exception("Blocked layers are not aligned with gaps.")
+    return normalized_gap_durations

@@ -1,5 +1,6 @@
 from schedule_simulator_core.DAGs import Layer, DAG
 from model_extraction.keras_model_profiler import traverse_keras_DFS, get_layer_children, get_layer_parents
+from schedule_simulator_core.DAGs import LOCAL_EXTRA_PREFIX
 import numpy as np
 
 
@@ -70,7 +71,8 @@ def keras_model_to_DAG(model, skipped_layer_types=None):
 
     for fun in [add_layer, connect_layer]:
         traverse_keras_DFS(model, processing_function=fun, order="pre-order", top_to_bottom=True)
-    units = dict(comm_unit="B", forward_pass_unit="B", backward_pass_unit="B")
+    units = {"{}comm_unit".format(LOCAL_EXTRA_PREFIX): "B", "{}forward_pass_unit".format(LOCAL_EXTRA_PREFIX): "B",
+             "{}backward_pass_unit".format(LOCAL_EXTRA_PREFIX): "B", }
     return DAG(input_layers, name=model.name, **units)
 
 
@@ -132,13 +134,13 @@ def apply_timing_profile_to_dag(dag, profiling_report, suppress_negatives=0, sca
             return
         layer_timing = sim_timings[layer_name]
         if "forward_pass_units" in layer_timing:
-            dag.extras["forward_pass_unit"] = "ns"
+            dag.extras["{}forward_pass_unit".format(LOCAL_EXTRA_PREFIX)] = "ns"
             sim_layer.forward_pass_units = layer_timing["forward_pass_units"]
         if "backward_pass_units" in layer_timing:
-            dag.extras["backward_pass_unit"] = "ns"
+            dag.extras["{}backward_pass_unit".format(LOCAL_EXTRA_PREFIX)] = "ns"
             sim_layer.backward_pass_units = layer_timing["backward_pass_units"]
         if "communication_units" in layer_timing:
-            dag.extras["comm_unit"] = "ns"
+            dag.extras["{}comm_unit".format(LOCAL_EXTRA_PREFIX)] = "ns"
             sim_layer.communication_units = layer_timing["communication_units"]
     dag.traverse_BFS(processing_function=apply_timing)
 
@@ -150,13 +152,15 @@ if __name__ == "__main__":
     import json
     from tensorflow.python.keras.layers import InputLayer
     from tensorflow.python.keras.layers.pooling import Pooling1D, Pooling2D, Pooling3D
-    from tensorflow.python.keras.applications import VGG16
+    from tensorflow.python.keras.applications import VGG16, ResNet50, DenseNet121, InceptionV3
     from schedule_simulator_core.DAGs import serialize_dag, deserialize_dag
-    model = VGG16(weights=None, include_top=True)
+    model = InceptionV3(weights=None, include_top=True)
     dag = keras_model_to_DAG(model, skipped_layer_types=[InputLayer, Pooling1D, Pooling2D, Pooling3D])
-    with open("model_reconstruction_profiling_reports/VGG16_06-27-15-20.timings.json") as report_file:
+    with open("model_reconstruction_profiling_reports/InceptionV3_07-02-21-21.timings.json") as report_file:
         model_profiling_report = json.load(report_file)
     apply_timing_profile_to_dag(dag, model_profiling_report, suppress_negatives=1, scaling_factor=1)
-    with open("dags/VGG16.dag", "w") as output_file:
+    dag.extras["{}model_profiling_report_name".format(LOCAL_EXTRA_PREFIX)] = "InceptionV3_07-02-21-21.timings.json"
+    dag.extras["{}model_profiling_args".format(LOCAL_EXTRA_PREFIX)] = model_profiling_report["args"]
+    with open("dags/InceptionV3_CPU.dag", "w") as output_file:
         output_file.write(serialize_dag(dag))
 

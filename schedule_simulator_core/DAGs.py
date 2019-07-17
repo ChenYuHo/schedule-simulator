@@ -3,6 +3,9 @@ This module includes everything related to DAGs and their algorithms
 Building the architecture is done here. Using the DAG architecture as a DNN is done in the DNN_functions module
 """
 
+# Extra keys that have this prefix should not be propagated to sub objects created.
+LOCAL_EXTRA_PREFIX = "$local$"
+
 
 class Layer:
     """
@@ -29,6 +32,9 @@ class Layer:
         self.extras = extras
         self._forward_dependencies = None
         self._backward_dependencies = None
+
+    def __str__(self):
+        return str(self.extras)
 
 
 class LayerFactory:
@@ -204,7 +210,13 @@ class DAG:
         return dict(fp_units=fp_units, bp_units=bp_units, comm_units=comm_units, comp_units=comp_units)
 
     def __str__(self):
-        return str(self.extras)
+        s = ""
+        for key, value in self.extras.items():
+            if key.startswith(LOCAL_EXTRA_PREFIX):
+                continue
+            s += "{}:{} ".format(key, value)
+        return s
+
     """Should add some functions to make it easy to join different DAGs together"""
 
 
