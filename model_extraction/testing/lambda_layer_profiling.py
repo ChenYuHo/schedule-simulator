@@ -54,5 +54,5 @@ x, y = get_dummy_input_output(model, 100000)
 # model.predict(x=x, steps=2, callbacks=[callback])
 # model.evaluate(x=x, y=y, steps=2, callbacks=[callback])
 model.fit(x=x, y=y, steps_per_epoch=4, callbacks=[callback], epochs=1)
-with open("lambda_layer_profiling_trace.json", "w") as file:
+with open("lambda_layer_profiling.chrometrace.json", "w") as file:
     json.dump(trace, file, indent=4)

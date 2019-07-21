@@ -11,6 +11,7 @@ import os
 import time
 import tensorflow as tf
 import contextlib
+import numpy as np
 
 
 def dummy_multi_model():
@@ -137,7 +138,7 @@ def clone_layer(layer):
     return deserialize(serialize(layer))
 
 
-def get_dummy_input_output(model, num_of_samples):
+def get_dummy_input_output(model, num_of_samples, use_numpy=False):
     # Keras gives us a list of shapes only in case of multiple inputs / outputs
     model_input_shapes = [model.input_shape] if model.input_shape[0] is None else model.input_shape
     model_output_shapes = [model.output_shape] if model.output_shape[0] is None else model.output_shape
@@ -151,8 +152,12 @@ def get_dummy_input_output(model, num_of_samples):
         output_shapes.append(shape)
     # Which op takes less time depends on whether you are using gpu or not and whether you are using eager execution or
     # not
-    input_data = [tf.random.uniform(shape=shape, name="data_generation_input") for shape in input_shapes]
-    output_data = [tf.random.uniform(shape=shape, name="data_generation_output") for shape in output_shapes]
+    if use_numpy:
+        input_data = [np.random.uniform(size=shape) for shape in input_shapes]
+        output_data = [np.random.uniform(size=shape) for shape in output_shapes]
+    else:
+        input_data = [tf.random.uniform(shape=shape, name="data_generation_input") for shape in input_shapes]
+        output_data = [tf.random.uniform(shape=shape, name="data_generation_output") for shape in output_shapes]
     return input_data, output_data
 
 
@@ -183,6 +188,7 @@ def get_trace_costs(trace_dict):
 
 
 def extend_trace(original_trace_dict, to_be_added_trace_dict, inplace=True):
+    # TODO remove this and use join_chrome_traces in utils instead
     if inplace:
         original_trace_dict["traceEvents"].extend(to_be_added_trace_dict["traceEvents"])
     else:
