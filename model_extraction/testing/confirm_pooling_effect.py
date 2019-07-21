@@ -4,8 +4,9 @@ import tensorflow.python.client.timeline as timeline
 import numpy as np
 import json
 import time
-from model_extraction.keras_model_profiler import clone_layer
+from model_extraction.keras_utils import clone_layer
 import itertools
+
 
 def get_trace_duration(trace_dict):
     """

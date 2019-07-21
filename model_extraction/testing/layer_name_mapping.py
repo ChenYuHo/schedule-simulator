@@ -1,7 +1,8 @@
 import json
 import os
 import tensorflow as tf
-from model_extraction.keras_model_profiler import traverse_keras_DFS
+from model_extraction.keras_utils import traverse_keras_DFS
+from model_extraction.keras_utils import *
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = "999"
 # Supressing deprectation messages is not working
@@ -12,14 +13,15 @@ optimizer = "SGD"
 print_op_info = False
 print_pass_info = False
 print_layer_names = False
-new_trace = False
+new_trace = True
 models = ["VGG16", "VGG19", "ResNet50", "InceptionV3", "DenseNet201"]
 
+names_to_id = dict()
+ids_to_name = dict()
 
-def gen_trace():
+def gen_trace(model):
     import tensorflow as tf
     import tensorflow.python.keras as k
-    from model_extraction.keras_model_profiler import get_dummy_input_output, extend_trace
     import tensorflow.python.client.timeline as timeline
     run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
     run_metadata = tf.RunMetadata()
@@ -43,12 +45,34 @@ def gen_trace():
         on_predict_batch_begin=batch_begin_callback_function, on_predict_batch_end=batch_end_callback_function,
         on_test_batch_begin=batch_begin_callback_function, on_test_batch_end=batch_end_callback_function
     )
+    i = 0
+    def give_id(original_name):
+        nonlocal i
+        idd = "A18xTi{}Zhl7A4".format(i)
+        names_to_id[original_name] = idd
+        ids_to_name[idd] = original_name
+        i += 1
+        return idd
+    model_dic = json.loads(model.to_json())
+    for layer in model_dic["config"]["layers"]:
+        idd = give_id(layer["name"])
+        layer["name"] = idd
+        layer["config"]["name"] = idd
+    for layer in model_dic["config"]["layers"]:
+        for inbound_node in layer["inbound_nodes"]:
+            for la in inbound_node:
+                la[0] = names_to_id[la[0]]
+    for layer in model_dic["config"]["input_layers"]:
+        layer[0] = names_to_id[layer[0]]
+    for layer in model_dic["config"]["output_layers"]:
+        layer[0] = names_to_id[layer[0]]
+    model = k.models.model_from_json(json.dumps(model_dic))
     model.compile(optimizer=optimizer, loss="mean_squared_error", options=run_options, run_metadata=run_metadata)
     x, y = get_dummy_input_output(model, 2, use_numpy=True)
-    model.fit(x, y, batch_size=1, callbacks=[callback], verbosity=0)
+    model.fit(x, y, batch_size=1, callbacks=[callback], verbose=0)
     with open("{}.chrometrace.json".format(model.name), "w") as file:
         json.dump(trace, file, indent=4)
-    return trace
+    return model, trace
 
 for model in models:
     tf.reset_default_graph()
@@ -59,7 +83,7 @@ for model in models:
         print("Model: {}".format(model.name))
 
         if new_trace:
-            trace = gen_trace()
+            model, trace = gen_trace(model)
         else:
             with open("{}.chrometrace.json".format(model.name)) as file:
                 trace = json.load(file)
@@ -92,7 +116,6 @@ for model in models:
             if not subset:
                 filtered_list.add(name)
         return filtered_list
-    i = 0
     def match_to_layer(event):
         matched_layers = set()
         for layer_name in layer_costs.keys():
@@ -107,17 +130,12 @@ for model in models:
                 for layer_name in layer_costs.keys():
                     if layer_name in value:
                         ml.add(layer_name)
-                if len(ml) == 0:
-                    print("Input: {}".format(value))
-                    for event in trace["traceEvents"]:
-                        if event["ph"] == "X" and event["pid"] == 13 and event["args"]["name"] == value:
-                            print("There is opp")
-                            break
-                matched_layers.update(filter_matched_layers(ml))
-            if len(matched_layers) == 0:
-                print("Args: {}".format(event["args"].keys()))
+                matched_layers.update(ml)
         else:
-            matched_layers = filter_matched_layers(matched_layers)
+            matched_layers = matched_layers
+        if len(matched_layers) > 1:
+            print(event)
+            print(matched_layers)
         return matched_layers
 
     def op(event):
@@ -128,7 +146,7 @@ for model in models:
         print(list(layer_costs.keys()))
     multi_matched_events = 0
     for event in trace["traceEvents"]:
-        if event["ph"] == "X" and event["pid"] == 13:
+        if event["ph"] == "X" and event["pid"]:
             add(op_counts["total"], op(event), 1)
             add(op_durations["total"], op(event), event["dur"])
             t = "backward_pass" if optimizer in event["args"]["name"] else "forward_pass"

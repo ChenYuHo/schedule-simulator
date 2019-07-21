@@ -1,5 +1,5 @@
 import tensorflow as tf
-import tensorflow.keras as k
+import tensorflow.python.keras as k
 tf.enable_eager_execution()
 print("Tensorflow version: {} Eager execution: {}".format(tf.__version__, tf.executing_eagerly()))
 model = k.models.Sequential()
