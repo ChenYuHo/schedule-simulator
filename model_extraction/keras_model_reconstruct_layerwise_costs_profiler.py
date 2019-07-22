@@ -80,7 +80,7 @@ def profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8, trial
     topological_layer_order.reverse()
     # Initialize the costs that we will profile
     costs = list()
-    global_func_args = dict(verbose=0)
+    global_func_args = dict(verbose=verbosity-2)
     costs.append(dict(name="predict", func="predict",
                       args=dict(x=None, steps=num_of_batches)))
     costs.append(dict(name="evaluate", func="evaluate",
@@ -272,7 +272,7 @@ if __name__ == "__main__":
         else:
             out = open(args.out, "w")
     else:
-        out = open("{}_{}.timings.json".format(args.model, datetime.now().strftime("%m-%d-%H-%M")), "w")
+        out = open("{}_{}.profile.json".format(args.model, datetime.now().strftime("%m-%d-%H-%M")), "w")
     report = {"host": socket.gethostname(), "args": args.__dict__, "timings": timings}
     json.dump(report, out, indent=4)
     if exception is not None:

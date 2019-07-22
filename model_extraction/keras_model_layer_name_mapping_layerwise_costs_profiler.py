@@ -11,6 +11,9 @@ import tensorflow.python.keras as k
 import tensorflow.python.client.timeline as timeline
 import os
 import sys
+import argparse
+from datetime import datetime
+import socket
 sys.path.append("..")
 from model_extraction.keras_utils import *
 
@@ -78,7 +81,6 @@ def generate_traces(input_model, loss, optimizer, batch_size=32, num_of_batches=
     traces = list()
     def batch_end_callback_function(batch, log):
         traces.append(timeline.Timeline(step_stats=run_metadata.step_stats).generate_chrome_trace_format())
-
     callback = k.callbacks.LambdaCallback(
         on_train_batch_end=batch_end_callback_function,
     )
@@ -91,7 +93,7 @@ def generate_traces(input_model, loss, optimizer, batch_size=32, num_of_batches=
     if output_file_prefix is not None:
         for i, trace in enumerate(traces):
             with open("{}_{}.chrometrace.json".format(output_file_prefix, i), "w") as file:
-                json.dumps(trace, indent=4)
+                json.dump(trace, file, indent=4)
     return traces
 
 
@@ -113,17 +115,25 @@ def match_event_to_layers(layer_names, event):
             matched_layers.update(ml)
     else:
         matched_layers = matched_layers
-    if len(matched_layers) > 1:
-        print(event)
-        print(matched_layers)
     return matched_layers
 
 
 def match_event_to_type(event, **kwargs):
-    if kwargs["optimizer"] in event["args"]["name"]:
+    if kwargs["optimizer"].upper() in event["args"]["name"]:
         return "backward_pass"
     else:
         return "forward_pass"
+
+
+def parse_stats(stats):
+    for k2 in ["all", "forward_pass", "backward_pass"]:
+        for k3 in ["count", "duration"]:
+            stats["{}_identified_{}_percentage".format(k2, k3)] = stats["identified_{}_{}".format(k2, k3)] /\
+                                                                  stats["total_{}_{}".format(k2, k3)]
+    for k2 in ["forward_pass", "backward_pass"]:
+        for k3 in ["count", "duration"]:
+            stats["{}_{}_percentage".format(k2, k3)] = stats["identified_{}_{}".format(k2, k3)] /\
+                                                       stats["total_all_{}".format(k3)]
 
 
 def parse_traces(model, traces, optimizer, pids=None, verbosity=1):
@@ -140,7 +150,7 @@ def parse_traces(model, traces, optimizer, pids=None, verbosity=1):
     def add_layer_name(layer):
         d = dict()
         for key in ["forward_pass_units", "backward_pass_units", "forward_pass_ops", "backward_pass_ops"]:
-            d[key] = np.zeros(shape=(len(traces),))
+            d[key] = [0 for _ in range(len(traces))]
         layer_costs[layer.name] = d
     traverse_keras_DFS(model, processing_function=add_layer_name, order="pre-order", top_to_bottom=True)
     stats = dict()
@@ -157,53 +167,111 @@ def parse_traces(model, traces, optimizer, pids=None, verbosity=1):
                     if event["args"]["name"] == "/job:localhost/replica:0/task:0/device:GPU:0 Compute" or\
                             event["args"]["name"] == "/job:localhost/replica:0/task:0/device:CPU:0 Compute":
                         pids.append(event["pid"])
-        log_msg("Using pids: {}".format(pids))
+            log_msg("Using pids: {}".format(pids))
+            stats["pids"] = pids
         for event in trace["traceEvents"]:
+            # We multiply durations by 1e3 to convert it to nanoseconds
             if event["ph"] == "X" and (pids == "all" or event["pid"] in pids):
                 stats["total_all_count"] += 1
-                stats["total_all_duration"] += event["dur"]
+                stats["total_all_duration"] += event["dur"] * 1e3
                 t = match_event_to_type(event, optimizer=optimizer)
                 stats["total_{}_count".format(t)] += 1
-                stats["total_{}_duration".format(t)] += event["dur"]
+                stats["total_{}_duration".format(t)] += event["dur"] * 1e3
                 matched_layers = match_event_to_layers(layer_costs.keys(), event)
                 if len(matched_layers) > 0:
                     stats["identified_all_count"] += 1
-                    stats["identified_all_duration"] += event["dur"]
+                    stats["identified_all_duration"] += event["dur"] * 1e3
                     stats["identified_{}_count".format(t)] += 1
-                    stats["identified_{}_duration".format(t)] += event["dur"]
+                    stats["identified_{}_duration".format(t)] += event["dur"] * 1e3
                 for matched_layer in matched_layers:
                     # If multiple layers are matched then we divide the event cost equally among all layers
                     layer_costs[matched_layer]["{}_ops".format(t)][i] += 1 / len(matched_layers)
-                    layer_costs[matched_layer]["{}_units".format(t)][i] += event["dur"] / len(matched_layers)
+                    layer_costs[matched_layer]["{}_units".format(t)][i] += event["dur"] * 1e3 / len(matched_layers)
+    parse_stats(stats)
+
     return layer_costs, stats
 
 
-def display_trace_parsing_stats(stats):
-    for k2 in ["all", "forward_pass", "backward_pass"]:
-        for k3 in ["count", "duration"]:
-            print("{} identified {}: {:.2f}%".format(k2, k3, stats["identified_{}_{}".format(k2, k3)] /
-                                                     stats["total_{}_{}".format(k2, k3)] * 100))
-    for k2 in ["forward_pass", "backward_pass"]:
-        for k3 in ["count", "duration"]:
-            print("{} {}: {:.2f}% of all identified.".format(k2, k3, stats["identified_{}_{}".format(k2, k3)] /
-                                                             stats["total_all_{}".format(k3)] * 100))
-
-
 def profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8, trials=1, verbosity=1, device="gpu",
-            skip_first_batch=True, pids=None):
+            pids=None, save_traces=False):
     """
     The function takes a keras model and attempts to estimate the cost of each layer in the model in terms of
     the forward pass and backward pass.
     """
-    traces = generate_traces(input_model, loss, optimizer, batch_size, num_of_batches, trials, verbosity, device)
-    if skip_first_batch:
-        for i in range(trials):
-            traces.pop(i*(num_of_batches - 1))
+    trace_prefix = None
+    if save_traces:
+        trace_prefix = "{}_{}".format(args.model, datetime.now().strftime("%m-%d-%H-%M"))
+    traces = generate_traces(input_model, loss, optimizer, batch_size, num_of_batches, trials, verbosity, device,
+                             output_file_prefix=trace_prefix)
     layer_costs, stats = parse_traces(input_model, traces, optimizer, pids, verbosity)
     if verbosity >= 1:
-        display_trace_parsing_stats(stats)
+        for k, v in stats.items():
+            if "percentage" in k:
+                print("{}: {:.2f}%".format(k, v*100))
+            else:
+                print("{}: {}".format(k, v))
     return layer_costs, stats
 
 
 if __name__ == "__main__":
-    pass
+    parser = argparse.ArgumentParser(description="A script that profiles Keras models and produces layer wise timings.")
+    parser.add_argument("model",
+                        help="The Keras model to profile. See Keras.Applications documentation for all options."
+                             "Dummy options include: [dummy_multi, dummy_linear_dense, dummy_linear_cnn, dummy_2_layers]")
+    parser.add_argument("-l", "--loss", default="binary_crossentropy",
+                        help="The loss function to use. See Keras.Losses documentation for all options.")
+    parser.add_argument("-o", "--optimizer", default="sgd",
+                        help="The optimizer to use when training. See Keras.Optimizers documentation for all options.")
+    parser.add_argument("--device", choices=["gpu", "cpu"], default="gpu",
+                        help="The device to use for all operations. If none is specified then it is automated.")
+    parser.add_argument("-bs", "--batch_size", type=int, default=32,
+                        help="The batch size used for all functions")
+    parser.add_argument("-nb", "--num_of_batches", type=int, default=8,
+                        help="The number of batches to run")
+    parser.add_argument("-t", "--trials", type=int, default=5,
+                        help="The number of layer building & evaluation iterations to do.")
+    parser.add_argument("-pi", "--pids",
+                        help="A comma separated list of integers specifying the process ids that we will include in our"
+                             " costs. Or use 'all' to use all the events in the trace. By default, the pids of:"
+                             "/job:localhost/replica:0/task:0/device:GPU:0 Compute"
+                             "/job:localhost/replica:0/task:0/device:CPU:0 Compute"
+                             " Are used.")
+    parser.add_argument("--out",
+                        help="Stream to write the timings to in json format if any. File | stdout | stderr | suppress")
+    parser.add_argument("-v", "--verbosity", type=int, default=1,
+                        help="0: Suppress all output\n"
+                             "1: Show profiler output\n"
+                             "2: Show tensorflow log messages\n"
+                             "3: Show tensorflow function progress")
+    parser.add_argument("-st", "--save_traces", default=False, action="store_true",
+                        help="Whether we save the trace of each batch or not.")
+    args = parser.parse_args()
+    try:
+        model_func_name = "{}_model".format(args.model)
+        if model_func_name in dir(sys.modules[__name__]):
+            module = sys.modules[__name__]
+            model = getattr(module, model_func_name)()
+        else:
+            module = __import__("tensorflow.keras.applications", fromlist=[args.model])
+            model = getattr(module, args.model)
+            model = model(weights=None, include_top=True)
+    except AttributeError:
+        raise Exception("'{}' is not a valid dummy or keras model.\n".format(args.model))
+    layer_costs, stats = profile(input_model=model, loss=args.loss, optimizer=args.optimizer,
+                                 batch_size=args.batch_size, num_of_batches=args.num_of_batches, trials=args.trials,
+                                 verbosity=args.verbosity, device=args.device, pids=args.pids,
+                                 save_traces=args.save_traces)
+    if args.out is not None:
+        if args.out == "stdout":
+            out = sys.__stdout__
+        elif args.out == "stderr":
+            out = sys.__stderr__
+        elif args.out == "suppress":
+            out = False
+        else:
+            out = open(args.out, "w")
+    else:
+        out = open("{}_{}.profile.json".format(args.model, datetime.now().strftime("%m-%d-%H-%M")), "w")
+    report = {"host": socket.gethostname(), "unit": "ns", "args": args.__dict__, "stats": stats,
+              "layer_costs": layer_costs}
+    json.dump(report, out, indent=4)
