@@ -50,7 +50,7 @@ def wrap_layer_names(model):
 
 
 def generate_traces(input_model, loss, optimizer, batch_size=32, num_of_batches=8, trials=1, verbosity=1, device="gpu",
-                    output_file_prefix=None):
+                    output_file_prefix=None, warmup_batch=True):
     # Early checks and setup -------------------------------------------------------------------------------------------
     if tf.executing_eagerly():
         raise Exception("Cannot use tracer with eager execution.")
@@ -86,6 +86,8 @@ def generate_traces(input_model, loss, optimizer, batch_size=32, num_of_batches=
     )
     model.compile(optimizer=optimizer, loss=loss, options=run_options, run_metadata=run_metadata)
     x, y = get_dummy_input_output(input_model, batch_size)
+    if warmup_batch:
+        model.fit(x, y, steps_per_epoch=1, verbose=0)
     for _ in range(trials):
         model.fit(x, y, steps_per_epoch=num_of_batches, callbacks=[callback], verbose=verbosity)
     for i, trace in enumerate(traces):
@@ -119,7 +121,7 @@ def match_event_to_layers(layer_names, event):
 
 
 def match_event_to_type(event, **kwargs):
-    if kwargs["optimizer"].upper() in event["args"]["name"]:
+    if kwargs["optimizer"].upper() in event["args"]["name"] or kwargs["optimizer"] in event["args"]["name"]:
         return "backward_pass"
     else:
         return "forward_pass"
@@ -133,7 +135,7 @@ def parse_stats(stats):
     for k2 in ["forward_pass", "backward_pass"]:
         for k3 in ["count", "duration"]:
             stats["{}_{}_percentage".format(k2, k3)] = stats["identified_{}_{}".format(k2, k3)] /\
-                                                       stats["total_all_{}".format(k3)]
+                                                       stats["identified_all_{}".format(k3)]
 
 
 def parse_traces(model, traces, optimizer, pids=None, verbosity=1):
@@ -146,14 +148,15 @@ def parse_traces(model, traces, optimizer, pids=None, verbosity=1):
         if verbosity >= 1:
             print(msg)
     layer_costs = dict()
-
     def add_layer_name(layer):
         d = dict()
         for key in ["forward_pass_units", "backward_pass_units", "forward_pass_ops", "backward_pass_ops"]:
             d[key] = [0 for _ in range(len(traces))]
         layer_costs[layer.name] = d
     traverse_keras_DFS(model, processing_function=add_layer_name, order="pre-order", top_to_bottom=True)
-    stats = dict()
+    stats = dict(pids=list())
+    if pids is not None:
+        stats["pids"].extend(pids)
     for k1 in ["total", "identified"]:
         for k2 in ["all", "forward_pass", "backward_pass"]:
             for k3 in ["count", "duration"]:
@@ -161,17 +164,17 @@ def parse_traces(model, traces, optimizer, pids=None, verbosity=1):
     # Add the costs from all traces
     for i, trace in enumerate(traces):
         if pids is None:
-            pids = list()
+            pid = list()
             for event in trace["traceEvents"]:
                 if event["ph"] == "M" and event["name"] == "process_name":
                     if event["args"]["name"] == "/job:localhost/replica:0/task:0/device:GPU:0 Compute" or\
                             event["args"]["name"] == "/job:localhost/replica:0/task:0/device:CPU:0 Compute":
-                        pids.append(event["pid"])
-            log_msg("Using pids: {}".format(pids))
-            stats["pids"] = pids
+                        pid.append(event["pid"])
+            log_msg("Using pids: {}".format(pid))
+            stats["pids"].append(pid)
         for event in trace["traceEvents"]:
             # We multiply durations by 1e3 to convert it to nanoseconds
-            if event["ph"] == "X" and (pids == "all" or event["pid"] in pids):
+            if event["ph"] == "X" and (pids == "all" or event["pid"] in pid):
                 stats["total_all_count"] += 1
                 stats["total_all_duration"] += event["dur"] * 1e3
                 t = match_event_to_type(event, optimizer=optimizer)
@@ -228,7 +231,7 @@ if __name__ == "__main__":
                         help="The batch size used for all functions")
     parser.add_argument("-nb", "--num_of_batches", type=int, default=8,
                         help="The number of batches to run")
-    parser.add_argument("-t", "--trials", type=int, default=5,
+    parser.add_argument("-t", "--trials", type=int, default=1,
                         help="The number of layer building & evaluation iterations to do.")
     parser.add_argument("-pi", "--pids",
                         help="A comma separated list of integers specifying the process ids that we will include in our"

@@ -88,6 +88,7 @@ def extract_costs_from_model_reconstruct_profile(profiling_report, suppress_nega
     """
     timings = profiling_report["timings"]
     scaling_factor = 1/profiling_report["args"]["batch_size"]
+    # FIXME scaling_factor should be removed since the relationship between batch_size and cost is far from linear
     layer_costs = dict()
     accumulative_cost = {"forward_pass_units": 0, "backward_pass_units": 0}
     for layer_name in timings:
@@ -123,15 +124,16 @@ def extract_costs_from_model_reconstruct_profile(profiling_report, suppress_nega
 
 
 def extract_costs_from_layer_name_mapping_profile(profiling_report, reduce_func=None,
-                                                  skip_first_batch=False):
+                                                  skip_first_batch_of_every_trial=False):
     layer_costs = profiling_report["layer_costs"]
     scaling_factor = 1/profiling_report["args"]["batch_size"]
+    # FIXME scaling_factor should be removed since the relationship between batch_size and cost is far from linear
     if reduce_func is None:
         reduce = lambda x: np.min(x) * scaling_factor
     else:
         reduce = lambda x: reduce_func(x) * scaling_factor
     for layer_name, cost_dict in layer_costs.items():
-        if skip_first_batch:
+        if skip_first_batch_of_every_trial:
             for cost_name, cost_list in cost_dict.items():
                 for i in range(profiling_report["args"]["trials"]):
                     cost_list.pop(i * profiling_report["args"]["num_of_batches"] - i)
@@ -182,7 +184,10 @@ if __name__ == "__main__":
     costs = extract_costs_from_layer_name_mapping_profile(model_profiling_report)
     apply_layer_costs_to_dag(dag, model_profiling_report, costs)
     dag.extras["{}model_profiling_report_name".format(LOCAL_EXTRA_PREFIX)] = "VGG16_07-22-17-33.profile.json"
-    dag.extras["{}model_profiling_args".format(LOCAL_EXTRA_PREFIX)] = model_profiling_report["args"]
+    report_metadata = dict()
+    for key, value in model_profiling_report.items():
+        if key != "timings" and key != "layer_costs":
+            report_metadata[key] = value
+    dag.extras["{}model_profiling_report_metadata".format(LOCAL_EXTRA_PREFIX)] = report_metadata
     with open("dags/VGG16_CPU_lnm.dag", "w") as output_file:
         output_file.write(serialize_dag(dag))
-

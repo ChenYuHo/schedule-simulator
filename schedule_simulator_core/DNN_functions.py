@@ -54,6 +54,7 @@ def forward_pass(dag: DAG, env: simpy.Environment, batch_size, computation_queue
     :param job_extras: Extras to be passed to all created jobs
     :return: A dict with key: layer and value: event to wait for before being able to do a backward pass on that layer
     """
+    # FIXME batch_size option should be removed since the relationship between batch_size and cost is far from linear
     forward_pass_output = dict()
     for layer in dag.topological_order:
         # Wait for all dependencies to finish
@@ -89,6 +90,7 @@ def backward_pass(dag: DAG, env: simpy.Environment, batch_size, computation_queu
     :return: A dict with key: layer and value: event to wait for before being able to do a forward pass on that
     layer
     """
+    # FIXME batch_size option should be removed since the relationship between batch_size and cost is far from linear
     backward_pass_output = dict()
     reversed_topological_order = dag.topological_order.copy()
     reversed_topological_order.reverse()
