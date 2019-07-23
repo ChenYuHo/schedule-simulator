@@ -469,3 +469,23 @@ def get_normalized_gap_durations(unit, gaps, cost_func):
         print("Number of blocked layers: {} Number of gaps: {}".format(len(normalized_gap_durations), len(gaps)))
         raise Exception("Blocked layers are not aligned with gaps.")
     return normalized_gap_durations
+
+
+def find_corrupt_json_value(dict_list_struct, stack=None):
+    if stack is None:
+        stack = list()
+
+    if isinstance(dict_list_struct, dict):
+        for key, value in dict_list_struct.items():
+            stack.append(key)
+            find_corrupt_json_value(key, stack)
+            find_corrupt_json_value(value, stack)
+            stack.pop(len(stack)-1)
+    elif isinstance(dict_list_struct, list) or isinstance(dict_list_struct, tuple):
+        for item in dict_list_struct:
+            find_corrupt_json_value(item)
+    else:
+        try:
+            json.dumps(dict_list_struct)
+        except:
+            raise Exception("Corrupt value is: {} of type: {}\nStack:\n{}".format(dict_list_struct, type(dict_list_struct).__name__, "\n".join([str(x) for x in stack])))

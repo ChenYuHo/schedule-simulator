@@ -129,91 +129,169 @@ def match_event_to_type(event, **kwargs):
 
 def parse_stats(stats):
     for k2 in ["all", "forward_pass", "backward_pass"]:
-        for k3 in ["count", "duration"]:
+        for k3 in ["count", "units", "durations"]:
             stats["{}_identified_{}_percentage".format(k2, k3)] = stats["identified_{}_{}".format(k2, k3)] /\
                                                                   stats["total_{}_{}".format(k2, k3)]
     for k2 in ["forward_pass", "backward_pass"]:
-        for k3 in ["count", "duration"]:
+        for k3 in ["count", "units", "durations"]:
             stats["{}_{}_percentage".format(k2, k3)] = stats["identified_{}_{}".format(k2, k3)] /\
                                                        stats["identified_all_{}".format(k3)]
 
 
-def parse_traces(model, traces, optimizer, pids=None, verbosity=1):
+def parse_traces(model, traces, optimizer, pid_scheme="task", verbosity=1):
+    """
+
+    :param model:
+    :param traces:
+    :param optimizer:
+    :param pid_scheme: The scheme in which we choose which pid groups from the trace to include in the costs
+    'task': use "/job:localhost/replica:0/task:0/device:GPU:0 Compute" &
+    "/job:localhost/replica:0/task:0/device:CPU:0 Compute"
+    'stream: use "/device:GPU:0/stream:all Compute" & "/device:CPU:0/stream:all Compute"
+    "task_stream" use both task names and stream names
+    'all: use all pids
+    :param verbosity:
+    :return:
+    """
+    task_pid_names = ["/job:localhost/replica:0/task:0/device:GPU:0 Compute",
+                      "/job:localhost/replica:0/task:0/device:CPU:0 Compute"]
+    stream_pid_names = ["/device:GPU:0/stream:all Compute", "/device:CPU:0/stream:all Compute"]
     if verbosity < 2:
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = "999"
         # Supressing deprectation messages is not working
         import tensorflow.python.util.deprecation as deprecation
         deprecation._PRINT_DEPRECATION_WARNINGS = False
+
     def log_msg(msg):
         if verbosity >= 1:
             print(msg)
     layer_costs = dict()
+
     def add_layer_name(layer):
         d = dict()
-        for key in ["forward_pass_units", "backward_pass_units", "forward_pass_ops", "backward_pass_ops"]:
+        for key in ["forward_pass_units", "backward_pass_units", "forward_pass_ops", "backward_pass_ops",
+                    "forward_pass_durations", "backward_pass_durations"]:
             d[key] = [0 for _ in range(len(traces))]
+        for key in ["forward_pass_intervals", "backward_pass_intervals"]:
+            d[key] = [None for _ in range(len(traces))]
         layer_costs[layer.name] = d
     traverse_keras_DFS(model, processing_function=add_layer_name, order="pre-order", top_to_bottom=True)
-    stats = dict(pids=list())
-    if pids is not None:
-        stats["pids"].extend(pids)
+    stats = dict()
+    def update_interval(stats, key, event):
+        interval_key = key + "_intervals"
+        duration_key = key + "_durations"
+        if interval_key not in stats:
+            stats[interval_key] = event["ts"], (event["ts"] + event["dur"])
+        else:
+            stats[interval_key] = (min(stats[interval_key][0], event["ts"]),
+                                   max(stats[interval_key][1], event["ts"] + event["dur"]))
+        stats[duration_key] = stats[interval_key][1] - stats[interval_key][0]
     for k1 in ["total", "identified"]:
         for k2 in ["all", "forward_pass", "backward_pass"]:
-            for k3 in ["count", "duration"]:
+            for k3 in ["count", "units", "durations"]:
                 stats["{}_{}_{}".format(k1, k2, k3)] = 0
     # Add the costs from all traces
+    all_pids = list()
     for i, trace in enumerate(traces):
-        if pids is None:
-            pid = list()
-            for event in trace["traceEvents"]:
-                if event["ph"] == "M" and event["name"] == "process_name":
-                    if event["args"]["name"] == "/job:localhost/replica:0/task:0/device:GPU:0 Compute" or\
-                            event["args"]["name"] == "/job:localhost/replica:0/task:0/device:CPU:0 Compute":
-                        pid.append(event["pid"])
-            log_msg("Using pids: {}".format(pid))
-            stats["pids"].append(pid)
+        current_pids = dict()
         for event in trace["traceEvents"]:
-            # We multiply durations by 1e3 to convert it to nanoseconds
-            if event["ph"] == "X" and (pids == "all" or event["pid"] in pid):
+            if event["ph"] == "M" and event["name"] == "process_name":
+                pid_name = event["args"]["name"]
+                if pid_scheme == "all" or pid_scheme == "task" and pid_name in task_pid_names or \
+                        pid_scheme == "stream" and pid_name in stream_pid_names or \
+                        pid_scheme == "task_stream" and (pid_name in task_pid_names or pid_name in stream_pid_names):
+                    current_pids[event["args"]["name"]] = event["pid"]
+        if len(current_pids) == 0:
+            raise Exception("No pids were matched using the current pid_scheme.Consider changing it.")
+        log_msg("Using pids: {}".format(current_pids))
+        all_pids.append(current_pids)
+        for event in trace["traceEvents"]:
+            if event["ph"] == "X" and event["pid"] in current_pids.values():
                 stats["total_all_count"] += 1
-                stats["total_all_duration"] += event["dur"] * 1e3
+                stats["total_all_units"] += event["dur"]
+                update_interval(stats, "total_all", event)
                 t = match_event_to_type(event, optimizer=optimizer)
                 stats["total_{}_count".format(t)] += 1
-                stats["total_{}_duration".format(t)] += event["dur"] * 1e3
+                stats["total_{}_units".format(t)] += event["dur"]
+                update_interval(stats, "total_{}".format(t), event)
                 matched_layers = match_event_to_layers(layer_costs.keys(), event)
                 if len(matched_layers) > 0:
                     stats["identified_all_count"] += 1
-                    stats["identified_all_duration"] += event["dur"] * 1e3
+                    stats["identified_all_units"] += event["dur"]
+                    update_interval(stats, "identified_all", event)
                     stats["identified_{}_count".format(t)] += 1
-                    stats["identified_{}_duration".format(t)] += event["dur"] * 1e3
+                    stats["identified_{}_units".format(t)] += event["dur"]
+                    update_interval(stats, "identified_{}".format(t), event)
                 for matched_layer in matched_layers:
                     # If multiple layers are matched then we divide the event cost equally among all layers
                     layer_costs[matched_layer]["{}_ops".format(t)][i] += 1 / len(matched_layers)
-                    layer_costs[matched_layer]["{}_units".format(t)][i] += event["dur"] * 1e3 / len(matched_layers)
-    parse_stats(stats)
+                    layer_costs[matched_layer]["{}_units".format(t)][i] += event["dur"] / len(matched_layers)
+                    if layer_costs[matched_layer]["{}_intervals".format(t)][i] is None:
+                        layer_costs[matched_layer]["{}_intervals".format(t)][i] = event["ts"], event["ts"] + event["dur"]
+                    else:
+                        layer_costs[matched_layer]["{}_intervals".format(t)][i] = (
+                            min(layer_costs[matched_layer]["{}_intervals".format(t)][i][0], event["ts"]),
+                            max(layer_costs[matched_layer]["{}_intervals".format(t)][i][1], event["ts"] + event["dur"])
+                        )
+                    layer_costs[matched_layer]["{}_durations".format(t)][i] = \
+                        layer_costs[matched_layer]["{}_intervals".format(t)][i][1] - \
+                        layer_costs[matched_layer]["{}_intervals".format(t)][i][0]
 
-    return layer_costs, stats
+    # Scale layer costs & stats from microseconds to nanoseconds (For consistency)
+    s = 1e3
+    for key, value in stats.items():
+        if "intervals" in key:
+            stats[key] = value[0] * s, value[1] * s
+        else:
+            stats[key] = value * s
+    for layer_name, layer_dict in layer_costs.items():
+        for cost_name, cost_list in layer_dict.items():
+            for i, cost in enumerate(cost_list):
+                if "intervals" in cost_name:
+                    if cost is not None:
+                        cost_list[i] = cost[0] * s, cost[1] * s
+                else:
+                    cost_list[i] = cost * s
+    # Compute percentages
+    parse_stats(stats)
+    return layer_costs, stats, all_pids
 
 
 def profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8, trials=1, verbosity=1, device="gpu",
-            pids=None, save_traces=False):
+            pid_scheme=None, save_traces=False):
     """
     The function takes a keras model and attempts to estimate the cost of each layer in the model in terms of
     the forward pass and backward pass.
     """
     trace_prefix = None
     if save_traces:
-        trace_prefix = "{}_{}".format(args.model, datetime.now().strftime("%m-%d-%H-%M"))
+        trace_prefix = "{}_{}".format(args.model, SCRIPT_START.strftime("%m-%d-%H-%M"))
     traces = generate_traces(input_model, loss, optimizer, batch_size, num_of_batches, trials, verbosity, device,
                              output_file_prefix=trace_prefix)
-    layer_costs, stats = parse_traces(input_model, traces, optimizer, pids, verbosity)
+    layer_costs, stats, pids = parse_traces(input_model, traces, optimizer, pid_scheme, verbosity)
     if verbosity >= 1:
         for k, v in stats.items():
             if "percentage" in k:
                 print("{}: {:.2f}%".format(k, v*100))
-            else:
-                print("{}: {}".format(k, v))
-    return layer_costs, stats
+    return layer_costs, stats, pids
+
+
+def generate_chrome_trace_for_layer_intervals(layer_costs, trace_index):
+    events = list()
+    for i, (layer_name, layer_dict) in enumerate(layer_costs.items()):
+        fp_interval = layer_dict["forward_pass_intervals"][trace_index]
+        print(fp_interval[1] - fp_interval[0] - layer_dict["forward_pass_durations"][trace_index])
+        assert fp_interval[1] - fp_interval[0] - layer_dict["forward_pass_durations"][trace_index] < 1e-9
+        fp_event = dict(ts=fp_interval[0], dur=fp_interval[1] - fp_interval[0], name="fp_{}".format(layer_name),
+                        ph="X", pid=0, tid=i*2)
+        events.append(fp_event)
+        bp_interval = layer_dict["backward_pass_intervals"][trace_index]
+        assert bp_interval[1] - bp_interval[0] - layer_dict["backward_pass_durations"][trace_index] < 1e-9
+        bp_event = dict(ts=bp_interval[0], dur=bp_interval[1] - bp_interval[0], name="bp_{}".format(layer_name),
+                        ph="X", pid=0, tid=i*2+1)
+        events.append(bp_event)
+    trace = dict(traceEvents=events)
+    return trace
 
 
 if __name__ == "__main__":
@@ -233,12 +311,9 @@ if __name__ == "__main__":
                         help="The number of batches to run")
     parser.add_argument("-t", "--trials", type=int, default=1,
                         help="The number of layer building & evaluation iterations to do.")
-    parser.add_argument("-pi", "--pids",
-                        help="A comma separated list of integers specifying the process ids that we will include in our"
-                             " costs. Or use 'all' to use all the events in the trace. By default, the pids of:"
-                             "/job:localhost/replica:0/task:0/device:GPU:0 Compute"
-                             "/job:localhost/replica:0/task:0/device:CPU:0 Compute"
-                             " Are used.")
+    parser.add_argument("-pi", "--pid_scheme", choices=["all", "task", "stream", "task_stream"],
+                        help="The scheme in which we choose which pid groups from the trace to include in the costs."
+                             "See documentation for more details.")
     parser.add_argument("--out",
                         help="Stream to write the timings to in json format if any. File | stdout | stderr | suppress")
     parser.add_argument("-v", "--verbosity", type=int, default=1,
@@ -247,7 +322,9 @@ if __name__ == "__main__":
                              "2: Show tensorflow log messages\n"
                              "3: Show tensorflow function progress")
     parser.add_argument("-st", "--save_traces", default=False, action="store_true",
-                        help="Whether we save the trace of each batch or not.")
+                        help="Whether we save the trace of each batch or not. For debugging.")
+    parser.add_argument("-git", "--gen_interval_trace", default=False, action="store_true",
+                        help="Whether we save a trace of the layer intervals or not")
     args = parser.parse_args()
     try:
         model_func_name = "{}_model".format(args.model)
@@ -260,10 +337,11 @@ if __name__ == "__main__":
             model = model(weights=None, include_top=True)
     except AttributeError:
         raise Exception("'{}' is not a valid dummy or keras model.\n".format(args.model))
-    layer_costs, stats = profile(input_model=model, loss=args.loss, optimizer=args.optimizer,
-                                 batch_size=args.batch_size, num_of_batches=args.num_of_batches, trials=args.trials,
-                                 verbosity=args.verbosity, device=args.device, pids=args.pids,
-                                 save_traces=args.save_traces)
+    SCRIPT_START = datetime.now()
+    layer_costs, stats, pids = profile(input_model=model, loss=args.loss, optimizer=args.optimizer,
+                                       batch_size=args.batch_size, num_of_batches=args.num_of_batches,
+                                       trials=args.trials, verbosity=args.verbosity, device=args.device,
+                                       pid_scheme=args.pid_scheme, save_traces=args.save_traces)
     if args.out is not None:
         if args.out == "stdout":
             out = sys.__stdout__
@@ -274,7 +352,11 @@ if __name__ == "__main__":
         else:
             out = open(args.out, "w")
     else:
-        out = open("{}_{}.profile.json".format(args.model, datetime.now().strftime("%m-%d-%H-%M")), "w")
-    report = {"host": socket.gethostname(), "unit": "ns", "args": args.__dict__, "stats": stats,
+        out = open("{}_{}.profile.json".format(args.model, SCRIPT_START.strftime("%m-%d-%H-%M")), "w")
+    report = {"host": socket.gethostname(), "unit": "ns", "args": args.__dict__, "stats": stats, "pids": pids,
               "layer_costs": layer_costs}
     json.dump(report, out, indent=4)
+    out.close()
+    if args.gen_interval_trace:
+        with open("{}_{}_intervals.chrometrace.json".format(args.model, SCRIPT_START.strftime("%m-%d-%H-%M")), "w") as f:
+            json.dump(generate_chrome_trace_for_layer_intervals(layer_costs, 0), f)

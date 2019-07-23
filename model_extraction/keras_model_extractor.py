@@ -87,8 +87,6 @@ def extract_costs_from_model_reconstruct_profile(profiling_report, suppress_nega
     :return: A dict(key=layer.name, value=dict(key=cost_name, value=COST))
     """
     timings = profiling_report["timings"]
-    scaling_factor = 1/profiling_report["args"]["batch_size"]
-    # FIXME scaling_factor should be removed since the relationship between batch_size and cost is far from linear
     layer_costs = dict()
     accumulative_cost = {"forward_pass_units": 0, "backward_pass_units": 0}
     for layer_name in timings:
@@ -98,9 +96,9 @@ def extract_costs_from_model_reconstruct_profile(profiling_report, suppress_nega
             evaluate = evaluate["durations"]
             fit = fit["durations"]
         if reduce_func is None:
-            reduce = lambda x: np.min(x)*scaling_factor
+            reduce = lambda x: min(x)
         else:
-            reduce = lambda x: reduce_func(x)*scaling_factor
+            reduce = lambda x: reduce_func(x)
         fit = reduce(fit)
         evaluate = reduce(evaluate)
         current_cost = dict()
@@ -126,12 +124,10 @@ def extract_costs_from_model_reconstruct_profile(profiling_report, suppress_nega
 def extract_costs_from_layer_name_mapping_profile(profiling_report, reduce_func=None,
                                                   skip_first_batch_of_every_trial=False):
     layer_costs = profiling_report["layer_costs"]
-    scaling_factor = 1/profiling_report["args"]["batch_size"]
-    # FIXME scaling_factor should be removed since the relationship between batch_size and cost is far from linear
     if reduce_func is None:
-        reduce = lambda x: np.min(x) * scaling_factor
+        reduce = lambda x: min(x)
     else:
-        reduce = lambda x: reduce_func(x) * scaling_factor
+        reduce = lambda x: reduce_func(x)
     for layer_name, cost_dict in layer_costs.items():
         if skip_first_batch_of_every_trial:
             for cost_name, cost_list in cost_dict.items():
@@ -176,18 +172,19 @@ if __name__ == "__main__":
     from tensorflow.python.keras.layers.pooling import Pooling1D, Pooling2D, Pooling3D
     from tensorflow.python.keras.applications import VGG16, ResNet50, DenseNet121, InceptionV3
     from schedule_simulator_core.DAGs import serialize_dag, deserialize_dag
-    model = VGG16(weights=None, include_top=True)
+    model = InceptionV3(weights=None, include_top=True)
+    report_name = "InceptionV3_07-23-09-16.profile.json"
     dag = keras_model_to_DAG(model, skipped_layer_types=[InputLayer])
-    with open("layer_name_mapping_profiling_reports/VGG16_07-22-17-33.profile.json") as report_file:
+    with open("layer_name_mapping_profiling_reports/{}".format(report_name)) as report_file:
         model_profiling_report = json.load(report_file)
     # costs = extract_costs_from_model_reconstruct_profile(model_profiling_report, suppress_negatives=1)
     costs = extract_costs_from_layer_name_mapping_profile(model_profiling_report)
     apply_layer_costs_to_dag(dag, model_profiling_report, costs)
-    dag.extras["{}model_profiling_report_name".format(LOCAL_EXTRA_PREFIX)] = "VGG16_07-22-17-33.profile.json"
+    dag.extras["{}model_profiling_report_name".format(LOCAL_EXTRA_PREFIX)] = report_name
     report_metadata = dict()
     for key, value in model_profiling_report.items():
         if key != "timings" and key != "layer_costs":
             report_metadata[key] = value
     dag.extras["{}model_profiling_report_metadata".format(LOCAL_EXTRA_PREFIX)] = report_metadata
-    with open("dags/VGG16_CPU_lnm.dag", "w") as output_file:
+    with open("dags/{}_GPU_lnm_task.dag".format(model.name), "w") as output_file:
         output_file.write(serialize_dag(dag))
