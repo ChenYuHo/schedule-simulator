@@ -137,10 +137,26 @@ def parse_stats(stats):
             stats["{}_{}_percentage".format(k2, k3)] = stats["identified_{}_{}".format(k2, k3)] /\
                                                        stats["identified_all_{}".format(k3)]
 
+def get_pids(trace, pid_scheme):
+    task_pid_names = ["/job:localhost/replica:0/task:0/device:GPU:0 Compute",
+                      "/job:localhost/replica:0/task:0/device:CPU:0 Compute"]
+    stream_pid_names = ["/device:GPU:0/stream:all Compute", "/device:CPU:0/stream:all Compute"]
+    matched_pids = dict()
+    unmatched_pids = dict()
+    for event in trace["traceEvents"]:
+        if event["ph"] == "M" and event["name"] == "process_name":
+            pid_name = event["args"]["name"]
+            if pid_scheme == "all" or pid_scheme == "task" and pid_name in task_pid_names or \
+                    pid_scheme == "stream" and pid_name in stream_pid_names or \
+                    pid_scheme == "task_stream" and (pid_name in task_pid_names or pid_name in stream_pid_names):
+                matched_pids[pid_name] = event["pid"]
+            else:
+                unmatched_pids[pid_name] = event["pid"]
+    return matched_pids, unmatched_pids
+
 
 def parse_traces(model, traces, optimizer, pid_scheme="task", verbosity=1):
     """
-
     :param model:
     :param traces:
     :param optimizer:
@@ -153,9 +169,6 @@ def parse_traces(model, traces, optimizer, pid_scheme="task", verbosity=1):
     :param verbosity:
     :return:
     """
-    task_pid_names = ["/job:localhost/replica:0/task:0/device:GPU:0 Compute",
-                      "/job:localhost/replica:0/task:0/device:CPU:0 Compute"]
-    stream_pid_names = ["/device:GPU:0/stream:all Compute", "/device:CPU:0/stream:all Compute"]
     if verbosity < 2:
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = "999"
         # Supressing deprectation messages is not working
@@ -193,20 +206,15 @@ def parse_traces(model, traces, optimizer, pid_scheme="task", verbosity=1):
     # Add the costs from all traces
     all_pids = list()
     for i, trace in enumerate(traces):
-        current_pids = dict()
+        matched_pids, unmatched_pids = get_pids(trace, pid_scheme)
+        if len(matched_pids) == 0:
+            raise Exception("No pids were matched using the current pid_scheme. Consider changing it.\nOnly found the "
+                            "following pids: {}".format(
+                "\n".join(["{}: {}".format(k, v) for k, v in unmatched_pids.items()])))
+        log_msg("Using pids: {}".format(matched_pids))
+        all_pids.append(matched_pids)
         for event in trace["traceEvents"]:
-            if event["ph"] == "M" and event["name"] == "process_name":
-                pid_name = event["args"]["name"]
-                if pid_scheme == "all" or pid_scheme == "task" and pid_name in task_pid_names or \
-                        pid_scheme == "stream" and pid_name in stream_pid_names or \
-                        pid_scheme == "task_stream" and (pid_name in task_pid_names or pid_name in stream_pid_names):
-                    current_pids[event["args"]["name"]] = event["pid"]
-        if len(current_pids) == 0:
-            raise Exception("No pids were matched using the current pid_scheme.Consider changing it.")
-        log_msg("Using pids: {}".format(current_pids))
-        all_pids.append(current_pids)
-        for event in trace["traceEvents"]:
-            if event["ph"] == "X" and event["pid"] in current_pids.values():
+            if event["ph"] == "X" and event["pid"] in matched_pids.values():
                 stats["total_all_count"] += 1
                 stats["total_all_units"] += event["dur"]
                 update_interval(stats, "total_all", event)
@@ -249,7 +257,7 @@ def parse_traces(model, traces, optimizer, pid_scheme="task", verbosity=1):
             for i, cost in enumerate(cost_list):
                 if "intervals" in cost_name:
                     if cost is not None:
-                        cost_list[i] = cost[0] * s, cost[1] * s
+                        cost_list[i] = cost[0], cost[0] + (cost[1]-cost[0]) * s
                 else:
                     cost_list[i] = cost * s
     # Compute percentages
@@ -280,18 +288,55 @@ def generate_chrome_trace_for_layer_intervals(layer_costs, trace_index):
     events = list()
     for i, (layer_name, layer_dict) in enumerate(layer_costs.items()):
         fp_interval = layer_dict["forward_pass_intervals"][trace_index]
-        print(fp_interval[1] - fp_interval[0] - layer_dict["forward_pass_durations"][trace_index])
-        assert fp_interval[1] - fp_interval[0] - layer_dict["forward_pass_durations"][trace_index] < 1e-9
-        fp_event = dict(ts=fp_interval[0], dur=fp_interval[1] - fp_interval[0], name="fp_{}".format(layer_name),
-                        ph="X", pid=0, tid=i*2)
-        events.append(fp_event)
+        if fp_interval is not None:
+            assert fp_interval[1] - fp_interval[0] == layer_dict["forward_pass_durations"][trace_index]
+            fp_event = dict(ts=fp_interval[0], dur=(fp_interval[1] - fp_interval[0])/1e3, name="fp_{}".format(layer_name),
+                            ph="X", pid=0, tid=i*2)
+            events.append(fp_event)
         bp_interval = layer_dict["backward_pass_intervals"][trace_index]
-        assert bp_interval[1] - bp_interval[0] - layer_dict["backward_pass_durations"][trace_index] < 1e-9
-        bp_event = dict(ts=bp_interval[0], dur=bp_interval[1] - bp_interval[0], name="bp_{}".format(layer_name),
-                        ph="X", pid=0, tid=i*2+1)
-        events.append(bp_event)
+        if bp_interval is not None:
+            assert bp_interval[1] - bp_interval[0] == layer_dict["backward_pass_durations"][trace_index]
+            bp_event = dict(ts=bp_interval[0], dur=(bp_interval[1] - bp_interval[0])/1e3, name="bp_{}".format(layer_name),
+                            ph="X", pid=0, tid=i*2+1)
+            events.append(bp_event)
     trace = dict(traceEvents=events)
     return trace
+
+
+def separate_chrome_trace_layerwise(model, trace, pid_scheme):
+    layer_names = list()
+
+    def add_layer_name(layer):
+        layer_names.append(layer.name)
+    traverse_keras_DFS(model, processing_function=add_layer_name)
+    matched_pids, unmatched_pids = get_pids(trace, pid_scheme)
+    if len(matched_pids) == 0:
+        raise Exception("No pids were matched using the current pid_scheme. Consider changing it.\nOnly found the "
+                        "following pids: {}".format(
+            "\n".join(["{}: {}".format(k, v) for k, v in unmatched_pids.items()])))
+    new_events = list()
+    layer_indices_mapping = dict()
+    type_color_mapping = {"forward_pass": "green", "backward_pass": "red"}
+    i = 1
+    for event in trace["traceEvents"]:
+        if event["ph"] == "X" and event["pid"] in matched_pids.values():
+            matched_layers = match_event_to_layers(layer_names, event)
+            t = match_event_to_type(event, optimizer=model.optimizer)
+            for matched_layer in matched_layers:
+                if matched_layer not in layer_indices_mapping.keys():
+                    layer_indices_mapping[matched_layer] = i
+                    i += 1
+                new_events.append(dict(pid=0, tid=layer_indices_mapping[matched_layer], ph="X", name=event["name"],
+                                       cname=type_color_mapping[t], ts=event["ts"], dur=event["dur"],
+                                       args=event["args"]))
+            if len(matched_layers) == 0:
+                new_events.append(dict(pid=0, tid=0, ph="X", cname=type_color_mapping[t], name=event["name"],
+                                       ts=event["ts"], dur=event["dur"], args=event["args"]))
+    for layer_name, index in layer_indices_mapping.items():
+        new_events.append(dict(ph="M", name="thread_name", pid=0, tid=index, args=dict(name=layer_name)))
+    new_events.append(dict(ph="M", name="thread_name", pid=0, tid=0, args=dict(name="Unmatched ops")))
+    new_trace = dict(traceEvents=new_events)
+    return new_trace
 
 
 if __name__ == "__main__":
@@ -311,7 +356,7 @@ if __name__ == "__main__":
                         help="The number of batches to run")
     parser.add_argument("-t", "--trials", type=int, default=1,
                         help="The number of layer building & evaluation iterations to do.")
-    parser.add_argument("-pi", "--pid_scheme", choices=["all", "task", "stream", "task_stream"],
+    parser.add_argument("-pi", "--pid_scheme", default="task", choices=["all", "task", "stream", "task_stream"],
                         help="The scheme in which we choose which pid groups from the trace to include in the costs."
                              "See documentation for more details.")
     parser.add_argument("--out",
