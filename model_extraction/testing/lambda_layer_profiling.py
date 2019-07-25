@@ -4,7 +4,7 @@ import tensorflow.python.client.timeline as timeline
 import numpy as np
 import json
 import time
-from model_extraction.keras_utils import clone_layer, get_dummy_input_output, extend_trace
+from model_extraction.tensorflow_utils import clone_layer, get_dummy_input_output, extend_trace
 
 
 options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)

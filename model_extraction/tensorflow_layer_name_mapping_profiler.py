@@ -15,7 +15,7 @@ import argparse
 from datetime import datetime
 import socket
 sys.path.append("..")
-from model_extraction.keras_utils import *
+from model_extraction.tensorflow_utils import *
 
 # A random sequence of characters to use in wrapping layer names to ensure they can be identified even
 # after tensorflow adds its own prefixes and suffixes
@@ -50,7 +50,7 @@ def wrap_layer_names(model):
 
 
 def generate_traces(input_model, loss, optimizer, batch_size=32, num_of_batches=8, trials=1, verbosity=1, device="gpu",
-                    output_file_prefix=None, warmup_batch=True):
+                    warmup_batch=True):
     # Early checks and setup -------------------------------------------------------------------------------------------
     if tf.executing_eagerly():
         raise Exception("Cannot use tracer with eager execution.")
@@ -92,10 +92,6 @@ def generate_traces(input_model, loss, optimizer, batch_size=32, num_of_batches=
         model.fit(x, y, steps_per_epoch=num_of_batches, callbacks=[callback], verbose=verbosity)
     for i, trace in enumerate(traces):
         traces[i] = json.loads(trace)
-    if output_file_prefix is not None:
-        for i, trace in enumerate(traces):
-            with open("{}_{}.chrometrace.json".format(output_file_prefix, i), "w") as file:
-                json.dump(trace, file, indent=4)
     return traces
 
 
@@ -136,6 +132,7 @@ def parse_stats(stats):
         for k3 in ["count", "units", "durations"]:
             stats["{}_{}_percentage".format(k2, k3)] = stats["identified_{}_{}".format(k2, k3)] /\
                                                        stats["identified_all_{}".format(k3)]
+
 
 def get_pids(trace, pid_scheme):
     task_pid_names = ["/job:localhost/replica:0/task:0/device:GPU:0 Compute",
@@ -266,22 +263,19 @@ def parse_traces(model, traces, optimizer, pid_scheme="task", verbosity=1):
 
 
 def profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8, trials=1, verbosity=1, device="gpu",
-            pid_scheme=None, save_traces=False):
+            pid_scheme=None):
     """
     The function takes a keras model and attempts to estimate the cost of each layer in the model in terms of
     the forward pass and backward pass.
     """
     trace_prefix = None
-    if save_traces:
-        trace_prefix = "{}_{}".format(args.model, SCRIPT_START.strftime("%m-%d-%H-%M"))
-    traces = generate_traces(input_model, loss, optimizer, batch_size, num_of_batches, trials, verbosity, device,
-                             output_file_prefix=trace_prefix)
+    traces = generate_traces(input_model, loss, optimizer, batch_size, num_of_batches, trials, verbosity, device)
     layer_costs, stats, pids = parse_traces(input_model, traces, optimizer, pid_scheme, verbosity)
     if verbosity >= 1:
         for k, v in stats.items():
             if "percentage" in k:
                 print("{}: {:.2f}%".format(k, v*100))
-    return layer_costs, stats, pids
+    return traces, layer_costs, stats, pids
 
 
 def generate_chrome_trace_for_layer_intervals(layer_costs, trace_index):
@@ -303,12 +297,12 @@ def generate_chrome_trace_for_layer_intervals(layer_costs, trace_index):
     return trace
 
 
-def separate_chrome_trace_layerwise(model, trace, pid_scheme):
+def generate_layerwise_chrome_trace(model, trace, pid_scheme, optimizer):
     layer_names = list()
 
     def add_layer_name(layer):
         layer_names.append(layer.name)
-    traverse_keras_DFS(model, processing_function=add_layer_name)
+    traverse_keras_DFS(model, processing_function=add_layer_name, order="pre-order", top_to_bottom=True)
     matched_pids, unmatched_pids = get_pids(trace, pid_scheme)
     if len(matched_pids) == 0:
         raise Exception("No pids were matched using the current pid_scheme. Consider changing it.\nOnly found the "
@@ -316,12 +310,14 @@ def separate_chrome_trace_layerwise(model, trace, pid_scheme):
             "\n".join(["{}: {}".format(k, v) for k, v in unmatched_pids.items()])))
     new_events = list()
     layer_indices_mapping = dict()
-    type_color_mapping = {"forward_pass": "green", "backward_pass": "red"}
+    # Color names available at:
+    # https://github.com/catapult-project/catapult/blob/11513e359cd60e369bbbd1f4f2ef648c1bccabd0/tracing/tracing/base/color_scheme.html
+    type_color_mapping = {"forward_pass": "good", "backward_pass": "terrible"}
     i = 1
     for event in trace["traceEvents"]:
         if event["ph"] == "X" and event["pid"] in matched_pids.values():
             matched_layers = match_event_to_layers(layer_names, event)
-            t = match_event_to_type(event, optimizer=model.optimizer)
+            t = match_event_to_type(event, optimizer=optimizer)
             for matched_layer in matched_layers:
                 if matched_layer not in layer_indices_mapping.keys():
                     layer_indices_mapping[matched_layer] = i
@@ -332,9 +328,16 @@ def separate_chrome_trace_layerwise(model, trace, pid_scheme):
             if len(matched_layers) == 0:
                 new_events.append(dict(pid=0, tid=0, ph="X", cname=type_color_mapping[t], name=event["name"],
                                        ts=event["ts"], dur=event["dur"], args=event["args"]))
-    for layer_name, index in layer_indices_mapping.items():
-        new_events.append(dict(ph="M", name="thread_name", pid=0, tid=index, args=dict(name=layer_name)))
+    # Sort threads in topological order and name layers
+    for i, layer_name in enumerate(layer_names):
+        if layer_name not in layer_indices_mapping:
+            continue
+        new_events.append(dict(ph="M", name="thread_name", pid=0, tid=layer_indices_mapping[layer_name],
+                               args=dict(name="{}_{}".format(i, layer_name))))
+        new_events.append(dict(ph="M", name="thread_sort_index", pid=0, tid=layer_indices_mapping[layer_name],
+                               args=dict(sort_index=i)))
     new_events.append(dict(ph="M", name="thread_name", pid=0, tid=0, args=dict(name="Unmatched ops")))
+    new_events.append(dict(ph="M", name="thread_sort_index", pid=0, tid=0,args=dict(sort_index=i+1)))
     new_trace = dict(traceEvents=new_events)
     return new_trace
 
@@ -359,8 +362,7 @@ if __name__ == "__main__":
     parser.add_argument("-pi", "--pid_scheme", default="task", choices=["all", "task", "stream", "task_stream"],
                         help="The scheme in which we choose which pid groups from the trace to include in the costs."
                              "See documentation for more details.")
-    parser.add_argument("--out",
-                        help="Stream to write the timings to in json format if any. File | stdout | stderr | suppress")
+    parser.add_argument("--out", help="File name to write the final report to")
     parser.add_argument("-v", "--verbosity", type=int, default=1,
                         help="0: Suppress all output\n"
                              "1: Show profiler output\n"
@@ -369,7 +371,9 @@ if __name__ == "__main__":
     parser.add_argument("-st", "--save_traces", default=False, action="store_true",
                         help="Whether we save the trace of each batch or not. For debugging.")
     parser.add_argument("-git", "--gen_interval_trace", default=False, action="store_true",
-                        help="Whether we save a trace of the layer intervals or not")
+                        help="Whether or not we generate an interval trace from the last trace. For debugging.")
+    parser.add_argument("-glt", "--gen_layerwise_trace", default=False, action="store_true",
+                        help="Whether or not we generate a layerwise trace from the last trace. For debugging.")
     args = parser.parse_args()
     try:
         model_func_name = "{}_model".format(args.model)
@@ -382,26 +386,29 @@ if __name__ == "__main__":
             model = model(weights=None, include_top=True)
     except AttributeError:
         raise Exception("'{}' is not a valid dummy or keras model.\n".format(args.model))
-    SCRIPT_START = datetime.now()
-    layer_costs, stats, pids = profile(input_model=model, loss=args.loss, optimizer=args.optimizer,
-                                       batch_size=args.batch_size, num_of_batches=args.num_of_batches,
-                                       trials=args.trials, verbosity=args.verbosity, device=args.device,
-                                       pid_scheme=args.pid_scheme, save_traces=args.save_traces)
-    if args.out is not None:
-        if args.out == "stdout":
-            out = sys.__stdout__
-        elif args.out == "stderr":
-            out = sys.__stderr__
-        elif args.out == "suppress":
-            out = False
-        else:
-            out = open(args.out, "w")
+    script_time_stamp = datetime.now().strftime("%m-%d-%H-%M")
+    traces, layer_costs, stats, pids = profile(input_model=model, loss=args.loss, optimizer=args.optimizer,
+                                               batch_size=args.batch_size, num_of_batches=args.num_of_batches,
+                                               trials=args.trials, verbosity=args.verbosity, device=args.device,
+                                               pid_scheme=args.pid_scheme)
+    # Save reports and traces
+    if args.out is None:
+        file_prefix = "{}_{}".format(args.model, script_time_stamp)
     else:
-        out = open("{}_{}.profile.json".format(args.model, SCRIPT_START.strftime("%m-%d-%H-%M")), "w")
+        file_prefix = args.out
+    out = open("{}.profile.json".format(file_prefix), "w")
     report = {"host": socket.gethostname(), "unit": "ns", "args": args.__dict__, "stats": stats, "pids": pids,
               "layer_costs": layer_costs}
     json.dump(report, out, indent=4)
     out.close()
+    if args.save_traces:
+        for i, trace in enumerate(traces):
+            with open("{}_{}.chrometrace.json".format(file_prefix, i), "w") as file:
+                json.dump(trace, file, indent=4)
     if args.gen_interval_trace:
-        with open("{}_{}_intervals.chrometrace.json".format(args.model, SCRIPT_START.strftime("%m-%d-%H-%M")), "w") as f:
-            json.dump(generate_chrome_trace_for_layer_intervals(layer_costs, 0), f)
+        with open("{}_intervals.chrometrace.json".format(file_prefix), "w") as f:
+            json.dump(generate_chrome_trace_for_layer_intervals(layer_costs, len(traces)-1), f)
+    if args.gen_layerwise_trace:
+        with open("{}_layerwise.chrometrace.json".format(file_prefix), "w") as f:
+            json.dump(generate_layerwise_chrome_trace(model, traces[-1], args.pid_scheme,
+                                                      args.optimizer), f)

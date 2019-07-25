@@ -22,7 +22,7 @@ import tensorflow as tf
 import time
 import json
 sys.path.append("..")
-from model_extraction.keras_utils import *
+from model_extraction.tensorflow_utils import *
 
 
 def profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8, trials=1, verbosity=1, device="gpu",

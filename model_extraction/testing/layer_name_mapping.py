@@ -1,8 +1,8 @@
 import json
 import os
 import tensorflow as tf
-from model_extraction.keras_utils import traverse_keras_DFS
-from model_extraction.keras_utils import *
+from model_extraction.tensorflow_utils import traverse_keras_DFS
+from model_extraction.tensorflow_utils import *
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = "999"
 # Supressing deprectation messages is not working
