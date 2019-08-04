@@ -250,12 +250,16 @@ if __name__ == "__main__":
             model = model(weights=None, include_top=True)
     except AttributeError:
         raise Exception("'{}' is not a valid dummy or keras model.\n".format(args.model))
+    t = time.time_ns()
     exception, timings = profile(input_model=model, batch_size=args.batch_size,
                                  num_of_batches=args.num_of_batches, loss=args.loss,
                                  optimizer=args.optimizer, device=args.device,
                                  verbosity=args.verbosity, trials=args.trials,
                                  use_tracer=not args.use_python_timing,
                                  skip_untrainable_layers=args.skip)
+    t = time.time_ns() - t
+    if args.verbosity >= 1:
+        print("Finished in {} ms".format(t / 1e6))
     if exception is not None:
         if isinstance(exception, KeyboardInterrupt):
             print("Profiling stopped by user. Attempting to write gathered data...")
@@ -273,7 +277,8 @@ if __name__ == "__main__":
             out = open(args.out, "w")
     else:
         out = open("{}_{}.profile.json".format(args.model, datetime.now().strftime("%m-%d-%H-%M")), "w")
-    report = {"host": socket.gethostname(), "args": args.__dict__, "timings": timings}
+    report = {"host": socket.gethostname(), "unit": "ns", "profiling_time": t, "args": args.__dict__,
+              "layer_costs": timings}
     json.dump(report, out, indent=4)
     if exception is not None:
         raise exception

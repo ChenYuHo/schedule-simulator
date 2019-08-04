@@ -358,7 +358,7 @@ if __name__ == "__main__":
     parser.add_argument("-nb", "--num_of_batches", type=int, default=8,
                         help="The number of batches to run")
     parser.add_argument("-t", "--trials", type=int, default=1,
-                        help="The number of layer building & evaluation iterations to do.")
+                        help="The number of training function calls to do.")
     parser.add_argument("-pi", "--pid_scheme", default="task", choices=["all", "task", "stream", "task_stream"],
                         help="The scheme in which we choose which pid groups from the trace to include in the costs."
                              "See documentation for more details.")
@@ -387,18 +387,22 @@ if __name__ == "__main__":
     except AttributeError:
         raise Exception("'{}' is not a valid dummy or keras model.\n".format(args.model))
     script_time_stamp = datetime.now().strftime("%m-%d-%H-%M")
+    t = time.time_ns()
     traces, layer_costs, stats, pids = profile(input_model=model, loss=args.loss, optimizer=args.optimizer,
                                                batch_size=args.batch_size, num_of_batches=args.num_of_batches,
                                                trials=args.trials, verbosity=args.verbosity, device=args.device,
                                                pid_scheme=args.pid_scheme)
+    t = time.time_ns() - t
+    if args.verbosity >= 1:
+        print("Finished in {} ms".format(t / 1e6))
     # Save reports and traces
     if args.out is None:
         file_prefix = "{}_{}".format(args.model, script_time_stamp)
     else:
         file_prefix = args.out
     out = open("{}.profile.json".format(file_prefix), "w")
-    report = {"host": socket.gethostname(), "unit": "ns", "args": args.__dict__, "stats": stats, "pids": pids,
-              "layer_costs": layer_costs}
+    report = {"host": socket.gethostname(), "unit": "ns", "profiling_time": t, "args": args.__dict__, "stats": stats,
+              "pids": pids, "layer_costs": layer_costs}
     json.dump(report, out, indent=4)
     out.close()
     if args.save_traces:

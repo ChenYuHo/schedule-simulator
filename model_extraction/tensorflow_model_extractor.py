@@ -1,6 +1,5 @@
-from schedule_simulator_core.DAGs import Layer, DAG
+from schedule_simulator_core.DAGs import Layer, DAG, LOCAL_EXTRA_PREFIX
 from model_extraction.tensorflow_utils import traverse_keras_DFS, get_layer_children, get_layer_parents
-from schedule_simulator_core.DAGs import LOCAL_EXTRA_PREFIX
 import numpy as np
 
 
