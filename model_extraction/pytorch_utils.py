@@ -52,12 +52,11 @@ def traverse_module(module, processing_func, only_process_leafs=True):
     :param processing_func: The function which will be called on the modules. Should only have one required argument in
     which the module will be passed
     """
-    has_children = False
-    if hasattr(module, "children"):
+    is_parent = is_parent_module(module)
+    if is_parent:
         for child in module.children():
             traverse_module(child, processing_func)
-            has_children = True
-    if not (only_process_leafs and has_children):
+    if not (only_process_leafs and is_parent):
         processing_func(module)
 
 
@@ -78,16 +77,24 @@ def get_standard_input_size(model):
 
 def get_standard_output_size(model):
     if type(model).__name__ == "Inception3":
-        return (1000,), (1000,)
+        if model.aux_logits:
+            return (1000,), (1000,)
+        else:
+            return (1000,),
     elif isinstance(model, DummyModel):
         return model.get_output_size()
     else:
         return (1000,),
 
 
-def get_dummy_input_output(model, batch_size, device="gpu"):
+def get_dummy_input_output(model, batch_size, device=None):
     if device == "gpu":
         device = "cuda"
+    elif device is None:
+        if torch.cuda.is_available():
+            device = "cuda"
+        else:
+            device = "cpu"
     inputs = list()
     for size in get_standard_input_size(model):
         size = [batch_size] + list(size)
@@ -97,6 +104,43 @@ def get_dummy_input_output(model, batch_size, device="gpu"):
         label = torch.randint(low=0, high=size[0], size=(batch_size,), device=device, dtype=torch.long)
         labels.append(label)
     return inputs, labels
+
+
+def get_module_name(torch_node, return_depth=False):
+    scope = torch_node.scopeName()
+    name = list()
+    recording = False
+    depth = 0
+    for c in scope:
+        if recording:
+            if c == ']':
+                recording = False
+            else:
+                name.append(c)
+        else:
+            if c == '[':
+                depth += 1
+                recording = True
+                if len(name) > 0:
+                    name.append(".")
+    name = "".join(name)
+    if return_depth:
+        return name, depth
+    else:
+        return name
+
+
+def get_module(model, module_name):
+    if len(module_name) == 0:
+        return model
+    for name, module in model.named_modules():
+        if name == module_name:
+            return module
+
+
+def is_parent_module(module):
+    return hasattr(module, "children") and len(list(module.children())) > 0
+
 
 class DummyModel(torch.nn.Module, ABC):
     @abstractmethod
@@ -154,34 +198,3 @@ class DummyMultiModel(DummyModel):
         main_out = self.relu5(self.linear2(main_out))
         main_out = self.relu6(self.linear3(main_out))
         return main_out, aux_out
-
-
-# net = DummyMultiModel()
-# loss_func = losses.CrossEntropyLoss()
-# optim = torch.optim.SGD(net.parameters(), lr=0.001)
-#
-# inputs = list()
-# batch_size = 1
-# for size in net.get_input_size():
-#     size = [batch_size] + list(size)
-#     inputs.append(torch.rand(size=size))
-# labels = list()
-# for size in net.get_output_size():
-#     labels.append(torch.randint(low=0, high=size[0], size=(batch_size,)))
-# # https://discuss.pytorch.org/t/how-to-traverse-a-network/10477/7
-# import torch.jit as jit
-# trace = jit.trace(net, inputs, check_trace=False)
-# print(trace.graph)
-# graph_lines = [x.lstrip() for x in str(trace.graph).split("\n")]
-# for graph_line in graph_lines:
-#     if len(graph_line) > 1 and graph_line[-1] == ']':
-#         print(graph_line)
-# optim.zero_grad()
-# outputs = net(*inputs)
-# loss = None
-# for i, output in enumerate(outputs):
-#     if loss is None:
-#         loss = loss_func(output, labels[i])
-#     else:
-#         loss += loss_func(output, labels[i])
-# optim.step()

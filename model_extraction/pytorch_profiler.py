@@ -13,9 +13,14 @@ sys.path.append("..")
 from model_extraction.pytorch_utils import *
 
 
-def profile(model, loss_func, optimizer, batch_size, num_of_batches, device="gpu", enable_autograd_profiler=False,
+def profile(model, loss_func, optimizer, batch_size, num_of_batches, device=None, enable_autograd_profiler=False,
             verbosity=1):
     # Setup and inject timings hooks
+    if device is None:
+        if torch.cuda.is_available():
+            device = "gpu"
+        else:
+            device = "cpu"
     if device == "gpu":
         if not torch.cuda.is_available():
             raise Exception("No GPUs were detected. Change device to 'cpu' or make sure you have appropriate gpu "
