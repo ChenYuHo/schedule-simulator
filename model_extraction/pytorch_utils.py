@@ -1,7 +1,11 @@
+from abc import ABC, abstractmethod
+
 import numpy as np
 from torchsummary import summary
 import torch
-from torchvision.datasets import FakeData
+import torch.nn as nn
+import torch.nn.modules.loss as losses
+import torch.nn.functional as F
 import torchvision.transforms as transforms
 import time
 
@@ -12,33 +16,31 @@ def train(model, loss_func, optimizer, batch_size, num_of_batches, device, verbo
     """
     model.train()
     transform = transforms.Compose([transforms.ToTensor()])
-    fake_data = FakeData(size=num_of_batches*batch_size, transform=transform,
-                         image_size=get_standard_input_shape(model))
-    trainloader = torch.utils.data.DataLoader(fake_data, batch_size=batch_size, num_workers=0)
     timer = time.time()
-    for i, data in enumerate(trainloader, 0):
-        # get the inputs; data is a list of [inputs, labels]
-        inputs, labels = data
-        if device == "gpu":
-            inputs = inputs.to("cuda")
-            labels = labels.to("cuda")
+    for batch_i in range(num_of_batches):
+        # 0. Generate fake data
+        inputs, labels = get_dummy_input_output(model, batch_size, device)
         # zero the parameter gradients
         optimizer.zero_grad()
-        # forward + backward + optimize
-        if type(model).__name__ == "Inception3":
-            # From https://discuss.pytorch.org/t/how-to-optimize-inception-model-with-auxiliary-classifiers/7958
-            outputs, aux_outputs = model(inputs)
-            loss1 = loss_func(outputs, labels)
-            loss2 = loss_func(aux_outputs, labels)
-            loss = loss1 + 0.4 * loss2
-        else:
-            outputs = model(inputs)
-            loss = loss_func(outputs, labels)
+        # 1. forward
+        outputs = model(*inputs)
+        # if this is a single output just wrap it in a list for consistency
+        if isinstance(outputs, torch.Tensor):
+            outputs = [outputs]
+        # 2. Loss
+        loss = None
+        for i, output in enumerate(outputs):
+            if loss is None:
+                loss = loss_func(output, labels[i])
+            else:
+                loss += loss_func(output, labels[i])
+        # 3. Backward
         loss.backward()
+        # 4. Update weights
         optimizer.step()
         if verbosity >= 1 and time.time() - timer >= 5:
             timer = time.time()
-            print("Finished {:.2f}%".format((i+1)/num_of_batches*100))
+            print("Finished {:.2f}%".format((batch_i+1)/num_of_batches*100))
     print("Finished training")
 
 
@@ -65,9 +67,121 @@ def count_trainable_params(module):
     return params
 
 
-def get_standard_input_shape(model):
+def get_standard_input_size(model):
     if type(model).__name__ == "Inception3":
-        return 3, 299, 299
+        return (3, 299, 299),
+    elif isinstance(model, DummyModel):
+        return model.get_input_size()
     else:
-        return 3, 224, 224
+        return (3, 224, 224),
 
+
+def get_standard_output_size(model):
+    if type(model).__name__ == "Inception3":
+        return (1000,), (1000,)
+    elif isinstance(model, DummyModel):
+        return model.get_output_size()
+    else:
+        return (1000,),
+
+
+def get_dummy_input_output(model, batch_size, device="gpu"):
+    if device == "gpu":
+        device = "cuda"
+    inputs = list()
+    for size in get_standard_input_size(model):
+        size = [batch_size] + list(size)
+        inputs.append(torch.rand(size=size, device=device))
+    labels = list()
+    for size in get_standard_output_size(model):
+        label = torch.randint(low=0, high=size[0], size=(batch_size,), device=device, dtype=torch.long)
+        labels.append(label)
+    return inputs, labels
+
+class DummyModel(torch.nn.Module, ABC):
+    @abstractmethod
+    def get_input_size(self):
+        pass
+
+    @abstractmethod
+    def get_output_size(self):
+        pass
+
+
+class DummyMultiModel(DummyModel):
+    """
+    The graph:
+    C: Conv2D, R: ReLu, P: MaxPooling2D, L: Linear
+                                          -> C -> R -> aux_out
+    main_in -> C -> R -> P -> C -> R -> P
+                                          ->
+                                             L -> R -> L -> R -> main_out
+                         aux_in -> L -> R ->
+    """
+    def get_input_size(self):
+        return (3, 128, 128), (128,)
+
+    def get_output_size(self):
+        return (256,), (256,)
+
+    def __init__(self):
+        super(DummyMultiModel, self).__init__()
+        self.conv1 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=8)
+        self.relu1 = nn.ReLU(inplace=True)
+        self.pool1 = nn.MaxPool2d(kernel_size=8, stride=4)
+        self.conv2 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=8)
+        self.relu2 = nn.ReLU(inplace=True)
+        self.pool2 = nn.MaxPool2d(kernel_size=8, stride=4)
+        self.conv3 = nn.Conv2d(in_channels=128, out_channels=256, kernel_size=4)
+        self.relu3 = nn.ReLU(inplace=True)
+        self.linear1 = nn.Linear(128, 512)
+        self.relu4 = nn.ReLU(inplace=True)
+        self.linear2 = nn.Linear(2560, 512)
+        self.relu5 = nn.ReLU(inplace=True)
+        self.linear3 = nn.Linear(512, 256)
+        self.relu6 = nn.ReLU(inplace=True)
+
+    def forward(self, *inputs):
+        main_in, aux_in = inputs
+        x = self.pool1(self.relu1(self.conv1(main_in)))
+        x = self.pool2(self.relu2(self.conv2(x)))
+        aux_out = self.relu3(self.conv3(x))
+        aux_out = aux_out.view(-1, np.prod(aux_out.size()[1:]))
+        x = x.view(-1, np.prod(x.size()[1:]))  # Flatten
+        y = aux_in.view(-1, np.prod(aux_in.size()[1:]))
+        y = self.relu4(self.linear1(y))
+        main_out = torch.cat((x, y), dim=1)
+        main_out = self.relu5(self.linear2(main_out))
+        main_out = self.relu6(self.linear3(main_out))
+        return main_out, aux_out
+
+
+# net = DummyMultiModel()
+# loss_func = losses.CrossEntropyLoss()
+# optim = torch.optim.SGD(net.parameters(), lr=0.001)
+#
+# inputs = list()
+# batch_size = 1
+# for size in net.get_input_size():
+#     size = [batch_size] + list(size)
+#     inputs.append(torch.rand(size=size))
+# labels = list()
+# for size in net.get_output_size():
+#     labels.append(torch.randint(low=0, high=size[0], size=(batch_size,)))
+# # https://discuss.pytorch.org/t/how-to-traverse-a-network/10477/7
+# import torch.jit as jit
+# trace = jit.trace(net, inputs, check_trace=False)
+# print(trace.graph)
+# graph_lines = [x.lstrip() for x in str(trace.graph).split("\n")]
+# for graph_line in graph_lines:
+#     if len(graph_line) > 1 and graph_line[-1] == ']':
+#         print(graph_line)
+# optim.zero_grad()
+# outputs = net(*inputs)
+# loss = None
+# for i, output in enumerate(outputs):
+#     if loss is None:
+#         loss = loss_func(output, labels[i])
+#     else:
+#         loss += loss_func(output, labels[i])
+# optim.step()

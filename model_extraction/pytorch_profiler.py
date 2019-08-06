@@ -89,13 +89,25 @@ if __name__ == "__main__":
                         help="Whether we save the trace of the training or not. For debugging.")
     args = parser.parse_args()
 
-    def try_import(name, path):
+    def try_import(name, path, raise_exception=True):
         try:
             module = __import__(path, fromlist=[name])
             return getattr(module, name)
         except AttributeError:
-            raise Exception("'{}' is not found in {}.\n".format(name, path))
-    model = try_import(args.model, "torchvision.models")(pretrained=False)
+            if raise_exception:
+                raise Exception("'{}' is not found in {}.\n".format(name, path))
+            return False
+
+    model = try_import(args.model, "torchvision.models", raise_exception=False)
+    if model:
+        model = model(pretrained=False)
+    else:
+        model = try_import(args.model, "model_extraction.pytorch_utils", raise_exception=False)
+        if model:
+            model = model()
+        else:
+            raise Exception("'{}' is not found in torchvision.models or model_extraction.pytorch_utils.\n".format(
+                args.model))
     loss = try_import(args.loss, "torch.nn.modules.loss")()
     optimizer = try_import(args.optimizer, "torch.optim")(model.parameters(), lr=0.001)
     script_time_stamp = datetime.now().strftime("%m-%d-%H-%M")
