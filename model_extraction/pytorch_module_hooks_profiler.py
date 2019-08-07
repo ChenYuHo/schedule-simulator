@@ -14,7 +14,7 @@ from model_extraction.pytorch_utils import *
 
 
 def profile(model, loss_func, optimizer, batch_size, num_of_batches, device=None, enable_autograd_profiler=False,
-            verbosity=1):
+            verbosity=1, skip_untrainable_layers=False):
     # Setup and inject timings hooks
     if device is None:
         if torch.cuda.is_available():
@@ -39,11 +39,13 @@ def profile(model, loss_func, optimizer, batch_size, num_of_batches, device=None
     start_times = list()
     layer_time_stamps = list()
     layers = list()
-
     def register_hooks(module):
+        if skip_untrainable_layers and count_trainable_params(module) == 0:
+            return
         module.register_forward_hook(get_hook(len(layers), "forward"))
         module.register_backward_hook(get_hook(len(layers), "backward"))
-        layers.append(dict(type=type(module).__name__, forward_pass_cost=list(), backward_pass_cost=list()))
+        layers.append(dict(name=get_module_name(model, module), type=type(module).__name__,
+                           forward_pass_cost=list(), backward_pass_cost=list()))
         layer_time_stamps.append(dict(forward_pass_ts=list(), backward_pass_ts=list()))
 
     model.register_forward_pre_hook(init)
@@ -66,8 +68,9 @@ def profile(model, loss_func, optimizer, batch_size, num_of_batches, device=None
     # Name layers
     layer_costs = dict()
     for layer_i, layer_dict in enumerate(layers):
-        layer_costs["{}_{}".format(layer_i, layer_dict["type"])] = dict(forward_pass_units=layer_dict["forward_pass_cost"],
-                                                                        backward_pass_units=layer_dict["backward_pass_cost"])
+        layer_costs[layer_dict["name"]] = dict(type=layer_dict["type"],
+                                               forward_pass_units=layer_dict["forward_pass_cost"],
+                                               backward_pass_units=layer_dict["backward_pass_cost"])
     return layer_costs, context
 
 
@@ -86,6 +89,8 @@ if __name__ == "__main__":
                         help="The batch size used for all functions")
     parser.add_argument("-nb", "--num_of_batches", type=int, default=8,
                         help="The number of batches to run")
+    parser.add_argument("--skip", default=False, action="store_true",
+                        help="Whether or not to skip layers with no trainable parameters")
     parser.add_argument("--out", help="File name to write the final report to")
     parser.add_argument("-v", "--verbosity", type=int, default=1,
                         help="0: Suppress all output\n"
@@ -103,16 +108,7 @@ if __name__ == "__main__":
                 raise Exception("'{}' is not found in {}.\n".format(name, path))
             return False
 
-    model = try_import(args.model, "torchvision.models", raise_exception=False)
-    if model:
-        model = model(pretrained=False)
-    else:
-        model = try_import(args.model, "model_extraction.pytorch_utils", raise_exception=False)
-        if model:
-            model = model()
-        else:
-            raise Exception("'{}' is not found in torchvision.models or model_extraction.pytorch_utils.\n".format(
-                args.model))
+    model = get_model(args.model)
     loss = try_import(args.loss, "torch.nn.modules.loss")()
     optimizer = try_import(args.optimizer, "torch.optim")(model.parameters(), lr=0.001)
     script_time_stamp = datetime.now().strftime("%m-%d-%H-%M")
@@ -120,7 +116,8 @@ if __name__ == "__main__":
     layer_costs, autograd_profiler = profile(model=model, loss_func=loss, optimizer=optimizer,
                                              batch_size=args.batch_size, num_of_batches=args.num_of_batches,
                                              verbosity=args.verbosity, device=args.device,
-                                             enable_autograd_profiler=args.save_trace)
+                                             enable_autograd_profiler=args.save_trace,
+                                             skip_untrainable_layers=args.skip)
     t = time.time_ns()-t
     # Save reports and traces
     if args.out is None:
@@ -138,7 +135,8 @@ if __name__ == "__main__":
         print("total costs in profile: {} ms".format((forward+backward)/1e6))
         print("total forward costs in profile:  {} ms ({:.2f}%)".format(forward / 1e6, forward/(forward+backward)*100))
         print("total backward costs in profile: {} ms ({:.2f}%)".format(backward / 1e6, backward/(forward+backward)*100))
-    report = {"method": "pytorch_module_hooks", "host": socket.gethostname(), "unit": "ns", "profiling_time": t,
+    report = {"method": "pytorch_module_hooks", "host": socket.gethostname(),
+              "report_date": script_time_stamp, "profiling_time": t, "unit": "ns",
               "args": args.__dict__, "layer_costs": layer_costs}
     json.dump(report, out, indent=4)
     out.close()

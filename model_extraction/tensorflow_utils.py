@@ -227,3 +227,19 @@ def layer_input_output_analysis(model):
         layers.append(layer_dict)
     traverse_keras_DFS(model=model, processing_function=process_layer)
     return layers
+
+
+def get_model(model_name):
+    import sys
+    try:
+        model_func_name = "{}_model".format(model_name)
+        if model_func_name in dir(sys.modules[__name__]):
+            module = sys.modules[__name__]
+            model = getattr(module, model_func_name)()
+        else:
+            module = __import__("tensorflow.keras.applications", fromlist=[model_name])
+            model = getattr(module, model_name)
+            model = model(weights=None, include_top=True)
+    except AttributeError:
+        raise Exception("'{}' is not a valid dummy or keras model.\n".format(model_name))
+    return model

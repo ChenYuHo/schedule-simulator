@@ -75,21 +75,28 @@ class DAG:
     """
     It is a generic class that can describe any DNN architecture.
     """
-    def __init__(self, dag_input_layers, **extras):
+    def __init__(self, dag_input_layers, dag_output_layers=None, **extras):
         self.dag_input_layers = dag_input_layers
         self.dag_output_layers = list()
         self.extras = extras
-        # Traverse dag and setup layer variables as well as extract dag_output_layers
-        def process_node(node):
-            node._forward_dependencies = set()
-            node._backward_dependencies = set()
-            if node.output_layers is None:
-                self.dag_output_layers.append(node)
-        self.traverse_BFS(processing_function=process_node)
+        # Extract dag_output_layers
+        if dag_output_layers is None:
+            self.set_output_layers()
         # Extract layer dependencies
         self.extract_dependencies()
         # Extract topological order
+        self.topological_order = None
+        self.produce_topological_order()
+
+    def set_output_layers(self):
+        def process_node(node):
+            if node.output_layers is None:
+                self.dag_output_layers.append(node)
+        self.traverse_BFS(processing_function=process_node)
+
+    def produce_topological_order(self):
         self.topological_order = list()
+
         def add_node(node):
             self.topological_order.append(node)
         self.traverse_DFS(add_node, order="post-order")
@@ -138,13 +145,19 @@ class DAG:
                 processing_function(root)
         visited = set()
         for root in self.dag_input_layers:
-            traverse(root=root,visited=visited)
+            traverse(root=root, visited=visited)
 
     def extract_dependencies(self):
         """
         Uses a DFS O(n) to extract all dependencies between layers in the DAG.
         I should modify this later to use the generic DFS post order function defined above.
         """
+        # Reset dependencies
+        def process_node(node):
+            node._forward_dependencies = set()
+            node._backward_dependencies = set()
+        self.traverse_BFS(processing_function=process_node)
+
         def extract_forward_dependencies(root: Layer, deps: set, visited: set):
             if root in visited:
                 return

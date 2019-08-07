@@ -219,11 +219,11 @@ if __name__ == "__main__":
                         help="The optimizer to use when training. See Keras.Optimizers documentation for all options.")
     parser.add_argument("--device", choices=["gpu", "cpu"], default="gpu",
                         help="The device to use for all operations. If none is specified then it is automated.")
-    parser.add_argument("-bs", "--batch_size", type=int, default=32,
+    parser.add_argument("-bs", "--batch_size", type=int, default=8,
                         help="The batch size used for all functions")
     parser.add_argument("-nb", "--num_of_batches", type=int, default=8,
                         help="The number of batches to run")
-    parser.add_argument("-t", "--trials", type=int, default=5,
+    parser.add_argument("-t", "--trials", type=int, default=2,
                         help="The number of layer building & evaluation iterations to do.")
     parser.add_argument("--skip", default=False, action="store_true",
                         help="Whether or not to skip layers with no trainable parameters")
@@ -239,17 +239,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.eager:
         tf.enable_eager_execution()
-    try:
-        model_func_name = "{}_model".format(args.model)
-        if model_func_name in dir(sys.modules[__name__]):
-            module = sys.modules[__name__]
-            model = getattr(module, model_func_name)()
-        else:
-            module = __import__("tensorflow.keras.applications", fromlist=[args.model])
-            model = getattr(module, args.model)
-            model = model(weights=None, include_top=True)
-    except AttributeError:
-        raise Exception("'{}' is not a valid dummy or keras model.\n".format(args.model))
+    model = get_model(args.model)
+    script_time_stamp =  datetime.now().strftime("%m-%d-%H-%M")
     t = time.time_ns()
     exception, timings = profile(input_model=model, batch_size=args.batch_size,
                                  num_of_batches=args.num_of_batches, loss=args.loss,
@@ -276,9 +267,10 @@ if __name__ == "__main__":
         else:
             out = open(args.out, "w")
     else:
-        out = open("{}_{}.profile.json".format(args.model, datetime.now().strftime("%m-%d-%H-%M")), "w")
-    report = {"method": "tensorflow_model_reconstruction", "host": socket.gethostname(), "unit": "ns",
-              "profiling_time": t, "args": args.__dict__, "timings": timings}
+        out = open("{}_{}.profile.json".format(args.model, script_time_stamp), "w")
+    report = {"method": "tensorflow_model_reconstruction", "host": socket.gethostname(),
+              "report_date": script_time_stamp, "profiling_time": t, "unit": "ns", "args": args.__dict__,
+              "timings": timings}
     json.dump(report, out, indent=4)
     if exception is not None:
         raise exception

@@ -152,7 +152,7 @@ def get_pids(trace, pid_scheme):
     return matched_pids, unmatched_pids
 
 
-def parse_traces(model, traces, optimizer, pid_scheme="task", verbosity=1):
+def parse_traces(model, traces, optimizer, pid_scheme="task", verbosity=1, skip_untrainable_layers=False):
     """
     :param model:
     :param traces:
@@ -164,8 +164,11 @@ def parse_traces(model, traces, optimizer, pid_scheme="task", verbosity=1):
     "task_stream" use both task names and stream names
     'all: use all pids
     :param verbosity:
+    :param skip_untrainable_layers: TODO Implement this
     :return:
     """
+    if skip_untrainable_layers:
+        raise Exception("Skipping untrainable layers is currently not supported for layer name mapping profiling.")
     if verbosity < 2:
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = "999"
         # Supressing deprectation messages is not working
@@ -263,14 +266,15 @@ def parse_traces(model, traces, optimizer, pid_scheme="task", verbosity=1):
 
 
 def profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8, trials=1, verbosity=1, device="gpu",
-            pid_scheme=None):
+            pid_scheme=None, skip_untrainable_layers=False):
     """
     The function takes a keras model and attempts to estimate the cost of each layer in the model in terms of
     the forward pass and backward pass.
     """
     trace_prefix = None
     traces = generate_traces(input_model, loss, optimizer, batch_size, num_of_batches, trials, verbosity, device)
-    layer_costs, stats, pids = parse_traces(input_model, traces, optimizer, pid_scheme, verbosity)
+    layer_costs, stats, pids = parse_traces(input_model, traces, optimizer, pid_scheme, verbosity,
+                                            skip_untrainable_layers)
     if verbosity >= 1:
         for k, v in stats.items():
             if "percentage" in k:
@@ -362,6 +366,8 @@ if __name__ == "__main__":
     parser.add_argument("-pi", "--pid_scheme", default="task", choices=["all", "task", "stream", "task_stream"],
                         help="The scheme in which we choose which pid groups from the trace to include in the costs."
                              "See documentation for more details.")
+    parser.add_argument("--skip", default=False, action="store_true",
+                        help="Whether or not to skip layers with no trainable parameters")
     parser.add_argument("--out", help="File name to write the final report to")
     parser.add_argument("-v", "--verbosity", type=int, default=1,
                         help="0: Suppress all output\n"
@@ -375,23 +381,13 @@ if __name__ == "__main__":
     parser.add_argument("-glt", "--gen_layerwise_trace", default=False, action="store_true",
                         help="Whether or not we generate a layerwise trace from the last trace. For debugging.")
     args = parser.parse_args()
-    try:
-        model_func_name = "{}_model".format(args.model)
-        if model_func_name in dir(sys.modules[__name__]):
-            module = sys.modules[__name__]
-            model = getattr(module, model_func_name)()
-        else:
-            module = __import__("tensorflow.keras.applications", fromlist=[args.model])
-            model = getattr(module, args.model)
-            model = model(weights=None, include_top=True)
-    except AttributeError:
-        raise Exception("'{}' is not a valid dummy or keras model.\n".format(args.model))
+    model = get_model(args.model)
     script_time_stamp = datetime.now().strftime("%m-%d-%H-%M")
     t = time.time_ns()
     traces, layer_costs, stats, pids = profile(input_model=model, loss=args.loss, optimizer=args.optimizer,
                                                batch_size=args.batch_size, num_of_batches=args.num_of_batches,
                                                trials=args.trials, verbosity=args.verbosity, device=args.device,
-                                               pid_scheme=args.pid_scheme)
+                                               pid_scheme=args.pid_scheme, skip_untrainable_layers=args.skip)
     t = time.time_ns() - t
     if args.verbosity >= 1:
         print("Finished in {} ms".format(t / 1e6))
@@ -401,8 +397,10 @@ if __name__ == "__main__":
     else:
         file_prefix = args.out
     out = open("{}.profile.json".format(file_prefix), "w")
-    report = {"method": "tensorflow_layer_name_mapping", "host": socket.gethostname(), "unit": "ns",
-              "profiling_time": t, "args": args.__dict__, "stats": stats, "pids": pids, "layer_costs": layer_costs}
+    report = {"method": "tensorflow_layer_name_mapping", "host": socket.gethostname(),
+              "report_date": script_time_stamp, "profiling_time": t,  "unit": "ns",
+              "args": args.__dict__, "stats": stats,
+              "pids": pids, "layer_costs": layer_costs}
     json.dump(report, out, indent=4)
     out.close()
     if args.save_traces:
@@ -414,5 +412,4 @@ if __name__ == "__main__":
             json.dump(generate_chrome_trace_for_layer_intervals(layer_costs, len(traces)-1), f)
     if args.gen_layerwise_trace:
         with open("{}_layerwise.chrometrace.json".format(file_prefix), "w") as f:
-            json.dump(generate_layerwise_chrome_trace(model, traces[-1], args.pid_scheme,
-                                                      args.optimizer), f)
+            json.dump(generate_layerwise_chrome_trace(model, traces[-1], args.pid_scheme, args.optimizer), f)

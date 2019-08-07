@@ -101,7 +101,7 @@ def get_dummy_input_output(model, batch_size, device="cpu"):
     return tuple(inputs), tuple(labels)
 
 
-def get_module_name(torch_node, return_depth=False):
+def get_module_name_from_op(torch_node, return_depth=False):
     scope = torch_node.scopeName()
     name = list()
     recording = False
@@ -133,8 +133,29 @@ def get_module(model, module_name):
             return module
 
 
+def get_module_name(model, module):
+    for name, m in model.named_modules():
+        if m == module:
+            return name
+
+
 def is_parent_module(module):
     return hasattr(module, "children") and len(list(module.children())) > 0
+
+
+def get_model(model_name):
+    import sys
+    try:
+        if model_name in dir(sys.modules[__name__]):
+            module = sys.modules[__name__]
+            model = getattr(module, model_name)()
+        else:
+            module = __import__("torchvision.models", fromlist=[model_name])
+            model = getattr(module, model_name)
+            model = model(pretrained=False)
+    except AttributeError:
+        raise Exception("'{}' is not a valid dummy or torchvision model.\n".format(model_name))
+    return model
 
 
 class DummyModel(torch.nn.Module, ABC):
