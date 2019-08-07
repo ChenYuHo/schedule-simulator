@@ -138,8 +138,8 @@ if __name__ == "__main__":
         print("total costs in profile: {} ms".format((forward+backward)/1e6))
         print("total forward costs in profile:  {} ms ({:.2f}%)".format(forward / 1e6, forward/(forward+backward)*100))
         print("total backward costs in profile: {} ms ({:.2f}%)".format(backward / 1e6, backward/(forward+backward)*100))
-    report = {"host": socket.gethostname(), "unit": "ns", "profiling_time": t, "args": args.__dict__,
-              "layer_costs": layer_costs}
+    report = {"method": "pytorch_module_hooks", "host": socket.gethostname(), "unit": "ns", "profiling_time": t,
+              "args": args.__dict__, "layer_costs": layer_costs}
     json.dump(report, out, indent=4)
     out.close()
     if args.save_trace:

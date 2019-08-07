@@ -277,8 +277,8 @@ if __name__ == "__main__":
             out = open(args.out, "w")
     else:
         out = open("{}_{}.profile.json".format(args.model, datetime.now().strftime("%m-%d-%H-%M")), "w")
-    report = {"host": socket.gethostname(), "unit": "ns", "profiling_time": t, "args": args.__dict__,
-              "layer_costs": timings}
+    report = {"method": "tensorflow_model_reconstruction", "host": socket.gethostname(), "unit": "ns",
+              "profiling_time": t, "args": args.__dict__, "timings": timings}
     json.dump(report, out, indent=4)
     if exception is not None:
         raise exception

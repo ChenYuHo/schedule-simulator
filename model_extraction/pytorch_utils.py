@@ -62,7 +62,7 @@ def traverse_module(module, processing_func, only_process_leafs=True):
 
 def count_trainable_params(module):
     model_parameters = filter(lambda p: p.requires_grad, module.parameters())
-    params = sum([np.prod(p.size()) for p in model_parameters])
+    params = int(sum([np.prod(p.size()) for p in model_parameters]))
     return params
 
 
@@ -87,14 +87,9 @@ def get_standard_output_size(model):
         return (1000,),
 
 
-def get_dummy_input_output(model, batch_size, device=None):
+def get_dummy_input_output(model, batch_size, device="cpu"):
     if device == "gpu":
         device = "cuda"
-    elif device is None:
-        if torch.cuda.is_available():
-            device = "cuda"
-        else:
-            device = "cpu"
     inputs = list()
     for size in get_standard_input_size(model):
         size = [batch_size] + list(size)
@@ -103,7 +98,7 @@ def get_dummy_input_output(model, batch_size, device=None):
     for size in get_standard_output_size(model):
         label = torch.randint(low=0, high=size[0], size=(batch_size,), device=device, dtype=torch.long)
         labels.append(label)
-    return inputs, labels
+    return tuple(inputs), tuple(labels)
 
 
 def get_module_name(torch_node, return_depth=False):
@@ -190,9 +185,12 @@ class DummyMultiModel(DummyModel):
         x = self.pool1(self.relu1(self.conv1(main_in)))
         x = self.pool2(self.relu2(self.conv2(x)))
         aux_out = self.relu3(self.conv3(x))
-        aux_out = aux_out.view(-1, np.prod(aux_out.size()[1:]))
-        x = x.view(-1, np.prod(x.size()[1:]))  # Flatten
-        y = aux_in.view(-1, np.prod(aux_in.size()[1:]))
+        aux_out = torch.flatten(aux_out, start_dim=1)
+        # aux_out = aux_out.view(-1, np.prod(aux_out.size()[1:]))
+        # x = x.view(-1, torch.prod(x.size()[1:]))  # Flatten
+        x = torch.flatten(x, start_dim=1)
+        # y = aux_in.view(-1, torch.prod(aux_in.size()[1:]))
+        y = torch.flatten(aux_in, start_dim=1)
         y = self.relu4(self.linear1(y))
         main_out = torch.cat((x, y), dim=1)
         main_out = self.relu5(self.linear2(main_out))

@@ -401,8 +401,8 @@ if __name__ == "__main__":
     else:
         file_prefix = args.out
     out = open("{}.profile.json".format(file_prefix), "w")
-    report = {"host": socket.gethostname(), "unit": "ns", "profiling_time": t, "args": args.__dict__, "stats": stats,
-              "pids": pids, "layer_costs": layer_costs}
+    report = {"method": "tensorflow_layer_name_mapping", "host": socket.gethostname(), "unit": "ns",
+              "profiling_time": t, "args": args.__dict__, "stats": stats, "pids": pids, "layer_costs": layer_costs}
     json.dump(report, out, indent=4)
     out.close()
     if args.save_traces:
