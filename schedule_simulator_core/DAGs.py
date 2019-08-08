@@ -88,6 +88,20 @@ class DAG:
         self.topological_order = None
         self.produce_topological_order()
 
+    def remove_layer(self, layer):
+        for inp in layer.input_layers:
+            inp.output_layers.remove(layer)
+            inp.output_layers.extend(layer.output_layers)
+        for out in layer.output_layers:
+            out.input_layers.remove(layer)
+            out.input_layers.extend(layer.input_layers)
+        if layer in self.dag_input_layers:
+            self.dag_input_layers.remove(layer)
+            self.dag_input_layers.extend(layer.output_layers)
+        if layer in self.dag_output_layers:
+            self.dag_output_layers.remove(layer)
+            self.dag_output_layers.extend(layer.input_layers)
+
     def set_output_layers(self):
         def process_node(node):
             if node.output_layers is None:
@@ -203,7 +217,7 @@ class DAG:
 
     def __copy__(self):
         """
-        Should provide a concrete cloning method later
+        TODO Provide a concrete cloning method instead
         """
         return deserialize_dag(serialize_dag(self))
 
@@ -230,7 +244,7 @@ class DAG:
             s += "{}:{} ".format(key, value)
         return s
 
-    """Should add some functions to make it easy to join different DAGs together"""
+    # TODO Should add some functions to make it easy to join different DAGs together
 
 
 class LinearDag(DAG):

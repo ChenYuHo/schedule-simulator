@@ -44,25 +44,15 @@ def remove_untrainable_layers(dag):
             if i-1 > 0:
                 prev_layer = dag.topological_order[i-1]
                 prev_layer.backward_pass_units += layer.backward_pass_units
-            if i < len(dag.topological_order):
+            if i+1 < len(dag.topological_order):
                 next_layer = dag.topological_order[i+1]
                 next_layer.forward_pass_units += layer.forward_pass_units
 
     # Remove untrainable layers from the linked structure
+    # TODO move remove to DAGs module
     def remove_untrainable(layer):
         if layer.communication_units == 0:
-            for inp in layer.input_layers:
-                inp.output_layers.remove(layer)
-                inp.output_layers.extend(layer.output_layers)
-            for out in layer.output_layers:
-                out.input_layers.remove(layer)
-                out.input_layers.extend(layer.input_layers)
-            if layer in dag.dag_input_layers:
-                dag.dag_input_layers.remove(layer)
-                dag.dag_input_layers.extend(layer.output_layers)
-            if layer in dag.dag_output_layers:
-                dag.dag_output_layers.remove(layer)
-                dag.dag_output_layers.extend(layer.input_layers)
+            dag.remove_layer(layer)
     dag.traverse_DFS(remove_untrainable, order="post-order")
     dag.produce_topological_order()
     dag.extract_dependencies()
