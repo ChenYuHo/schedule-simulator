@@ -1,5 +1,6 @@
 {
     "host": "mcnode40",
+    "method": "tensorflow_model_reconstruction",
     "args": {
         "model": "DenseNet121",
         "loss": "binary_crossentropy",

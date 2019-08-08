@@ -1,5 +1,6 @@
 {
     "host": "mcnode38",
+    "method": "tensorflow_model_reconstruction",
     "args": {
         "model": "ResNet50",
         "loss": "binary_crossentropy",

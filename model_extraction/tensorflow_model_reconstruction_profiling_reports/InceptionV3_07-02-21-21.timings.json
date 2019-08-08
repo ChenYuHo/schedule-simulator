@@ -1,5 +1,6 @@
 {
     "host": "mcnode39",
+    "method": "tensorflow_model_reconstruction",
     "args": {
         "model": "InceptionV3",
         "loss": "binary_crossentropy",
