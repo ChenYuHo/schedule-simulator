@@ -125,11 +125,11 @@ def match_event_to_type(event, **kwargs):
 
 def parse_stats(stats):
     for k2 in ["all", "forward_pass", "backward_pass"]:
-        for k3 in ["count", "units", "durations"]:
+        for k3 in ["count", "units", "sequential_units"]:
             stats["{}_identified_{}_percentage".format(k2, k3)] = stats["identified_{}_{}".format(k2, k3)] /\
                                                                   stats["total_{}_{}".format(k2, k3)]
     for k2 in ["forward_pass", "backward_pass"]:
-        for k3 in ["count", "units", "durations"]:
+        for k3 in ["count", "units", "sequential_units"]:
             stats["{}_{}_percentage".format(k2, k3)] = stats["identified_{}_{}".format(k2, k3)] /\
                                                        stats["identified_all_{}".format(k3)]
 
@@ -178,33 +178,28 @@ def parse_traces(model, traces, optimizer, pid_scheme="task", verbosity=1, skip_
     def log_msg(msg):
         if verbosity >= 1:
             print(msg)
+    # Initialize layer_costs dict
     layer_costs = dict()
-
     def add_layer_name(layer):
         d = dict()
-        for key in ["forward_pass_units", "backward_pass_units", "forward_pass_ops", "backward_pass_ops",
-                    "forward_pass_durations", "backward_pass_durations"]:
-            d[key] = [0 for _ in range(len(traces))]
-        for key in ["forward_pass_intervals", "backward_pass_intervals"]:
-            d[key] = [None for _ in range(len(traces))]
+        for k2 in ["forward_pass", "backward_pass"]:
+            for k3 in ["ops", "units", "sequential_units", "intervals"]:
+                key = "{}_{}".format(k2, k3)
+                if k3 != "intervals":
+                    d[key] = [0 for _ in range(len(traces))]
+                else:
+                    d[key] = [None for _ in range(len(traces))]
         layer_costs[layer.name] = d
     traverse_keras_DFS(model, processing_function=add_layer_name, order="pre-order", top_to_bottom=True)
+    # Initialize stats dict
     stats = dict()
-    def update_interval(stats, key, event):
-        interval_key = key + "_intervals"
-        duration_key = key + "_durations"
-        if interval_key not in stats:
-            stats[interval_key] = event["ts"], (event["ts"] + event["dur"])
-        else:
-            stats[interval_key] = (min(stats[interval_key][0], event["ts"]),
-                                   max(stats[interval_key][1], event["ts"] + event["dur"]))
-        stats[duration_key] = stats[interval_key][1] - stats[interval_key][0]
     for k1 in ["total", "identified"]:
         for k2 in ["all", "forward_pass", "backward_pass"]:
-            for k3 in ["count", "units", "durations"]:
+            for k3 in ["count", "units", "sequential_units"]:
                 stats["{}_{}_{}".format(k1, k2, k3)] = 0
     # Add the costs from all traces
     all_pids = list()
+    interval_offsets = list()
     for i, trace in enumerate(traces):
         matched_pids, unmatched_pids = get_pids(trace, pid_scheme)
         if len(matched_pids) == 0:
@@ -213,52 +208,100 @@ def parse_traces(model, traces, optimizer, pid_scheme="task", verbosity=1, skip_
                 "\n".join(["{}: {}".format(k, v) for k, v in unmatched_pids.items()])))
         log_msg("Using pids: {}".format(matched_pids))
         all_pids.append(matched_pids)
+        # First run through events. We match each event to a layer. We compute op counts, units, and intervals. O(n)
+        interval_offsets.append(float("inf"))
+        interval_points = set()
+        filtered_events = list()
+        filtered_events_matched_layers = list()
+        filtered_events_types = list()
         for event in trace["traceEvents"]:
             if event["ph"] == "X" and event["pid"] in matched_pids.values():
+                filtered_events.append(event)
+                if event["ts"] < interval_offsets[-1]:
+                    interval_offsets[-1] = event["ts"]
+                interval_points.add(event["ts"])
+                interval_points.add(event["ts"] + event["dur"])
+
                 stats["total_all_count"] += 1
                 stats["total_all_units"] += event["dur"]
-                update_interval(stats, "total_all", event)
                 t = match_event_to_type(event, optimizer=optimizer)
+                filtered_events_types.append(t)
                 stats["total_{}_count".format(t)] += 1
                 stats["total_{}_units".format(t)] += event["dur"]
-                update_interval(stats, "total_{}".format(t), event)
                 matched_layers = match_event_to_layers(layer_costs.keys(), event)
+                filtered_events_matched_layers.append(matched_layers)
                 if len(matched_layers) > 0:
                     stats["identified_all_count"] += 1
                     stats["identified_all_units"] += event["dur"]
-                    update_interval(stats, "identified_all", event)
                     stats["identified_{}_count".format(t)] += 1
                     stats["identified_{}_units".format(t)] += event["dur"]
-                    update_interval(stats, "identified_{}".format(t), event)
                 for matched_layer in matched_layers:
                     # If multiple layers are matched then we divide the event cost equally among all layers
                     layer_costs[matched_layer]["{}_ops".format(t)][i] += 1 / len(matched_layers)
                     layer_costs[matched_layer]["{}_units".format(t)][i] += event["dur"] / len(matched_layers)
                     if layer_costs[matched_layer]["{}_intervals".format(t)][i] is None:
-                        layer_costs[matched_layer]["{}_intervals".format(t)][i] = event["ts"], event["ts"] + event["dur"]
+                        layer_costs[matched_layer]["{}_intervals".format(t)][i] = event["ts"], event["ts"] + event[
+                            "dur"]
                     else:
                         layer_costs[matched_layer]["{}_intervals".format(t)][i] = (
                             min(layer_costs[matched_layer]["{}_intervals".format(t)][i][0], event["ts"]),
                             max(layer_costs[matched_layer]["{}_intervals".format(t)][i][1], event["ts"] + event["dur"])
                         )
-                    layer_costs[matched_layer]["{}_durations".format(t)][i] = \
-                        layer_costs[matched_layer]["{}_intervals".format(t)][i][1] - \
-                        layer_costs[matched_layer]["{}_intervals".format(t)][i][0]
+        # Second run through events. We reuse the matched layers from before and we compute sequential units. O(n^2)
+        # 1. Iterate over all sub intervals.
+        # 2. Find events that cover this interval.
+        # 3. Find all the layers that match the events
+        # 4. Split the cost of the interval between all matched layers.
+        interval_points = list(interval_points)
+        interval_points.sort()
+        for j in range(len(interval_points)-1):
+            b, e = interval_points[j], interval_points[j+1]
+            cost = e - b
+            matched_layers_lists = list()
+            matched_events_count = 0
+            types_list = list()
+            found_event = False
+            for k, event in enumerate(filtered_events):
+                event_b, event_e = event["ts"], event["ts"] + event["dur"]
+                # If this event covers the interval we are looking at
+                if event_b != event_e and event_b <= b and event_e >= e:
+                    found_event = True
+                    if len(filtered_events_matched_layers[k]) > 0:
+                        matched_events_count += 1
+                    matched_layers_lists.append(filtered_events_matched_layers[k])
+                    types_list.append(filtered_events_types[k])
+            identified_cost = 0
+            for k, matched_layers_list in enumerate(matched_layers_lists):
+                assert found_event
+                t = types_list[k]
+                # FIXME remove this as it does not make a lot of sense
+                stats["total_{}_sequential_units".format(t)] += cost / len(matched_layers_lists)
+                if len(matched_layers_list) == 0:
+                    continue
+                sub_cost = cost / matched_events_count
+                for matched_layer in matched_layers_list:
+                    layer_costs[matched_layer]["{}_sequential_units".format(t)][i] += (
+                            sub_cost / len(matched_layers_list)
+                    )
+                if len(matched_layers_list) > 0:
+                    identified_cost += sub_cost
+                    stats["identified_{}_sequential_units".format(t)] += sub_cost
+            if found_event:
+                stats["total_all_sequential_units"] += cost
+                stats["identified_all_sequential_units"] += identified_cost
 
     # Scale layer costs & stats from microseconds to nanoseconds (For consistency)
     s = 1e3
     for key, value in stats.items():
-        if "intervals" in key:
-            stats[key] = value[0] * s, value[1] * s
-        else:
+        if "units" in key:
             stats[key] = value * s
     for layer_name, layer_dict in layer_costs.items():
         for cost_name, cost_list in layer_dict.items():
             for i, cost in enumerate(cost_list):
                 if "intervals" in cost_name:
                     if cost is not None:
-                        cost_list[i] = cost[0], cost[0] + (cost[1]-cost[0]) * s
-                else:
+                        cost_list[i] = (cost[0]-interval_offsets[i])*s, (cost[1]-interval_offsets[i])*s
+                elif "units" in cost_name:
                     cost_list[i] = cost * s
     # Compute percentages
     parse_stats(stats)
@@ -279,6 +322,8 @@ def profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8, trial
         for k, v in stats.items():
             if "percentage" in k:
                 print("{}: {:.2f}%".format(k, v*100))
+            if "total_all" in k and "units" in k:
+                print("{}: {:.2f} ms".format(k, v/1e6))
     return traces, layer_costs, stats, pids
 
 
@@ -287,14 +332,12 @@ def generate_chrome_trace_for_layer_intervals(layer_costs, trace_index):
     for i, (layer_name, layer_dict) in enumerate(layer_costs.items()):
         fp_interval = layer_dict["forward_pass_intervals"][trace_index]
         if fp_interval is not None:
-            assert fp_interval[1] - fp_interval[0] == layer_dict["forward_pass_durations"][trace_index]
-            fp_event = dict(ts=fp_interval[0], dur=(fp_interval[1] - fp_interval[0])/1e3, name="fp_{}".format(layer_name),
+            fp_event = dict(ts=fp_interval[0]/1e3, dur=(fp_interval[1] - fp_interval[0])/1e3, name="fp_{}".format(layer_name),
                             ph="X", pid=0, tid=i*2)
             events.append(fp_event)
         bp_interval = layer_dict["backward_pass_intervals"][trace_index]
         if bp_interval is not None:
-            assert bp_interval[1] - bp_interval[0] == layer_dict["backward_pass_durations"][trace_index]
-            bp_event = dict(ts=bp_interval[0], dur=(bp_interval[1] - bp_interval[0])/1e3, name="bp_{}".format(layer_name),
+            bp_event = dict(ts=bp_interval[0]/1e3, dur=(bp_interval[1] - bp_interval[0])/1e3, name="bp_{}".format(layer_name),
                             ph="X", pid=0, tid=i*2+1)
             events.append(bp_event)
     trace = dict(traceEvents=events)

@@ -129,8 +129,8 @@ def extract_costs_from_layer_name_mapping_profile(profiling_report, reduce_func=
             for cost_name, cost_list in cost_dict.items():
                 for i in range(profiling_report["args"]["trials"]):
                     cost_list.pop(i * profiling_report["args"]["num_of_batches"] - i)
-        for cost_name, cost_list in cost_dict.items():
-            layer_costs[layer_name][cost_name] = reduce_func(cost_list)
+        layer_costs[layer_name]["forward_pass_units"] = reduce_func(cost_dict["forward_pass_sequential_units"])
+        layer_costs[layer_name]["backward_pass_units"] = reduce_func(cost_dict["backward_pass_sequential_units"])
     profile_info = dict()
     for key, value in profiling_report.items():
         if key != "layer_costs":

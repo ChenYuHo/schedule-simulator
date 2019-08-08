@@ -120,10 +120,11 @@ def extract_costs_from_module_hooks_profile(profiling_report, reduce_func=None, 
         reduce_func = lambda x: min(x)
     layer_costs = profiling_report["layer_costs"]
     for layer_name, cost_dict in layer_costs.items():
-        for cost_name, cost_list in cost_dict.items():
-            if skip_first_batch:
-                cost_list.pop(0)
-            layer_costs[layer_name][cost_name] = reduce_func(cost_list)
+        if skip_first_batch:
+            cost_dict["forward_pass_units"].pop(0)
+            cost_dict["backward_pass_units"].pop(0)
+        layer_costs[layer_name]["forward_pass_units"] = reduce_func(cost_dict["forward_pass_units"])
+        layer_costs[layer_name]["backward_pass_units"] = reduce_func(cost_dict["backward_pass_units"])
     profile_info = dict()
     for key, value in profiling_report.items():
         if key != "layer_costs":
