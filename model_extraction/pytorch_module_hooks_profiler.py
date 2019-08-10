@@ -29,24 +29,20 @@ def profile(model, loss_func, optimizer, batch_size, num_of_batches, device=None
         loss_func = loss_func.cuda()
 
     def init(module, input):
-        start_times.append(time.time_ns())
+        layer_time_stamps.append((module, "init", time.time_ns()))
 
-    def get_hook(index, type):
+    def get_hook(type):
         def hook(module, input, output):
-            layer_time_stamps[index]["{}_pass_ts".format(type)].append(time.time_ns())
+            layer_time_stamps.append((module, type, time.time_ns()))
         return hook
 
-    start_times = list()
     layer_time_stamps = list()
-    layers = list()
     def register_hooks(module):
         if skip_untrainable_layers and count_trainable_params(module) == 0:
             return
-        module.register_forward_hook(get_hook(len(layers), "forward"))
-        module.register_backward_hook(get_hook(len(layers), "backward"))
-        layers.append(dict(name=get_module_name(model, module), type=type(module).__name__,
-                           forward_pass_cost=list(), backward_pass_cost=list()))
-        layer_time_stamps.append(dict(forward_pass_ts=list(), backward_pass_ts=list()))
+        # FIXME do not rely on the order of modules. Use the order at which the modules are called
+        module.register_forward_hook(get_hook("forward"))
+        module.register_backward_hook(get_hook("backward"))
 
     model.register_forward_pre_hook(init)
     traverse_module(model, register_hooks)
@@ -56,21 +52,17 @@ def profile(model, loss_func, optimizer, batch_size, num_of_batches, device=None
         train(model=model, loss_func=loss_func, optimizer=optimizer, batch_size=batch_size,
               num_of_batches=num_of_batches, device=device, verbosity=verbosity)
     # Parse costs from time stamps
-    for batch_i in range(len(layer_time_stamps[0].values().__iter__().__next__())):
-        last_ts = start_times[batch_i]
-        for t in ["forward_pass", "backward_pass"]:
-            for layer_i in range(len(layers)):
-                if t == "backward_pass":
-                    layer_i = len(layers) - layer_i - 1
-                next_ts = layer_time_stamps[layer_i]["{}_ts".format(t)][batch_i]
-                layers[layer_i]["{}_cost".format(t)].append(next_ts-last_ts)
-                last_ts = next_ts
-    # Name layers
     layer_costs = dict()
-    for layer_i, layer_dict in enumerate(layers):
-        layer_costs[layer_dict["name"]] = dict(type=layer_dict["type"],
-                                               forward_pass_units=layer_dict["forward_pass_cost"],
-                                               backward_pass_units=layer_dict["backward_pass_cost"])
+    for i, (module, type, ts) in enumerate(layer_time_stamps):
+        if type == "init":
+            continue
+        module_name = get_module_name(model, module)
+        if module_name not in layer_costs:
+            layer_costs[module_name] = dict(forward_pass_units=list(), backward_pass_units=list())
+        if type == "forward":
+            layer_costs[module_name]["forward_pass_units"].append(ts-layer_time_stamps[i-1][2])
+        elif type == "backward":
+            layer_costs[module_name]["backward_pass_units"].append(ts - layer_time_stamps[i - 1][2])
     return layer_costs, context
 
 

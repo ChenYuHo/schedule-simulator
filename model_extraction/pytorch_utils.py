@@ -152,7 +152,10 @@ def get_model(model_name):
         else:
             module = __import__("torchvision.models", fromlist=[model_name])
             model = getattr(module, model_name)
-            model = model(pretrained=False)
+            if model_name == "inception_v3":
+                model = model(pretrained=False, aux_logits=False)
+            else:
+                model = model(pretrained=False)
     except AttributeError:
         raise Exception("'{}' is not a valid dummy or torchvision model.\n".format(model_name))
     return model

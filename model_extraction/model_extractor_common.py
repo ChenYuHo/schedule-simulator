@@ -85,6 +85,7 @@ def produce_dag(model_name, library, profiling_report_path, skip_untrainable_lay
     if "method" not in report:
         raise Exception("No valid method has been supplied in the report")
     method = report["method"]
+    device = report["args"]["device"]
     if library not in method:
         # TODO Allow models and profiling reports to differ. Store profiling data using their topological order index
         # instead of using names.
@@ -107,7 +108,7 @@ def produce_dag(model_name, library, profiling_report_path, skip_untrainable_lay
     if skip_untrainable_layers:
         remove_untrainable_layers(dag)
     # 5. Write dag to file
-    with open("{}_{}.dag".format(model_name, method), "w") as file:
+    with open("{}_{}_{}.dag".format(model_name, device, method), "w") as file:
         file.write(serialize_dag(dag))
 
 
