@@ -1,0 +1,4788 @@
+{
+    "extras": {
+        "name": "DenseNet",
+        "$local$comm_unit": "B",
+        "$local$forward_pass_unit": "ns",
+        "$local$backward_pass_unit": "ns",
+        "$local$extraction_info": {
+            "library": "pytorch",
+            "skip_untrainable_layers": true,
+            "remove_untrainable_layers": true
+        },
+        "$local$profile_info": {
+            "method": "pytorch_module_hooks",
+            "host": "mcnode40",
+            "report_date": "08-12-18-53",
+            "profiling_time": 6809573653,
+            "unit": "ns",
+            "args": {
+                "model": "densenet121",
+                "loss": "CrossEntropyLoss",
+                "optimizer": "SGD",
+                "device": "gpu",
+                "batch_size": 8,
+                "num_of_batches": 10,
+                "skip": true,
+                "out": null,
+                "verbosity": 1,
+                "save_trace": true
+            }
+        }
+    },
+    "layers": {
+        "0": {
+            "forward_pass_units": 166260,
+            "backward_pass_units": 94012,
+            "communication_units": 37632,
+            "input_layers": [],
+            "output_layers": [
+                1
+            ],
+            "extras": {
+                "name": "features.conv0",
+                "type": "Conv2d"
+            }
+        },
+        "1": {
+            "forward_pass_units": 218833,
+            "backward_pass_units": 175308,
+            "communication_units": 512,
+            "input_layers": [
+                0
+            ],
+            "output_layers": [
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8
+            ],
+            "extras": {
+                "name": "features.norm0",
+                "type": "BatchNorm2d"
+            }
+        },
+        "2": {
+            "forward_pass_units": 253040,
+            "backward_pass_units": 104584,
+            "communication_units": 512,
+            "input_layers": [
+                1
+            ],
+            "output_layers": [
+                9
+            ],
+            "extras": {
+                "name": "features.denseblock1.denselayer1.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "3": {
+            "forward_pass_units": 205887,
+            "backward_pass_units": 100638,
+            "communication_units": 1792,
+            "input_layers": [
+                10,
+                11,
+                12,
+                1,
+                13,
+                14
+            ],
+            "output_layers": [
+                15
+            ],
+            "extras": {
+                "name": "features.denseblock1.denselayer6.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "4": {
+            "forward_pass_units": 212812,
+            "backward_pass_units": 103392,
+            "communication_units": 1024,
+            "input_layers": [
+                1,
+                13,
+                14
+            ],
+            "output_layers": [
+                16
+            ],
+            "extras": {
+                "name": "features.denseblock1.denselayer3.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "5": {
+            "forward_pass_units": 227731,
+            "backward_pass_units": 103088,
+            "communication_units": 768,
+            "input_layers": [
+                1,
+                13
+            ],
+            "output_layers": [
+                17
+            ],
+            "extras": {
+                "name": "features.denseblock1.denselayer2.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "6": {
+            "forward_pass_units": 204789,
+            "backward_pass_units": 102277,
+            "communication_units": 1280,
+            "input_layers": [
+                14,
+                1,
+                13,
+                12
+            ],
+            "output_layers": [
+                18
+            ],
+            "extras": {
+                "name": "features.denseblock1.denselayer4.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "7": {
+            "forward_pass_units": 206773,
+            "backward_pass_units": 106424,
+            "communication_units": 2048,
+            "input_layers": [
+                10,
+                11,
+                19,
+                12,
+                1,
+                13,
+                14
+            ],
+            "output_layers": [
+                20
+            ],
+            "extras": {
+                "name": "features.transition1.norm",
+                "type": "BatchNorm2d"
+            }
+        },
+        "8": {
+            "forward_pass_units": 203915,
+            "backward_pass_units": 105430,
+            "communication_units": 1536,
+            "input_layers": [
+                11,
+                12,
+                1,
+                13,
+                14
+            ],
+            "output_layers": [
+                21
+            ],
+            "extras": {
+                "name": "features.denseblock1.denselayer5.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "9": {
+            "forward_pass_units": 147765,
+            "backward_pass_units": 127298,
+            "communication_units": 32768,
+            "input_layers": [
+                2
+            ],
+            "output_layers": [
+                22
+            ],
+            "extras": {
+                "name": "features.denseblock1.denselayer1.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "15": {
+            "forward_pass_units": 128272,
+            "backward_pass_units": 137859,
+            "communication_units": 114688,
+            "input_layers": [
+                3
+            ],
+            "output_layers": [
+                23
+            ],
+            "extras": {
+                "name": "features.denseblock1.denselayer6.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "16": {
+            "forward_pass_units": 128577,
+            "backward_pass_units": 133812,
+            "communication_units": 65536,
+            "input_layers": [
+                4
+            ],
+            "output_layers": [
+                24
+            ],
+            "extras": {
+                "name": "features.denseblock1.denselayer3.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "17": {
+            "forward_pass_units": 133675,
+            "backward_pass_units": 138230,
+            "communication_units": 49152,
+            "input_layers": [
+                5
+            ],
+            "output_layers": [
+                25
+            ],
+            "extras": {
+                "name": "features.denseblock1.denselayer2.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "18": {
+            "forward_pass_units": 132417,
+            "backward_pass_units": 135332,
+            "communication_units": 81920,
+            "input_layers": [
+                6
+            ],
+            "output_layers": [
+                26
+            ],
+            "extras": {
+                "name": "features.denseblock1.denselayer4.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "20": {
+            "forward_pass_units": 128785,
+            "backward_pass_units": 197154,
+            "communication_units": 131072,
+            "input_layers": [
+                7
+            ],
+            "output_layers": [
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39
+            ],
+            "extras": {
+                "name": "features.transition1.conv",
+                "type": "Conv2d"
+            }
+        },
+        "21": {
+            "forward_pass_units": 126952,
+            "backward_pass_units": 135523,
+            "communication_units": 98304,
+            "input_layers": [
+                8
+            ],
+            "output_layers": [
+                40
+            ],
+            "extras": {
+                "name": "features.denseblock1.denselayer5.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "22": {
+            "forward_pass_units": 151170,
+            "backward_pass_units": 105350,
+            "communication_units": 1024,
+            "input_layers": [
+                9
+            ],
+            "output_layers": [
+                13
+            ],
+            "extras": {
+                "name": "features.denseblock1.denselayer1.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "23": {
+            "forward_pass_units": 141411,
+            "backward_pass_units": 108092,
+            "communication_units": 1024,
+            "input_layers": [
+                15
+            ],
+            "output_layers": [
+                19
+            ],
+            "extras": {
+                "name": "features.denseblock1.denselayer6.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "24": {
+            "forward_pass_units": 144498,
+            "backward_pass_units": 104776,
+            "communication_units": 1024,
+            "input_layers": [
+                16
+            ],
+            "output_layers": [
+                12
+            ],
+            "extras": {
+                "name": "features.denseblock1.denselayer3.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "25": {
+            "forward_pass_units": 145046,
+            "backward_pass_units": 104890,
+            "communication_units": 1024,
+            "input_layers": [
+                17
+            ],
+            "output_layers": [
+                14
+            ],
+            "extras": {
+                "name": "features.denseblock1.denselayer2.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "26": {
+            "forward_pass_units": 144996,
+            "backward_pass_units": 104380,
+            "communication_units": 1024,
+            "input_layers": [
+                18
+            ],
+            "output_layers": [
+                11
+            ],
+            "extras": {
+                "name": "features.denseblock1.denselayer4.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "27": {
+            "forward_pass_units": 201394,
+            "backward_pass_units": 104340,
+            "communication_units": 2048,
+            "input_layers": [
+                41,
+                42,
+                43,
+                44,
+                20
+            ],
+            "output_layers": [
+                45
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer5.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "28": {
+            "forward_pass_units": 193699,
+            "backward_pass_units": 105600,
+            "communication_units": 1024,
+            "input_layers": [
+                20
+            ],
+            "output_layers": [
+                46
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer1.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "29": {
+            "forward_pass_units": 203024,
+            "backward_pass_units": 104061,
+            "communication_units": 1792,
+            "input_layers": [
+                41,
+                43,
+                42,
+                20
+            ],
+            "output_layers": [
+                47
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer4.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "30": {
+            "forward_pass_units": 203496,
+            "backward_pass_units": 102644,
+            "communication_units": 3072,
+            "input_layers": [
+                41,
+                44,
+                48,
+                20,
+                49,
+                50,
+                43,
+                51,
+                42
+            ],
+            "output_layers": [
+                52
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer9.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "31": {
+            "forward_pass_units": 200917,
+            "backward_pass_units": 101521,
+            "communication_units": 1536,
+            "input_layers": [
+                41,
+                43,
+                20
+            ],
+            "output_layers": [
+                53
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer3.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "32": {
+            "forward_pass_units": 198928,
+            "backward_pass_units": 104236,
+            "communication_units": 3328,
+            "input_layers": [
+                41,
+                42,
+                50,
+                54,
+                20,
+                49,
+                48,
+                43,
+                51,
+                44
+            ],
+            "output_layers": [
+                55
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer10.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "33": {
+            "forward_pass_units": 201155,
+            "backward_pass_units": 101436,
+            "communication_units": 2816,
+            "input_layers": [
+                41,
+                44,
+                48,
+                20,
+                50,
+                43,
+                51,
+                42
+            ],
+            "output_layers": [
+                56
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer8.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "34": {
+            "forward_pass_units": 201994,
+            "backward_pass_units": 105454,
+            "communication_units": 4096,
+            "input_layers": [
+                41,
+                54,
+                44,
+                48,
+                57,
+                20,
+                49,
+                50,
+                43,
+                51,
+                58,
+                42,
+                59
+            ],
+            "output_layers": [
+                60
+            ],
+            "extras": {
+                "name": "features.transition2.norm",
+                "type": "BatchNorm2d"
+            }
+        },
+        "35": {
+            "forward_pass_units": 200260,
+            "backward_pass_units": 104193,
+            "communication_units": 2304,
+            "input_layers": [
+                41,
+                50,
+                43,
+                44,
+                42,
+                20
+            ],
+            "output_layers": [
+                61
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer6.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "36": {
+            "forward_pass_units": 201460,
+            "backward_pass_units": 105200,
+            "communication_units": 3840,
+            "input_layers": [
+                41,
+                42,
+                50,
+                54,
+                20,
+                49,
+                48,
+                43,
+                51,
+                58,
+                44,
+                59
+            ],
+            "output_layers": [
+                62
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer12.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "37": {
+            "forward_pass_units": 203680,
+            "backward_pass_units": 101809,
+            "communication_units": 1280,
+            "input_layers": [
+                43,
+                20
+            ],
+            "output_layers": [
+                63
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer2.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "38": {
+            "forward_pass_units": 204089,
+            "backward_pass_units": 104163,
+            "communication_units": 2560,
+            "input_layers": [
+                41,
+                42,
+                50,
+                43,
+                51,
+                44,
+                20
+            ],
+            "output_layers": [
+                64
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer7.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "39": {
+            "forward_pass_units": 202512,
+            "backward_pass_units": 103879,
+            "communication_units": 3584,
+            "input_layers": [
+                41,
+                54,
+                44,
+                48,
+                20,
+                49,
+                50,
+                43,
+                51,
+                58,
+                42
+            ],
+            "output_layers": [
+                65
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer11.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "40": {
+            "forward_pass_units": 142296,
+            "backward_pass_units": 104587,
+            "communication_units": 1024,
+            "input_layers": [
+                21
+            ],
+            "output_layers": [
+                10
+            ],
+            "extras": {
+                "name": "features.denseblock1.denselayer5.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "13": {
+            "forward_pass_units": 139124,
+            "backward_pass_units": 207554,
+            "communication_units": 147456,
+            "input_layers": [
+                22
+            ],
+            "output_layers": [
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8
+            ],
+            "extras": {
+                "name": "features.denseblock1.denselayer1.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "19": {
+            "forward_pass_units": 125308,
+            "backward_pass_units": 195288,
+            "communication_units": 147456,
+            "input_layers": [
+                23
+            ],
+            "output_layers": [
+                7,
+                3
+            ],
+            "extras": {
+                "name": "features.denseblock1.denselayer6.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "12": {
+            "forward_pass_units": 125254,
+            "backward_pass_units": 207347,
+            "communication_units": 147456,
+            "input_layers": [
+                24
+            ],
+            "output_layers": [
+                3,
+                4,
+                6,
+                7,
+                8
+            ],
+            "extras": {
+                "name": "features.denseblock1.denselayer3.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "14": {
+            "forward_pass_units": 130778,
+            "backward_pass_units": 206394,
+            "communication_units": 147456,
+            "input_layers": [
+                25
+            ],
+            "output_layers": [
+                3,
+                4,
+                5,
+                6,
+                7,
+                8
+            ],
+            "extras": {
+                "name": "features.denseblock1.denselayer2.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "11": {
+            "forward_pass_units": 125444,
+            "backward_pass_units": 210853,
+            "communication_units": 147456,
+            "input_layers": [
+                26
+            ],
+            "output_layers": [
+                7,
+                3,
+                8,
+                6
+            ],
+            "extras": {
+                "name": "features.denseblock1.denselayer4.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "45": {
+            "forward_pass_units": 125507,
+            "backward_pass_units": 133418,
+            "communication_units": 131072,
+            "input_layers": [
+                27
+            ],
+            "output_layers": [
+                66
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer5.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "46": {
+            "forward_pass_units": 126021,
+            "backward_pass_units": 130256,
+            "communication_units": 65536,
+            "input_layers": [
+                28
+            ],
+            "output_layers": [
+                67
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer1.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "47": {
+            "forward_pass_units": 126597,
+            "backward_pass_units": 140785,
+            "communication_units": 114688,
+            "input_layers": [
+                29
+            ],
+            "output_layers": [
+                68
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer4.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "52": {
+            "forward_pass_units": 124380,
+            "backward_pass_units": 138452,
+            "communication_units": 196608,
+            "input_layers": [
+                30
+            ],
+            "output_layers": [
+                69
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer9.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "53": {
+            "forward_pass_units": 127471,
+            "backward_pass_units": 135287,
+            "communication_units": 98304,
+            "input_layers": [
+                31
+            ],
+            "output_layers": [
+                70
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer3.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "55": {
+            "forward_pass_units": 126044,
+            "backward_pass_units": 140857,
+            "communication_units": 212992,
+            "input_layers": [
+                32
+            ],
+            "output_layers": [
+                71
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer10.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "56": {
+            "forward_pass_units": 127353,
+            "backward_pass_units": 139965,
+            "communication_units": 180224,
+            "input_layers": [
+                33
+            ],
+            "output_layers": [
+                72
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer8.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "60": {
+            "forward_pass_units": 129364,
+            "backward_pass_units": 192118,
+            "communication_units": 524288,
+            "input_layers": [
+                34
+            ],
+            "output_layers": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+            ],
+            "extras": {
+                "name": "features.transition2.conv",
+                "type": "Conv2d"
+            }
+        },
+        "61": {
+            "forward_pass_units": 122412,
+            "backward_pass_units": 139646,
+            "communication_units": 147456,
+            "input_layers": [
+                35
+            ],
+            "output_layers": [
+                98
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer6.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "62": {
+            "forward_pass_units": 124970,
+            "backward_pass_units": 139478,
+            "communication_units": 245760,
+            "input_layers": [
+                36
+            ],
+            "output_layers": [
+                99
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer12.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "63": {
+            "forward_pass_units": 124803,
+            "backward_pass_units": 135695,
+            "communication_units": 81920,
+            "input_layers": [
+                37
+            ],
+            "output_layers": [
+                100
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer2.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "64": {
+            "forward_pass_units": 126128,
+            "backward_pass_units": 137080,
+            "communication_units": 163840,
+            "input_layers": [
+                38
+            ],
+            "output_layers": [
+                101
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer7.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "65": {
+            "forward_pass_units": 125724,
+            "backward_pass_units": 141693,
+            "communication_units": 229376,
+            "input_layers": [
+                39
+            ],
+            "output_layers": [
+                102
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer11.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "10": {
+            "forward_pass_units": 125726,
+            "backward_pass_units": 214695,
+            "communication_units": 147456,
+            "input_layers": [
+                40
+            ],
+            "output_layers": [
+                7,
+                3,
+                8
+            ],
+            "extras": {
+                "name": "features.denseblock1.denselayer5.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "66": {
+            "forward_pass_units": 140204,
+            "backward_pass_units": 104366,
+            "communication_units": 1024,
+            "input_layers": [
+                45
+            ],
+            "output_layers": [
+                50
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer5.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "67": {
+            "forward_pass_units": 144400,
+            "backward_pass_units": 107127,
+            "communication_units": 1024,
+            "input_layers": [
+                46
+            ],
+            "output_layers": [
+                43
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer1.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "68": {
+            "forward_pass_units": 143310,
+            "backward_pass_units": 106522,
+            "communication_units": 1024,
+            "input_layers": [
+                47
+            ],
+            "output_layers": [
+                44
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer4.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "69": {
+            "forward_pass_units": 143450,
+            "backward_pass_units": 105276,
+            "communication_units": 1024,
+            "input_layers": [
+                52
+            ],
+            "output_layers": [
+                54
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer9.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "70": {
+            "forward_pass_units": 140728,
+            "backward_pass_units": 105773,
+            "communication_units": 1024,
+            "input_layers": [
+                53
+            ],
+            "output_layers": [
+                42
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer3.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "71": {
+            "forward_pass_units": 142179,
+            "backward_pass_units": 102670,
+            "communication_units": 1024,
+            "input_layers": [
+                55
+            ],
+            "output_layers": [
+                58
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer10.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "72": {
+            "forward_pass_units": 141899,
+            "backward_pass_units": 104460,
+            "communication_units": 1024,
+            "input_layers": [
+                56
+            ],
+            "output_layers": [
+                49
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer8.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "73": {
+            "forward_pass_units": 200403,
+            "backward_pass_units": 102751,
+            "communication_units": 7424,
+            "input_layers": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                60,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123
+            ],
+            "output_layers": [
+                124
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer22.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "74": {
+            "forward_pass_units": 203750,
+            "backward_pass_units": 103838,
+            "communication_units": 8192,
+            "input_layers": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                60,
+                112,
+                113,
+                125,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                126,
+                120,
+                121,
+                127,
+                122,
+                123
+            ],
+            "output_layers": [
+                128
+            ],
+            "extras": {
+                "name": "features.transition3.norm",
+                "type": "BatchNorm2d"
+            }
+        },
+        "75": {
+            "forward_pass_units": 199777,
+            "backward_pass_units": 99947,
+            "communication_units": 6912,
+            "input_layers": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                110,
+                111,
+                60,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123
+            ],
+            "output_layers": [
+                129
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer20.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "76": {
+            "forward_pass_units": 201767,
+            "backward_pass_units": 99591,
+            "communication_units": 3840,
+            "input_layers": [
+                103,
+                104,
+                107,
+                108,
+                116,
+                118,
+                121,
+                60
+            ],
+            "output_layers": [
+                130
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer8.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "77": {
+            "forward_pass_units": 204253,
+            "backward_pass_units": 101045,
+            "communication_units": 4096,
+            "input_layers": [
+                114,
+                103,
+                104,
+                107,
+                108,
+                116,
+                118,
+                121,
+                60
+            ],
+            "output_layers": [
+                131
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer9.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "78": {
+            "forward_pass_units": 198914,
+            "backward_pass_units": 102605,
+            "communication_units": 5632,
+            "input_layers": [
+                114,
+                103,
+                104,
+                106,
+                107,
+                108,
+                116,
+                117,
+                118,
+                110,
+                111,
+                119,
+                121,
+                60,
+                113
+            ],
+            "output_layers": [
+                132
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer15.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "79": {
+            "forward_pass_units": 203014,
+            "backward_pass_units": 103230,
+            "communication_units": 2304,
+            "input_layers": [
+                103,
+                60
+            ],
+            "output_layers": [
+                133
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer2.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "80": {
+            "forward_pass_units": 200854,
+            "backward_pass_units": 97215,
+            "communication_units": 4864,
+            "input_layers": [
+                114,
+                103,
+                104,
+                106,
+                107,
+                108,
+                116,
+                118,
+                111,
+                121,
+                60,
+                113
+            ],
+            "output_layers": [
+                134
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer12.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "81": {
+            "forward_pass_units": 202192,
+            "backward_pass_units": 102845,
+            "communication_units": 3328,
+            "input_layers": [
+                118,
+                103,
+                104,
+                60,
+                107,
+                116
+            ],
+            "output_layers": [
+                135
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer6.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "82": {
+            "forward_pass_units": 202063,
+            "backward_pass_units": 103654,
+            "communication_units": 7936,
+            "input_layers": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                60,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                126,
+                120,
+                121,
+                127,
+                122,
+                123
+            ],
+            "output_layers": [
+                136
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer24.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "83": {
+            "forward_pass_units": 201578,
+            "backward_pass_units": 101690,
+            "communication_units": 2816,
+            "input_layers": [
+                118,
+                103,
+                116,
+                60
+            ],
+            "output_layers": [
+                137
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer4.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "84": {
+            "forward_pass_units": 199386,
+            "backward_pass_units": 103425,
+            "communication_units": 3072,
+            "input_layers": [
+                118,
+                103,
+                60,
+                107,
+                116
+            ],
+            "output_layers": [
+                138
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer5.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "85": {
+            "forward_pass_units": 202147,
+            "backward_pass_units": 97851,
+            "communication_units": 7680,
+            "input_layers": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                110,
+                111,
+                60,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                122,
+                119,
+                126,
+                120,
+                121,
+                109,
+                123
+            ],
+            "output_layers": [
+                139
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer23.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "86": {
+            "forward_pass_units": 200040,
+            "backward_pass_units": 103474,
+            "communication_units": 6400,
+            "input_layers": [
+                103,
+                104,
+                106,
+                107,
+                108,
+                110,
+                111,
+                60,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122
+            ],
+            "output_layers": [
+                140
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer18.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "87": {
+            "forward_pass_units": 200026,
+            "backward_pass_units": 103263,
+            "communication_units": 2560,
+            "input_layers": [
+                103,
+                116,
+                60
+            ],
+            "output_layers": [
+                141
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer3.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "88": {
+            "forward_pass_units": 187108,
+            "backward_pass_units": 100521,
+            "communication_units": 2048,
+            "input_layers": [
+                60
+            ],
+            "output_layers": [
+                142
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer1.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "89": {
+            "forward_pass_units": 201123,
+            "backward_pass_units": 101212,
+            "communication_units": 5376,
+            "input_layers": [
+                114,
+                103,
+                104,
+                106,
+                107,
+                108,
+                116,
+                117,
+                118,
+                110,
+                111,
+                121,
+                60,
+                113
+            ],
+            "output_layers": [
+                143
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer14.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "90": {
+            "forward_pass_units": 200989,
+            "backward_pass_units": 102289,
+            "communication_units": 4352,
+            "input_layers": [
+                114,
+                103,
+                104,
+                107,
+                108,
+                116,
+                118,
+                111,
+                121,
+                60
+            ],
+            "output_layers": [
+                144
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer10.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "91": {
+            "forward_pass_units": 200803,
+            "backward_pass_units": 102396,
+            "communication_units": 4608,
+            "input_layers": [
+                114,
+                103,
+                104,
+                107,
+                108,
+                116,
+                118,
+                111,
+                121,
+                60,
+                113
+            ],
+            "output_layers": [
+                145
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer11.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "92": {
+            "forward_pass_units": 200901,
+            "backward_pass_units": 98482,
+            "communication_units": 3584,
+            "input_layers": [
+                118,
+                103,
+                104,
+                60,
+                107,
+                108,
+                116
+            ],
+            "output_layers": [
+                146
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer7.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "93": {
+            "forward_pass_units": 200094,
+            "backward_pass_units": 102279,
+            "communication_units": 6656,
+            "input_layers": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                110,
+                111,
+                60,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122
+            ],
+            "output_layers": [
+                147
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer19.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "94": {
+            "forward_pass_units": 201605,
+            "backward_pass_units": 101637,
+            "communication_units": 5120,
+            "input_layers": [
+                114,
+                103,
+                104,
+                106,
+                107,
+                108,
+                116,
+                117,
+                118,
+                111,
+                121,
+                60,
+                113
+            ],
+            "output_layers": [
+                148
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer13.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "95": {
+            "forward_pass_units": 202624,
+            "backward_pass_units": 101616,
+            "communication_units": 7168,
+            "input_layers": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                110,
+                111,
+                60,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                122,
+                119,
+                120,
+                121,
+                109,
+                123
+            ],
+            "output_layers": [
+                149
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer21.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "96": {
+            "forward_pass_units": 201664,
+            "backward_pass_units": 101912,
+            "communication_units": 5888,
+            "input_layers": [
+                103,
+                104,
+                106,
+                107,
+                108,
+                110,
+                111,
+                60,
+                113,
+                114,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121
+            ],
+            "output_layers": [
+                150
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer16.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "97": {
+            "forward_pass_units": 201814,
+            "backward_pass_units": 102873,
+            "communication_units": 6144,
+            "input_layers": [
+                103,
+                104,
+                106,
+                107,
+                108,
+                110,
+                111,
+                60,
+                113,
+                114,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122
+            ],
+            "output_layers": [
+                151
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer17.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "98": {
+            "forward_pass_units": 143561,
+            "backward_pass_units": 102955,
+            "communication_units": 1024,
+            "input_layers": [
+                61
+            ],
+            "output_layers": [
+                51
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer6.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "99": {
+            "forward_pass_units": 142476,
+            "backward_pass_units": 105337,
+            "communication_units": 1024,
+            "input_layers": [
+                62
+            ],
+            "output_layers": [
+                57
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer12.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "100": {
+            "forward_pass_units": 146815,
+            "backward_pass_units": 103633,
+            "communication_units": 1024,
+            "input_layers": [
+                63
+            ],
+            "output_layers": [
+                41
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer2.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "101": {
+            "forward_pass_units": 144570,
+            "backward_pass_units": 103834,
+            "communication_units": 1024,
+            "input_layers": [
+                64
+            ],
+            "output_layers": [
+                48
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer7.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "102": {
+            "forward_pass_units": 143167,
+            "backward_pass_units": 105906,
+            "communication_units": 1024,
+            "input_layers": [
+                65
+            ],
+            "output_layers": [
+                59
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer11.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "50": {
+            "forward_pass_units": 127133,
+            "backward_pass_units": 228669,
+            "communication_units": 147456,
+            "input_layers": [
+                66
+            ],
+            "output_layers": [
+                27,
+                30,
+                32,
+                33,
+                34,
+                35,
+                36,
+                38,
+                39
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer5.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "43": {
+            "forward_pass_units": 128474,
+            "backward_pass_units": 227911,
+            "communication_units": 147456,
+            "input_layers": [
+                67
+            ],
+            "output_layers": [
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer1.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "44": {
+            "forward_pass_units": 126039,
+            "backward_pass_units": 226192,
+            "communication_units": 147456,
+            "input_layers": [
+                68
+            ],
+            "output_layers": [
+                27,
+                29,
+                30,
+                32,
+                33,
+                34,
+                35,
+                36,
+                38,
+                39
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer4.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "54": {
+            "forward_pass_units": 124391,
+            "backward_pass_units": 226999,
+            "communication_units": 147456,
+            "input_layers": [
+                69
+            ],
+            "output_layers": [
+                30,
+                32,
+                34,
+                36,
+                39
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer9.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "42": {
+            "forward_pass_units": 126206,
+            "backward_pass_units": 226638,
+            "communication_units": 147456,
+            "input_layers": [
+                70
+            ],
+            "output_layers": [
+                27,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                38,
+                39
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer3.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "58": {
+            "forward_pass_units": 125763,
+            "backward_pass_units": 228414,
+            "communication_units": 147456,
+            "input_layers": [
+                71
+            ],
+            "output_layers": [
+                39,
+                36,
+                32,
+                34
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer10.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "49": {
+            "forward_pass_units": 124760,
+            "backward_pass_units": 226406,
+            "communication_units": 147456,
+            "input_layers": [
+                72
+            ],
+            "output_layers": [
+                30,
+                32,
+                33,
+                34,
+                36,
+                39
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer8.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "124": {
+            "forward_pass_units": 128879,
+            "backward_pass_units": 135498,
+            "communication_units": 475136,
+            "input_layers": [
+                73
+            ],
+            "output_layers": [
+                152
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer22.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "128": {
+            "forward_pass_units": 127200,
+            "backward_pass_units": 205128,
+            "communication_units": 2097152,
+            "input_layers": [
+                74
+            ],
+            "output_layers": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169
+            ],
+            "extras": {
+                "name": "features.transition3.conv",
+                "type": "Conv2d"
+            }
+        },
+        "129": {
+            "forward_pass_units": 128629,
+            "backward_pass_units": 135601,
+            "communication_units": 442368,
+            "input_layers": [
+                75
+            ],
+            "output_layers": [
+                170
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer20.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "130": {
+            "forward_pass_units": 129355,
+            "backward_pass_units": 134815,
+            "communication_units": 245760,
+            "input_layers": [
+                76
+            ],
+            "output_layers": [
+                171
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer8.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "131": {
+            "forward_pass_units": 128685,
+            "backward_pass_units": 136171,
+            "communication_units": 262144,
+            "input_layers": [
+                77
+            ],
+            "output_layers": [
+                172
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer9.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "132": {
+            "forward_pass_units": 127898,
+            "backward_pass_units": 135254,
+            "communication_units": 360448,
+            "input_layers": [
+                78
+            ],
+            "output_layers": [
+                173
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer15.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "133": {
+            "forward_pass_units": 133731,
+            "backward_pass_units": 135398,
+            "communication_units": 147456,
+            "input_layers": [
+                79
+            ],
+            "output_layers": [
+                174
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer2.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "134": {
+            "forward_pass_units": 127181,
+            "backward_pass_units": 138260,
+            "communication_units": 311296,
+            "input_layers": [
+                80
+            ],
+            "output_layers": [
+                175
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer12.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "135": {
+            "forward_pass_units": 127155,
+            "backward_pass_units": 135224,
+            "communication_units": 212992,
+            "input_layers": [
+                81
+            ],
+            "output_layers": [
+                176
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer6.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "136": {
+            "forward_pass_units": 128716,
+            "backward_pass_units": 138446,
+            "communication_units": 507904,
+            "input_layers": [
+                82
+            ],
+            "output_layers": [
+                177
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer24.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "137": {
+            "forward_pass_units": 127722,
+            "backward_pass_units": 135304,
+            "communication_units": 180224,
+            "input_layers": [
+                83
+            ],
+            "output_layers": [
+                178
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer4.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "138": {
+            "forward_pass_units": 129241,
+            "backward_pass_units": 133012,
+            "communication_units": 196608,
+            "input_layers": [
+                84
+            ],
+            "output_layers": [
+                179
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer5.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "139": {
+            "forward_pass_units": 129001,
+            "backward_pass_units": 134610,
+            "communication_units": 491520,
+            "input_layers": [
+                85
+            ],
+            "output_layers": [
+                180
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer23.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "140": {
+            "forward_pass_units": 124575,
+            "backward_pass_units": 135618,
+            "communication_units": 409600,
+            "input_layers": [
+                86
+            ],
+            "output_layers": [
+                181
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer18.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "141": {
+            "forward_pass_units": 127747,
+            "backward_pass_units": 136489,
+            "communication_units": 163840,
+            "input_layers": [
+                87
+            ],
+            "output_layers": [
+                182
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer3.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "142": {
+            "forward_pass_units": 138180,
+            "backward_pass_units": 133583,
+            "communication_units": 131072,
+            "input_layers": [
+                88
+            ],
+            "output_layers": [
+                183
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer1.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "143": {
+            "forward_pass_units": 127316,
+            "backward_pass_units": 132671,
+            "communication_units": 344064,
+            "input_layers": [
+                89
+            ],
+            "output_layers": [
+                184
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer14.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "144": {
+            "forward_pass_units": 127345,
+            "backward_pass_units": 131868,
+            "communication_units": 278528,
+            "input_layers": [
+                90
+            ],
+            "output_layers": [
+                185
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer10.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "145": {
+            "forward_pass_units": 127040,
+            "backward_pass_units": 133863,
+            "communication_units": 294912,
+            "input_layers": [
+                91
+            ],
+            "output_layers": [
+                186
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer11.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "146": {
+            "forward_pass_units": 129063,
+            "backward_pass_units": 132941,
+            "communication_units": 229376,
+            "input_layers": [
+                92
+            ],
+            "output_layers": [
+                187
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer7.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "147": {
+            "forward_pass_units": 126794,
+            "backward_pass_units": 134090,
+            "communication_units": 425984,
+            "input_layers": [
+                93
+            ],
+            "output_layers": [
+                188
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer19.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "148": {
+            "forward_pass_units": 131048,
+            "backward_pass_units": 132805,
+            "communication_units": 327680,
+            "input_layers": [
+                94
+            ],
+            "output_layers": [
+                189
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer13.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "149": {
+            "forward_pass_units": 126795,
+            "backward_pass_units": 134571,
+            "communication_units": 458752,
+            "input_layers": [
+                95
+            ],
+            "output_layers": [
+                190
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer21.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "150": {
+            "forward_pass_units": 130690,
+            "backward_pass_units": 136441,
+            "communication_units": 376832,
+            "input_layers": [
+                96
+            ],
+            "output_layers": [
+                191
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer16.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "151": {
+            "forward_pass_units": 128104,
+            "backward_pass_units": 134283,
+            "communication_units": 393216,
+            "input_layers": [
+                97
+            ],
+            "output_layers": [
+                192
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer17.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "51": {
+            "forward_pass_units": 125447,
+            "backward_pass_units": 229187,
+            "communication_units": 147456,
+            "input_layers": [
+                98
+            ],
+            "output_layers": [
+                30,
+                32,
+                33,
+                34,
+                35,
+                36,
+                38,
+                39
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer6.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "57": {
+            "forward_pass_units": 124258,
+            "backward_pass_units": 231053,
+            "communication_units": 147456,
+            "input_layers": [
+                99
+            ],
+            "output_layers": [
+                36,
+                34
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer12.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "41": {
+            "forward_pass_units": 128036,
+            "backward_pass_units": 225867,
+            "communication_units": 147456,
+            "input_layers": [
+                100
+            ],
+            "output_layers": [
+                27,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer2.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "48": {
+            "forward_pass_units": 124435,
+            "backward_pass_units": 230452,
+            "communication_units": 147456,
+            "input_layers": [
+                101
+            ],
+            "output_layers": [
+                30,
+                32,
+                33,
+                34,
+                36,
+                38,
+                39
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer7.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "59": {
+            "forward_pass_units": 125409,
+            "backward_pass_units": 237156,
+            "communication_units": 147456,
+            "input_layers": [
+                102
+            ],
+            "output_layers": [
+                39,
+                36,
+                34
+            ],
+            "extras": {
+                "name": "features.denseblock2.denselayer11.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "152": {
+            "forward_pass_units": 145565,
+            "backward_pass_units": 105089,
+            "communication_units": 1024,
+            "input_layers": [
+                124
+            ],
+            "output_layers": [
+                126
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer22.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "153": {
+            "forward_pass_units": 194048,
+            "backward_pass_units": 99084,
+            "communication_units": 6400,
+            "input_layers": [
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                128
+            ],
+            "output_layers": [
+                202
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer10.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "154": {
+            "forward_pass_units": 189532,
+            "backward_pass_units": 104168,
+            "communication_units": 4096,
+            "input_layers": [
+                128
+            ],
+            "output_layers": [
+                203
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer1.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "155": {
+            "forward_pass_units": 203890,
+            "backward_pass_units": 101358,
+            "communication_units": 4352,
+            "input_layers": [
+                195,
+                128
+            ],
+            "output_layers": [
+                204
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer2.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "156": {
+            "forward_pass_units": 199482,
+            "backward_pass_units": 103569,
+            "communication_units": 5888,
+            "input_layers": [
+                193,
+                194,
+                195,
+                197,
+                199,
+                200,
+                201,
+                128
+            ],
+            "output_layers": [
+                205
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer8.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "157": {
+            "forward_pass_units": 203131,
+            "backward_pass_units": 100796,
+            "communication_units": 4864,
+            "input_layers": [
+                195,
+                197,
+                201,
+                128
+            ],
+            "output_layers": [
+                206
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer4.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "158": {
+            "forward_pass_units": 201247,
+            "backward_pass_units": 101787,
+            "communication_units": 7168,
+            "input_layers": [
+                207,
+                208,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                209,
+                128
+            ],
+            "output_layers": [
+                210
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer13.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "159": {
+            "forward_pass_units": 196290,
+            "backward_pass_units": 100642,
+            "communication_units": 6144,
+            "input_layers": [
+                193,
+                194,
+                195,
+                196,
+                197,
+                199,
+                200,
+                201,
+                128
+            ],
+            "output_layers": [
+                211
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer9.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "160": {
+            "forward_pass_units": 197437,
+            "backward_pass_units": 102761,
+            "communication_units": 6656,
+            "input_layers": [
+                208,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                128
+            ],
+            "output_layers": [
+                212
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer11.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "161": {
+            "forward_pass_units": 200420,
+            "backward_pass_units": 100975,
+            "communication_units": 5376,
+            "input_layers": [
+                193,
+                200,
+                195,
+                197,
+                201,
+                128
+            ],
+            "output_layers": [
+                213
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer6.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "162": {
+            "forward_pass_units": 199675,
+            "backward_pass_units": 110062,
+            "communication_units": 7936,
+            "input_layers": [
+                214,
+                207,
+                208,
+                193,
+                198,
+                200,
+                201,
+                215,
+                194,
+                195,
+                196,
+                197,
+                216,
+                199,
+                209,
+                128
+            ],
+            "output_layers": [
+                217
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer16.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "163": {
+            "forward_pass_units": 198474,
+            "backward_pass_units": 101663,
+            "communication_units": 7424,
+            "input_layers": [
+                207,
+                208,
+                193,
+                194,
+                195,
+                196,
+                197,
+                216,
+                198,
+                199,
+                200,
+                201,
+                209,
+                128
+            ],
+            "output_layers": [
+                218
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer14.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "164": {
+            "forward_pass_units": 199916,
+            "backward_pass_units": 99993,
+            "communication_units": 5120,
+            "input_layers": [
+                200,
+                195,
+                197,
+                201,
+                128
+            ],
+            "output_layers": [
+                219
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer5.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "165": {
+            "forward_pass_units": 191392,
+            "backward_pass_units": 104471,
+            "communication_units": 7680,
+            "input_layers": [
+                214,
+                207,
+                208,
+                193,
+                194,
+                195,
+                196,
+                197,
+                216,
+                198,
+                199,
+                200,
+                201,
+                209,
+                128
+            ],
+            "output_layers": [
+                220
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer15.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "166": {
+            "forward_pass_units": 193037,
+            "backward_pass_units": 100253,
+            "communication_units": 6912,
+            "input_layers": [
+                207,
+                208,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                128
+            ],
+            "output_layers": [
+                221
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer12.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "167": {
+            "forward_pass_units": 200658,
+            "backward_pass_units": 102466,
+            "communication_units": 4608,
+            "input_layers": [
+                195,
+                128,
+                197
+            ],
+            "output_layers": [
+                222
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer3.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "168": {
+            "forward_pass_units": 194448,
+            "backward_pass_units": 103937,
+            "communication_units": 5632,
+            "input_layers": [
+                199,
+                193,
+                200,
+                195,
+                197,
+                201,
+                128
+            ],
+            "output_layers": [
+                223
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer7.norm1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "169": {
+            "forward_pass_units": 197543,
+            "backward_pass_units": 303569,
+            "communication_units": 8192,
+            "input_layers": [
+                224,
+                214,
+                207,
+                208,
+                193,
+                198,
+                200,
+                201,
+                215,
+                194,
+                195,
+                196,
+                197,
+                216,
+                199,
+                209,
+                128
+            ],
+            "output_layers": [
+                225
+            ],
+            "extras": {
+                "name": "features.norm5",
+                "type": "BatchNorm2d"
+            }
+        },
+        "170": {
+            "forward_pass_units": 143720,
+            "backward_pass_units": 105369,
+            "communication_units": 1024,
+            "input_layers": [
+                129
+            ],
+            "output_layers": [
+                109
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer20.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "171": {
+            "forward_pass_units": 143596,
+            "backward_pass_units": 104419,
+            "communication_units": 1024,
+            "input_layers": [
+                130
+            ],
+            "output_layers": [
+                114
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer8.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "172": {
+            "forward_pass_units": 146644,
+            "backward_pass_units": 105838,
+            "communication_units": 1024,
+            "input_layers": [
+                131
+            ],
+            "output_layers": [
+                111
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer9.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "173": {
+            "forward_pass_units": 145054,
+            "backward_pass_units": 103597,
+            "communication_units": 1024,
+            "input_layers": [
+                132
+            ],
+            "output_layers": [
+                120
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer15.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "174": {
+            "forward_pass_units": 143719,
+            "backward_pass_units": 104721,
+            "communication_units": 1024,
+            "input_layers": [
+                133
+            ],
+            "output_layers": [
+                116
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer2.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "175": {
+            "forward_pass_units": 147098,
+            "backward_pass_units": 105559,
+            "communication_units": 1024,
+            "input_layers": [
+                134
+            ],
+            "output_layers": [
+                117
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer12.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "176": {
+            "forward_pass_units": 147190,
+            "backward_pass_units": 104506,
+            "communication_units": 1024,
+            "input_layers": [
+                135
+            ],
+            "output_layers": [
+                108
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer6.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "177": {
+            "forward_pass_units": 144153,
+            "backward_pass_units": 105580,
+            "communication_units": 1024,
+            "input_layers": [
+                136
+            ],
+            "output_layers": [
+                125
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer24.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "178": {
+            "forward_pass_units": 147306,
+            "backward_pass_units": 104611,
+            "communication_units": 1024,
+            "input_layers": [
+                137
+            ],
+            "output_layers": [
+                107
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer4.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "179": {
+            "forward_pass_units": 145623,
+            "backward_pass_units": 103019,
+            "communication_units": 1024,
+            "input_layers": [
+                138
+            ],
+            "output_layers": [
+                104
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer5.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "180": {
+            "forward_pass_units": 144619,
+            "backward_pass_units": 104584,
+            "communication_units": 1024,
+            "input_layers": [
+                139
+            ],
+            "output_layers": [
+                127
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer23.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "181": {
+            "forward_pass_units": 144556,
+            "backward_pass_units": 104977,
+            "communication_units": 1024,
+            "input_layers": [
+                140
+            ],
+            "output_layers": [
+                105
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer18.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "182": {
+            "forward_pass_units": 143963,
+            "backward_pass_units": 105355,
+            "communication_units": 1024,
+            "input_layers": [
+                141
+            ],
+            "output_layers": [
+                118
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer3.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "183": {
+            "forward_pass_units": 145397,
+            "backward_pass_units": 105175,
+            "communication_units": 1024,
+            "input_layers": [
+                142
+            ],
+            "output_layers": [
+                103
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer1.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "184": {
+            "forward_pass_units": 143966,
+            "backward_pass_units": 105006,
+            "communication_units": 1024,
+            "input_layers": [
+                143
+            ],
+            "output_layers": [
+                119
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer14.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "185": {
+            "forward_pass_units": 144456,
+            "backward_pass_units": 103849,
+            "communication_units": 1024,
+            "input_layers": [
+                144
+            ],
+            "output_layers": [
+                113
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer10.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "186": {
+            "forward_pass_units": 146120,
+            "backward_pass_units": 104665,
+            "communication_units": 1024,
+            "input_layers": [
+                145
+            ],
+            "output_layers": [
+                106
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer11.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "187": {
+            "forward_pass_units": 151687,
+            "backward_pass_units": 105127,
+            "communication_units": 1024,
+            "input_layers": [
+                146
+            ],
+            "output_layers": [
+                121
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer7.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "188": {
+            "forward_pass_units": 146059,
+            "backward_pass_units": 104840,
+            "communication_units": 1024,
+            "input_layers": [
+                147
+            ],
+            "output_layers": [
+                123
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer19.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "189": {
+            "forward_pass_units": 143977,
+            "backward_pass_units": 102207,
+            "communication_units": 1024,
+            "input_layers": [
+                148
+            ],
+            "output_layers": [
+                110
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer13.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "190": {
+            "forward_pass_units": 144025,
+            "backward_pass_units": 104570,
+            "communication_units": 1024,
+            "input_layers": [
+                149
+            ],
+            "output_layers": [
+                112
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer21.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "191": {
+            "forward_pass_units": 145638,
+            "backward_pass_units": 106140,
+            "communication_units": 1024,
+            "input_layers": [
+                150
+            ],
+            "output_layers": [
+                122
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer16.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "192": {
+            "forward_pass_units": 146317,
+            "backward_pass_units": 105590,
+            "communication_units": 1024,
+            "input_layers": [
+                151
+            ],
+            "output_layers": [
+                115
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer17.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "126": {
+            "forward_pass_units": 124315,
+            "backward_pass_units": 207752,
+            "communication_units": 147456,
+            "input_layers": [
+                152
+            ],
+            "output_layers": [
+                82,
+                73,
+                74,
+                85
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer22.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "202": {
+            "forward_pass_units": 127301,
+            "backward_pass_units": 135152,
+            "communication_units": 409600,
+            "input_layers": [
+                153
+            ],
+            "output_layers": [
+                226
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer10.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "203": {
+            "forward_pass_units": 123781,
+            "backward_pass_units": 133865,
+            "communication_units": 262144,
+            "input_layers": [
+                154
+            ],
+            "output_layers": [
+                227
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer1.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "204": {
+            "forward_pass_units": 126682,
+            "backward_pass_units": 132907,
+            "communication_units": 278528,
+            "input_layers": [
+                155
+            ],
+            "output_layers": [
+                228
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer2.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "205": {
+            "forward_pass_units": 124695,
+            "backward_pass_units": 135536,
+            "communication_units": 376832,
+            "input_layers": [
+                156
+            ],
+            "output_layers": [
+                229
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer8.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "206": {
+            "forward_pass_units": 127743,
+            "backward_pass_units": 134944,
+            "communication_units": 311296,
+            "input_layers": [
+                157
+            ],
+            "output_layers": [
+                230
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer4.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "210": {
+            "forward_pass_units": 128024,
+            "backward_pass_units": 133499,
+            "communication_units": 458752,
+            "input_layers": [
+                158
+            ],
+            "output_layers": [
+                231
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer13.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "211": {
+            "forward_pass_units": 123140,
+            "backward_pass_units": 131072,
+            "communication_units": 393216,
+            "input_layers": [
+                159
+            ],
+            "output_layers": [
+                232
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer9.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "212": {
+            "forward_pass_units": 127692,
+            "backward_pass_units": 133958,
+            "communication_units": 425984,
+            "input_layers": [
+                160
+            ],
+            "output_layers": [
+                233
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer11.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "213": {
+            "forward_pass_units": 125329,
+            "backward_pass_units": 130415,
+            "communication_units": 344064,
+            "input_layers": [
+                161
+            ],
+            "output_layers": [
+                234
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer6.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "217": {
+            "forward_pass_units": 128505,
+            "backward_pass_units": 163336,
+            "communication_units": 507904,
+            "input_layers": [
+                162
+            ],
+            "output_layers": [
+                235
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer16.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "218": {
+            "forward_pass_units": 127997,
+            "backward_pass_units": 135553,
+            "communication_units": 475136,
+            "input_layers": [
+                163
+            ],
+            "output_layers": [
+                236
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer14.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "219": {
+            "forward_pass_units": 127620,
+            "backward_pass_units": 130383,
+            "communication_units": 327680,
+            "input_layers": [
+                164
+            ],
+            "output_layers": [
+                237
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer5.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "220": {
+            "forward_pass_units": 125159,
+            "backward_pass_units": 144310,
+            "communication_units": 491520,
+            "input_layers": [
+                165
+            ],
+            "output_layers": [
+                238
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer15.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "221": {
+            "forward_pass_units": 125209,
+            "backward_pass_units": 131354,
+            "communication_units": 442368,
+            "input_layers": [
+                166
+            ],
+            "output_layers": [
+                239
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer12.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "222": {
+            "forward_pass_units": 127065,
+            "backward_pass_units": 134825,
+            "communication_units": 294912,
+            "input_layers": [
+                167
+            ],
+            "output_layers": [
+                240
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer3.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "223": {
+            "forward_pass_units": 127743,
+            "backward_pass_units": 133567,
+            "communication_units": 360448,
+            "input_layers": [
+                168
+            ],
+            "output_layers": [
+                241
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer7.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "225": {
+            "forward_pass_units": 220950,
+            "backward_pass_units": 1567810,
+            "communication_units": 4100000,
+            "input_layers": [
+                169
+            ],
+            "output_layers": [],
+            "extras": {
+                "name": "classifier",
+                "type": "Linear"
+            }
+        },
+        "109": {
+            "forward_pass_units": 125059,
+            "backward_pass_units": 207345,
+            "communication_units": 147456,
+            "input_layers": [
+                170
+            ],
+            "output_layers": [
+                82,
+                73,
+                74,
+                75,
+                95,
+                85
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer20.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "114": {
+            "forward_pass_units": 127552,
+            "backward_pass_units": 204871,
+            "communication_units": 147456,
+            "input_layers": [
+                171
+            ],
+            "output_layers": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                80,
+                82,
+                85,
+                86,
+                89,
+                90,
+                91,
+                93,
+                94,
+                95,
+                96,
+                97
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer8.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "111": {
+            "forward_pass_units": 126907,
+            "backward_pass_units": 207131,
+            "communication_units": 147456,
+            "input_layers": [
+                172
+            ],
+            "output_layers": [
+                73,
+                74,
+                75,
+                77,
+                78,
+                80,
+                82,
+                85,
+                86,
+                89,
+                95,
+                90,
+                91,
+                94,
+                93,
+                96,
+                97
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer9.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "120": {
+            "forward_pass_units": 127350,
+            "backward_pass_units": 206992,
+            "communication_units": 147456,
+            "input_layers": [
+                173
+            ],
+            "output_layers": [
+                73,
+                86,
+                74,
+                75,
+                78,
+                93,
+                82,
+                95,
+                96,
+                97,
+                85
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer15.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "116": {
+            "forward_pass_units": 126925,
+            "backward_pass_units": 204804,
+            "communication_units": 147456,
+            "input_layers": [
+                174
+            ],
+            "output_layers": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer2.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "117": {
+            "forward_pass_units": 126755,
+            "backward_pass_units": 203909,
+            "communication_units": 147456,
+            "input_layers": [
+                175
+            ],
+            "output_layers": [
+                73,
+                86,
+                74,
+                75,
+                89,
+                95,
+                78,
+                80,
+                82,
+                94,
+                93,
+                96,
+                97,
+                85
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer12.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "108": {
+            "forward_pass_units": 125398,
+            "backward_pass_units": 207653,
+            "communication_units": 147456,
+            "input_layers": [
+                176
+            ],
+            "output_layers": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                80,
+                81,
+                82,
+                85,
+                86,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer6.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "125": {
+            "forward_pass_units": 126602,
+            "backward_pass_units": 191363,
+            "communication_units": 147456,
+            "input_layers": [
+                177
+            ],
+            "output_layers": [
+                82,
+                74
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer24.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "107": {
+            "forward_pass_units": 129155,
+            "backward_pass_units": 204064,
+            "communication_units": 147456,
+            "input_layers": [
+                178
+            ],
+            "output_layers": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer4.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "104": {
+            "forward_pass_units": 127519,
+            "backward_pass_units": 207266,
+            "communication_units": 147456,
+            "input_layers": [
+                179
+            ],
+            "output_layers": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                80,
+                81,
+                82,
+                84,
+                85,
+                86,
+                89,
+                95,
+                90,
+                91,
+                92,
+                94,
+                93,
+                96,
+                97
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer5.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "127": {
+            "forward_pass_units": 125644,
+            "backward_pass_units": 211676,
+            "communication_units": 147456,
+            "input_layers": [
+                180
+            ],
+            "output_layers": [
+                82,
+                74,
+                85
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer23.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "105": {
+            "forward_pass_units": 124201,
+            "backward_pass_units": 207199,
+            "communication_units": 147456,
+            "input_layers": [
+                181
+            ],
+            "output_layers": [
+                73,
+                86,
+                74,
+                75,
+                93,
+                82,
+                95,
+                85
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer18.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "118": {
+            "forward_pass_units": 127352,
+            "backward_pass_units": 201929,
+            "communication_units": 147456,
+            "input_layers": [
+                182
+            ],
+            "output_layers": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer3.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "103": {
+            "forward_pass_units": 126433,
+            "backward_pass_units": 203741,
+            "communication_units": 147456,
+            "input_layers": [
+                183
+            ],
+            "output_layers": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer1.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "119": {
+            "forward_pass_units": 127664,
+            "backward_pass_units": 206981,
+            "communication_units": 147456,
+            "input_layers": [
+                184
+            ],
+            "output_layers": [
+                73,
+                86,
+                74,
+                75,
+                89,
+                78,
+                93,
+                82,
+                95,
+                96,
+                97,
+                85
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer14.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "113": {
+            "forward_pass_units": 124962,
+            "backward_pass_units": 206590,
+            "communication_units": 147456,
+            "input_layers": [
+                185
+            ],
+            "output_layers": [
+                73,
+                74,
+                75,
+                78,
+                80,
+                82,
+                85,
+                86,
+                89,
+                95,
+                90,
+                91,
+                94,
+                93,
+                96,
+                97
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer10.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "106": {
+            "forward_pass_units": 126132,
+            "backward_pass_units": 203695,
+            "communication_units": 147456,
+            "input_layers": [
+                186
+            ],
+            "output_layers": [
+                73,
+                86,
+                74,
+                75,
+                89,
+                78,
+                80,
+                91,
+                93,
+                82,
+                94,
+                95,
+                96,
+                97,
+                85
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer11.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "121": {
+            "forward_pass_units": 127160,
+            "backward_pass_units": 205015,
+            "communication_units": 147456,
+            "input_layers": [
+                187
+            ],
+            "output_layers": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                80,
+                82,
+                85,
+                86,
+                89,
+                95,
+                90,
+                91,
+                92,
+                94,
+                93,
+                96,
+                97
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer7.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "123": {
+            "forward_pass_units": 126234,
+            "backward_pass_units": 204518,
+            "communication_units": 147456,
+            "input_layers": [
+                188
+            ],
+            "output_layers": [
+                82,
+                73,
+                74,
+                75,
+                95,
+                93,
+                85
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer19.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "110": {
+            "forward_pass_units": 123510,
+            "backward_pass_units": 206420,
+            "communication_units": 147456,
+            "input_layers": [
+                189
+            ],
+            "output_layers": [
+                73,
+                86,
+                74,
+                75,
+                89,
+                95,
+                78,
+                82,
+                94,
+                93,
+                96,
+                97,
+                85
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer13.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "112": {
+            "forward_pass_units": 127557,
+            "backward_pass_units": 208644,
+            "communication_units": 147456,
+            "input_layers": [
+                190
+            ],
+            "output_layers": [
+                82,
+                73,
+                74,
+                95,
+                85
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer21.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "122": {
+            "forward_pass_units": 125916,
+            "backward_pass_units": 204098,
+            "communication_units": 147456,
+            "input_layers": [
+                191
+            ],
+            "output_layers": [
+                73,
+                86,
+                74,
+                75,
+                95,
+                82,
+                93,
+                96,
+                97,
+                85
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer16.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "115": {
+            "forward_pass_units": 123479,
+            "backward_pass_units": 205400,
+            "communication_units": 147456,
+            "input_layers": [
+                192
+            ],
+            "output_layers": [
+                73,
+                86,
+                74,
+                75,
+                93,
+                82,
+                95,
+                97,
+                85
+            ],
+            "extras": {
+                "name": "features.denseblock3.denselayer17.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "226": {
+            "forward_pass_units": 139542,
+            "backward_pass_units": 104251,
+            "communication_units": 1024,
+            "input_layers": [
+                202
+            ],
+            "output_layers": [
+                208
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer10.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "227": {
+            "forward_pass_units": 146118,
+            "backward_pass_units": 104947,
+            "communication_units": 1024,
+            "input_layers": [
+                203
+            ],
+            "output_layers": [
+                195
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer1.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "228": {
+            "forward_pass_units": 145222,
+            "backward_pass_units": 104119,
+            "communication_units": 1024,
+            "input_layers": [
+                204
+            ],
+            "output_layers": [
+                197
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer2.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "229": {
+            "forward_pass_units": 138520,
+            "backward_pass_units": 105196,
+            "communication_units": 1024,
+            "input_layers": [
+                205
+            ],
+            "output_layers": [
+                196
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer8.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "230": {
+            "forward_pass_units": 146376,
+            "backward_pass_units": 105406,
+            "communication_units": 1024,
+            "input_layers": [
+                206
+            ],
+            "output_layers": [
+                200
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer4.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "231": {
+            "forward_pass_units": 142693,
+            "backward_pass_units": 105472,
+            "communication_units": 1024,
+            "input_layers": [
+                210
+            ],
+            "output_layers": [
+                216
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer13.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "232": {
+            "forward_pass_units": 145203,
+            "backward_pass_units": 104018,
+            "communication_units": 1024,
+            "input_layers": [
+                211
+            ],
+            "output_layers": [
+                198
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer9.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "233": {
+            "forward_pass_units": 144362,
+            "backward_pass_units": 103970,
+            "communication_units": 1024,
+            "input_layers": [
+                212
+            ],
+            "output_layers": [
+                207
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer11.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "234": {
+            "forward_pass_units": 145882,
+            "backward_pass_units": 103558,
+            "communication_units": 1024,
+            "input_layers": [
+                213
+            ],
+            "output_layers": [
+                199
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer6.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "235": {
+            "forward_pass_units": 144405,
+            "backward_pass_units": 116824,
+            "communication_units": 1024,
+            "input_layers": [
+                217
+            ],
+            "output_layers": [
+                224
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer16.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "236": {
+            "forward_pass_units": 142283,
+            "backward_pass_units": 103710,
+            "communication_units": 1024,
+            "input_layers": [
+                218
+            ],
+            "output_layers": [
+                214
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer14.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "237": {
+            "forward_pass_units": 146724,
+            "backward_pass_units": 104758,
+            "communication_units": 1024,
+            "input_layers": [
+                219
+            ],
+            "output_layers": [
+                193
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer5.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "238": {
+            "forward_pass_units": 144828,
+            "backward_pass_units": 108527,
+            "communication_units": 1024,
+            "input_layers": [
+                220
+            ],
+            "output_layers": [
+                215
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer15.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "239": {
+            "forward_pass_units": 144977,
+            "backward_pass_units": 105473,
+            "communication_units": 1024,
+            "input_layers": [
+                221
+            ],
+            "output_layers": [
+                209
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer12.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "240": {
+            "forward_pass_units": 144927,
+            "backward_pass_units": 105081,
+            "communication_units": 1024,
+            "input_layers": [
+                222
+            ],
+            "output_layers": [
+                201
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer3.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "241": {
+            "forward_pass_units": 146533,
+            "backward_pass_units": 103814,
+            "communication_units": 1024,
+            "input_layers": [
+                223
+            ],
+            "output_layers": [
+                194
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer7.norm2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "208": {
+            "forward_pass_units": 124762,
+            "backward_pass_units": 204157,
+            "communication_units": 147456,
+            "input_layers": [
+                226
+            ],
+            "output_layers": [
+                153,
+                162,
+                163,
+                165,
+                166,
+                169,
+                158,
+                160
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer10.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "195": {
+            "forward_pass_units": 142110,
+            "backward_pass_units": 204136,
+            "communication_units": 147456,
+            "input_layers": [
+                227
+            ],
+            "output_layers": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer1.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "197": {
+            "forward_pass_units": 132586,
+            "backward_pass_units": 206170,
+            "communication_units": 147456,
+            "input_layers": [
+                228
+            ],
+            "output_layers": [
+                153,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer2.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "196": {
+            "forward_pass_units": 126967,
+            "backward_pass_units": 206142,
+            "communication_units": 147456,
+            "input_layers": [
+                229
+            ],
+            "output_layers": [
+                153,
+                162,
+                163,
+                165,
+                166,
+                156,
+                169,
+                158,
+                159,
+                160
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer8.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "200": {
+            "forward_pass_units": 128665,
+            "backward_pass_units": 205226,
+            "communication_units": 147456,
+            "input_layers": [
+                230
+            ],
+            "output_layers": [
+                153,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                156,
+                168,
+                157,
+                169,
+                158,
+                159,
+                160
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer4.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "216": {
+            "forward_pass_units": 123978,
+            "backward_pass_units": 204446,
+            "communication_units": 147456,
+            "input_layers": [
+                231
+            ],
+            "output_layers": [
+                162,
+                169,
+                158,
+                163,
+                165
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer13.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "198": {
+            "forward_pass_units": 125925,
+            "backward_pass_units": 206534,
+            "communication_units": 147456,
+            "input_layers": [
+                232
+            ],
+            "output_layers": [
+                153,
+                162,
+                163,
+                165,
+                166,
+                169,
+                158,
+                159,
+                160
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer9.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "207": {
+            "forward_pass_units": 126551,
+            "backward_pass_units": 204976,
+            "communication_units": 147456,
+            "input_layers": [
+                233
+            ],
+            "output_layers": [
+                165,
+                158,
+                169,
+                162,
+                163,
+                166,
+                160
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer11.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "199": {
+            "forward_pass_units": 126676,
+            "backward_pass_units": 203374,
+            "communication_units": 147456,
+            "input_layers": [
+                234
+            ],
+            "output_layers": [
+                153,
+                161,
+                162,
+                163,
+                165,
+                166,
+                156,
+                168,
+                169,
+                158,
+                159,
+                160
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer6.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "224": {
+            "forward_pass_units": 127261,
+            "backward_pass_units": 256370,
+            "communication_units": 147456,
+            "input_layers": [
+                235
+            ],
+            "output_layers": [
+                162,
+                169
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer16.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "214": {
+            "forward_pass_units": 124747,
+            "backward_pass_units": 207145,
+            "communication_units": 147456,
+            "input_layers": [
+                236
+            ],
+            "output_layers": [
+                162,
+                163,
+                165,
+                169
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer14.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "193": {
+            "forward_pass_units": 128433,
+            "backward_pass_units": 202779,
+            "communication_units": 147456,
+            "input_layers": [
+                237
+            ],
+            "output_layers": [
+                153,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                156,
+                168,
+                169,
+                158,
+                159,
+                160
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer5.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "215": {
+            "forward_pass_units": 129171,
+            "backward_pass_units": 216650,
+            "communication_units": 147456,
+            "input_layers": [
+                238
+            ],
+            "output_layers": [
+                162,
+                165,
+                169
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer15.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "209": {
+            "forward_pass_units": 124763,
+            "backward_pass_units": 201495,
+            "communication_units": 147456,
+            "input_layers": [
+                239
+            ],
+            "output_layers": [
+                165,
+                158,
+                169,
+                162,
+                163,
+                166
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer12.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "201": {
+            "forward_pass_units": 130125,
+            "backward_pass_units": 202285,
+            "communication_units": 147456,
+            "input_layers": [
+                240
+            ],
+            "output_layers": [
+                153,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                156,
+                168,
+                157,
+                169,
+                158,
+                159,
+                160
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer3.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "194": {
+            "forward_pass_units": 126580,
+            "backward_pass_units": 204735,
+            "communication_units": 147456,
+            "input_layers": [
+                241
+            ],
+            "output_layers": [
+                153,
+                162,
+                163,
+                165,
+                166,
+                156,
+                168,
+                169,
+                158,
+                159,
+                160
+            ],
+            "extras": {
+                "name": "features.denseblock4.denselayer7.conv2",
+                "type": "Conv2d"
+            }
+        }
+    }
+}

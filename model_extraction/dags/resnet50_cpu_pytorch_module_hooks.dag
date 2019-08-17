@@ -1,0 +1,1759 @@
+{
+    "extras": {
+        "name": "ResNet",
+        "$local$comm_unit": "B",
+        "$local$forward_pass_unit": "ns",
+        "$local$backward_pass_unit": "ns",
+        "$local$extraction_info": {
+            "library": "pytorch",
+            "skip_untrainable_layers": true,
+            "remove_untrainable_layers": true
+        },
+        "$local$profile_info": {
+            "method": "pytorch_module_hooks",
+            "host": "mcnode40",
+            "report_date": "08-12-11-00",
+            "profiling_time": 19855690889,
+            "unit": "ns",
+            "args": {
+                "model": "resnet50",
+                "loss": "CrossEntropyLoss",
+                "optimizer": "SGD",
+                "device": "cpu",
+                "batch_size": 8,
+                "num_of_batches": 10,
+                "skip": true,
+                "out": null,
+                "verbosity": 1,
+                "save_trace": true
+            }
+        }
+    },
+    "layers": {
+        "0": {
+            "forward_pass_units": 12334960,
+            "backward_pass_units": 10440944,
+            "communication_units": 37632,
+            "input_layers": [],
+            "output_layers": [
+                1
+            ],
+            "extras": {
+                "name": "conv1",
+                "type": "Conv2d"
+            }
+        },
+        "1": {
+            "forward_pass_units": 9908728,
+            "backward_pass_units": 16713125,
+            "communication_units": 512,
+            "input_layers": [
+                0
+            ],
+            "output_layers": [
+                2,
+                3
+            ],
+            "extras": {
+                "name": "bn1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "2": {
+            "forward_pass_units": 9052217,
+            "backward_pass_units": 15967825,
+            "communication_units": 65536,
+            "input_layers": [
+                1
+            ],
+            "output_layers": [
+                4
+            ],
+            "extras": {
+                "name": "layer1.0.downsample.0",
+                "type": "Conv2d"
+            }
+        },
+        "3": {
+            "forward_pass_units": 14190175,
+            "backward_pass_units": 5111864,
+            "communication_units": 16384,
+            "input_layers": [
+                1
+            ],
+            "output_layers": [
+                5
+            ],
+            "extras": {
+                "name": "layer1.0.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "4": {
+            "forward_pass_units": 9932787,
+            "backward_pass_units": 14838351,
+            "communication_units": 2048,
+            "input_layers": [
+                2
+            ],
+            "output_layers": [
+                6,
+                7,
+                8,
+                9
+            ],
+            "extras": {
+                "name": "layer1.0.downsample.1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "5": {
+            "forward_pass_units": 2016313,
+            "backward_pass_units": 3288698,
+            "communication_units": 512,
+            "input_layers": [
+                3
+            ],
+            "output_layers": [
+                10
+            ],
+            "extras": {
+                "name": "layer1.0.bn1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "6": {
+            "forward_pass_units": 15745235,
+            "backward_pass_units": 23328828,
+            "communication_units": 131072,
+            "input_layers": [
+                11,
+                12,
+                4,
+                13
+            ],
+            "output_layers": [
+                14
+            ],
+            "extras": {
+                "name": "layer2.0.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "7": {
+            "forward_pass_units": 11944201,
+            "backward_pass_units": 18371091,
+            "communication_units": 65536,
+            "input_layers": [
+                4,
+                11,
+                12
+            ],
+            "output_layers": [
+                15
+            ],
+            "extras": {
+                "name": "layer1.2.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "8": {
+            "forward_pass_units": 13073350,
+            "backward_pass_units": 18405190,
+            "communication_units": 65536,
+            "input_layers": [
+                12,
+                4
+            ],
+            "output_layers": [
+                16
+            ],
+            "extras": {
+                "name": "layer1.1.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "9": {
+            "forward_pass_units": 10471878,
+            "backward_pass_units": 26236025,
+            "communication_units": 524288,
+            "input_layers": [
+                11,
+                12,
+                4,
+                13
+            ],
+            "output_layers": [
+                17
+            ],
+            "extras": {
+                "name": "layer2.0.downsample.0",
+                "type": "Conv2d"
+            }
+        },
+        "10": {
+            "forward_pass_units": 8399146,
+            "backward_pass_units": 14671923,
+            "communication_units": 147456,
+            "input_layers": [
+                5
+            ],
+            "output_layers": [
+                18
+            ],
+            "extras": {
+                "name": "layer1.0.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "14": {
+            "forward_pass_units": 3917169,
+            "backward_pass_units": 6117569,
+            "communication_units": 1024,
+            "input_layers": [
+                6
+            ],
+            "output_layers": [
+                19
+            ],
+            "extras": {
+                "name": "layer2.0.bn1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "15": {
+            "forward_pass_units": 2039257,
+            "backward_pass_units": 3225665,
+            "communication_units": 512,
+            "input_layers": [
+                7
+            ],
+            "output_layers": [
+                20
+            ],
+            "extras": {
+                "name": "layer1.2.bn1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "16": {
+            "forward_pass_units": 2066102,
+            "backward_pass_units": 3268820,
+            "communication_units": 512,
+            "input_layers": [
+                8
+            ],
+            "output_layers": [
+                21
+            ],
+            "extras": {
+                "name": "layer1.1.bn1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "17": {
+            "forward_pass_units": 4047255,
+            "backward_pass_units": 7928805,
+            "communication_units": 4096,
+            "input_layers": [
+                9
+            ],
+            "output_layers": [
+                22,
+                23,
+                24,
+                25,
+                26
+            ],
+            "extras": {
+                "name": "layer2.0.downsample.1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "18": {
+            "forward_pass_units": 2059430,
+            "backward_pass_units": 3474462,
+            "communication_units": 512,
+            "input_layers": [
+                10
+            ],
+            "output_layers": [
+                27
+            ],
+            "extras": {
+                "name": "layer1.0.bn2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "19": {
+            "forward_pass_units": 9082040,
+            "backward_pass_units": 15044528,
+            "communication_units": 589824,
+            "input_layers": [
+                14
+            ],
+            "output_layers": [
+                28
+            ],
+            "extras": {
+                "name": "layer2.0.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "20": {
+            "forward_pass_units": 7430726,
+            "backward_pass_units": 14624804,
+            "communication_units": 147456,
+            "input_layers": [
+                15
+            ],
+            "output_layers": [
+                29
+            ],
+            "extras": {
+                "name": "layer1.2.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "21": {
+            "forward_pass_units": 8326684,
+            "backward_pass_units": 14748041,
+            "communication_units": 147456,
+            "input_layers": [
+                16
+            ],
+            "output_layers": [
+                30
+            ],
+            "extras": {
+                "name": "layer1.1.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "22": {
+            "forward_pass_units": 6477433,
+            "backward_pass_units": 9394995,
+            "communication_units": 262144,
+            "input_layers": [
+                31,
+                32,
+                17,
+                33
+            ],
+            "output_layers": [
+                34
+            ],
+            "extras": {
+                "name": "layer2.3.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "23": {
+            "forward_pass_units": 8532085,
+            "backward_pass_units": 15357384,
+            "communication_units": 524288,
+            "input_layers": [
+                31,
+                32,
+                35,
+                17,
+                33
+            ],
+            "output_layers": [
+                36
+            ],
+            "extras": {
+                "name": "layer3.0.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "24": {
+            "forward_pass_units": 6508881,
+            "backward_pass_units": 9364551,
+            "communication_units": 262144,
+            "input_layers": [
+                31,
+                32,
+                17
+            ],
+            "output_layers": [
+                37
+            ],
+            "extras": {
+                "name": "layer2.2.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "25": {
+            "forward_pass_units": 6450486,
+            "backward_pass_units": 9443844,
+            "communication_units": 262144,
+            "input_layers": [
+                31,
+                17
+            ],
+            "output_layers": [
+                38
+            ],
+            "extras": {
+                "name": "layer2.1.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "26": {
+            "forward_pass_units": 8217105,
+            "backward_pass_units": 17221061,
+            "communication_units": 2097152,
+            "input_layers": [
+                31,
+                32,
+                35,
+                17,
+                33
+            ],
+            "output_layers": [
+                39
+            ],
+            "extras": {
+                "name": "layer3.0.downsample.0",
+                "type": "Conv2d"
+            }
+        },
+        "27": {
+            "forward_pass_units": 9874004,
+            "backward_pass_units": 16014494,
+            "communication_units": 65536,
+            "input_layers": [
+                18
+            ],
+            "output_layers": [
+                12
+            ],
+            "extras": {
+                "name": "layer1.0.conv3",
+                "type": "Conv2d"
+            }
+        },
+        "28": {
+            "forward_pass_units": 1292318,
+            "backward_pass_units": 1828588,
+            "communication_units": 1024,
+            "input_layers": [
+                19
+            ],
+            "output_layers": [
+                40
+            ],
+            "extras": {
+                "name": "layer2.0.bn2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "29": {
+            "forward_pass_units": 2050287,
+            "backward_pass_units": 3032989,
+            "communication_units": 512,
+            "input_layers": [
+                20
+            ],
+            "output_layers": [
+                41
+            ],
+            "extras": {
+                "name": "layer1.2.bn2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "30": {
+            "forward_pass_units": 1966993,
+            "backward_pass_units": 3013553,
+            "communication_units": 512,
+            "input_layers": [
+                21
+            ],
+            "output_layers": [
+                42
+            ],
+            "extras": {
+                "name": "layer1.1.bn2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "34": {
+            "forward_pass_units": 1241431,
+            "backward_pass_units": 1619464,
+            "communication_units": 1024,
+            "input_layers": [
+                22
+            ],
+            "output_layers": [
+                43
+            ],
+            "extras": {
+                "name": "layer2.3.bn1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "36": {
+            "forward_pass_units": 2134825,
+            "backward_pass_units": 3464092,
+            "communication_units": 2048,
+            "input_layers": [
+                23
+            ],
+            "output_layers": [
+                44
+            ],
+            "extras": {
+                "name": "layer3.0.bn1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "37": {
+            "forward_pass_units": 1240930,
+            "backward_pass_units": 1585012,
+            "communication_units": 1024,
+            "input_layers": [
+                24
+            ],
+            "output_layers": [
+                45
+            ],
+            "extras": {
+                "name": "layer2.2.bn1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "38": {
+            "forward_pass_units": 1269400,
+            "backward_pass_units": 1606003,
+            "communication_units": 1024,
+            "input_layers": [
+                25
+            ],
+            "output_layers": [
+                46
+            ],
+            "extras": {
+                "name": "layer2.1.bn1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "39": {
+            "forward_pass_units": 2424884,
+            "backward_pass_units": 4246012,
+            "communication_units": 8192,
+            "input_layers": [
+                26
+            ],
+            "output_layers": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+            ],
+            "extras": {
+                "name": "layer3.0.downsample.1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "12": {
+            "forward_pass_units": 8764155,
+            "backward_pass_units": 9413051,
+            "communication_units": 2048,
+            "input_layers": [
+                27
+            ],
+            "output_layers": [
+                6,
+                7,
+                8,
+                9
+            ],
+            "extras": {
+                "name": "layer1.0.bn3",
+                "type": "BatchNorm2d"
+            }
+        },
+        "40": {
+            "forward_pass_units": 5099751,
+            "backward_pass_units": 9492453,
+            "communication_units": 262144,
+            "input_layers": [
+                28
+            ],
+            "output_layers": [
+                31
+            ],
+            "extras": {
+                "name": "layer2.0.conv3",
+                "type": "Conv2d"
+            }
+        },
+        "41": {
+            "forward_pass_units": 9310466,
+            "backward_pass_units": 15917534,
+            "communication_units": 65536,
+            "input_layers": [
+                29
+            ],
+            "output_layers": [
+                13
+            ],
+            "extras": {
+                "name": "layer1.2.conv3",
+                "type": "Conv2d"
+            }
+        },
+        "42": {
+            "forward_pass_units": 9098649,
+            "backward_pass_units": 15850352,
+            "communication_units": 65536,
+            "input_layers": [
+                30
+            ],
+            "output_layers": [
+                11
+            ],
+            "extras": {
+                "name": "layer1.1.conv3",
+                "type": "Conv2d"
+            }
+        },
+        "43": {
+            "forward_pass_units": 6743956,
+            "backward_pass_units": 13164906,
+            "communication_units": 589824,
+            "input_layers": [
+                34
+            ],
+            "output_layers": [
+                54
+            ],
+            "extras": {
+                "name": "layer2.3.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "44": {
+            "forward_pass_units": 7830156,
+            "backward_pass_units": 14029514,
+            "communication_units": 2359296,
+            "input_layers": [
+                36
+            ],
+            "output_layers": [
+                55
+            ],
+            "extras": {
+                "name": "layer3.0.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "45": {
+            "forward_pass_units": 6638136,
+            "backward_pass_units": 13085278,
+            "communication_units": 589824,
+            "input_layers": [
+                37
+            ],
+            "output_layers": [
+                56
+            ],
+            "extras": {
+                "name": "layer2.2.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "46": {
+            "forward_pass_units": 6604622,
+            "backward_pass_units": 12941210,
+            "communication_units": 589824,
+            "input_layers": [
+                38
+            ],
+            "output_layers": [
+                57
+            ],
+            "extras": {
+                "name": "layer2.1.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "47": {
+            "forward_pass_units": 6890154,
+            "backward_pass_units": 14494855,
+            "communication_units": 2097152,
+            "input_layers": [
+                58,
+                59,
+                60,
+                39,
+                61,
+                62,
+                63
+            ],
+            "output_layers": [
+                64
+            ],
+            "extras": {
+                "name": "layer4.0.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "48": {
+            "forward_pass_units": 4596160,
+            "backward_pass_units": 8506171,
+            "communication_units": 1048576,
+            "input_layers": [
+                58,
+                59,
+                60,
+                61,
+                39
+            ],
+            "output_layers": [
+                65
+            ],
+            "extras": {
+                "name": "layer3.4.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "49": {
+            "forward_pass_units": 4669743,
+            "backward_pass_units": 8636000,
+            "communication_units": 1048576,
+            "input_layers": [
+                61,
+                59,
+                39
+            ],
+            "output_layers": [
+                66
+            ],
+            "extras": {
+                "name": "layer3.2.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "50": {
+            "forward_pass_units": 7632436,
+            "backward_pass_units": 22576969,
+            "communication_units": 8388608,
+            "input_layers": [
+                58,
+                59,
+                60,
+                39,
+                61,
+                62,
+                63
+            ],
+            "output_layers": [
+                67
+            ],
+            "extras": {
+                "name": "layer4.0.downsample.0",
+                "type": "Conv2d"
+            }
+        },
+        "51": {
+            "forward_pass_units": 4714839,
+            "backward_pass_units": 8451929,
+            "communication_units": 1048576,
+            "input_layers": [
+                61,
+                39
+            ],
+            "output_layers": [
+                68
+            ],
+            "extras": {
+                "name": "layer3.1.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "52": {
+            "forward_pass_units": 4591311,
+            "backward_pass_units": 8518933,
+            "communication_units": 1048576,
+            "input_layers": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                39
+            ],
+            "output_layers": [
+                69
+            ],
+            "extras": {
+                "name": "layer3.5.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "53": {
+            "forward_pass_units": 4458013,
+            "backward_pass_units": 8564031,
+            "communication_units": 1048576,
+            "input_layers": [
+                58,
+                61,
+                59,
+                39
+            ],
+            "output_layers": [
+                70
+            ],
+            "extras": {
+                "name": "layer3.3.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "31": {
+            "forward_pass_units": 3999047,
+            "backward_pass_units": 5099609,
+            "communication_units": 4096,
+            "input_layers": [
+                40
+            ],
+            "output_layers": [
+                22,
+                23,
+                24,
+                25,
+                26
+            ],
+            "extras": {
+                "name": "layer2.0.bn3",
+                "type": "BatchNorm2d"
+            }
+        },
+        "13": {
+            "forward_pass_units": 8719576,
+            "backward_pass_units": 15572382,
+            "communication_units": 2048,
+            "input_layers": [
+                41
+            ],
+            "output_layers": [
+                6,
+                7,
+                9
+            ],
+            "extras": {
+                "name": "layer1.2.bn3",
+                "type": "BatchNorm2d"
+            }
+        },
+        "11": {
+            "forward_pass_units": 9132277,
+            "backward_pass_units": 15596997,
+            "communication_units": 2048,
+            "input_layers": [
+                42
+            ],
+            "output_layers": [
+                6,
+                7,
+                8,
+                9
+            ],
+            "extras": {
+                "name": "layer1.1.bn3",
+                "type": "BatchNorm2d"
+            }
+        },
+        "54": {
+            "forward_pass_units": 1140332,
+            "backward_pass_units": 1797340,
+            "communication_units": 1024,
+            "input_layers": [
+                43
+            ],
+            "output_layers": [
+                71
+            ],
+            "extras": {
+                "name": "layer2.3.bn2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "55": {
+            "forward_pass_units": 902973,
+            "backward_pass_units": 1117545,
+            "communication_units": 2048,
+            "input_layers": [
+                44
+            ],
+            "output_layers": [
+                72
+            ],
+            "extras": {
+                "name": "layer3.0.bn2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "56": {
+            "forward_pass_units": 1122400,
+            "backward_pass_units": 1792700,
+            "communication_units": 1024,
+            "input_layers": [
+                45
+            ],
+            "output_layers": [
+                73
+            ],
+            "extras": {
+                "name": "layer2.2.bn2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "57": {
+            "forward_pass_units": 1190141,
+            "backward_pass_units": 1814683,
+            "communication_units": 1024,
+            "input_layers": [
+                46
+            ],
+            "output_layers": [
+                74
+            ],
+            "extras": {
+                "name": "layer2.1.bn2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "64": {
+            "forward_pass_units": 1424057,
+            "backward_pass_units": 2927349,
+            "communication_units": 4096,
+            "input_layers": [
+                47
+            ],
+            "output_layers": [
+                75
+            ],
+            "extras": {
+                "name": "layer4.0.bn1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "65": {
+            "forward_pass_units": 907302,
+            "backward_pass_units": 1030253,
+            "communication_units": 2048,
+            "input_layers": [
+                48
+            ],
+            "output_layers": [
+                76
+            ],
+            "extras": {
+                "name": "layer3.4.bn1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "66": {
+            "forward_pass_units": 776700,
+            "backward_pass_units": 1109054,
+            "communication_units": 2048,
+            "input_layers": [
+                49
+            ],
+            "output_layers": [
+                77
+            ],
+            "extras": {
+                "name": "layer3.2.bn1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "67": {
+            "forward_pass_units": 2392725,
+            "backward_pass_units": 5239291,
+            "communication_units": 16384,
+            "input_layers": [
+                50
+            ],
+            "output_layers": [
+                78,
+                79,
+                80
+            ],
+            "extras": {
+                "name": "layer4.0.downsample.1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "68": {
+            "forward_pass_units": 932867,
+            "backward_pass_units": 1100985,
+            "communication_units": 2048,
+            "input_layers": [
+                51
+            ],
+            "output_layers": [
+                81
+            ],
+            "extras": {
+                "name": "layer3.1.bn1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "69": {
+            "forward_pass_units": 912469,
+            "backward_pass_units": 1153292,
+            "communication_units": 2048,
+            "input_layers": [
+                52
+            ],
+            "output_layers": [
+                82
+            ],
+            "extras": {
+                "name": "layer3.5.bn1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "70": {
+            "forward_pass_units": 880158,
+            "backward_pass_units": 1101864,
+            "communication_units": 2048,
+            "input_layers": [
+                53
+            ],
+            "output_layers": [
+                83
+            ],
+            "extras": {
+                "name": "layer3.3.bn1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "71": {
+            "forward_pass_units": 4802646,
+            "backward_pass_units": 9514781,
+            "communication_units": 262144,
+            "input_layers": [
+                54
+            ],
+            "output_layers": [
+                35
+            ],
+            "extras": {
+                "name": "layer2.3.conv3",
+                "type": "Conv2d"
+            }
+        },
+        "72": {
+            "forward_pass_units": 4178764,
+            "backward_pass_units": 8524553,
+            "communication_units": 1048576,
+            "input_layers": [
+                55
+            ],
+            "output_layers": [
+                61
+            ],
+            "extras": {
+                "name": "layer3.0.conv3",
+                "type": "Conv2d"
+            }
+        },
+        "73": {
+            "forward_pass_units": 4611662,
+            "backward_pass_units": 9294032,
+            "communication_units": 262144,
+            "input_layers": [
+                56
+            ],
+            "output_layers": [
+                33
+            ],
+            "extras": {
+                "name": "layer2.2.conv3",
+                "type": "Conv2d"
+            }
+        },
+        "74": {
+            "forward_pass_units": 4505317,
+            "backward_pass_units": 9361206,
+            "communication_units": 262144,
+            "input_layers": [
+                57
+            ],
+            "output_layers": [
+                32
+            ],
+            "extras": {
+                "name": "layer2.1.conv3",
+                "type": "Conv2d"
+            }
+        },
+        "75": {
+            "forward_pass_units": 7369749,
+            "backward_pass_units": 15977426,
+            "communication_units": 9437184,
+            "input_layers": [
+                64
+            ],
+            "output_layers": [
+                84
+            ],
+            "extras": {
+                "name": "layer4.0.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "76": {
+            "forward_pass_units": 6387273,
+            "backward_pass_units": 12626243,
+            "communication_units": 2359296,
+            "input_layers": [
+                65
+            ],
+            "output_layers": [
+                85
+            ],
+            "extras": {
+                "name": "layer3.4.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "77": {
+            "forward_pass_units": 6313488,
+            "backward_pass_units": 12760376,
+            "communication_units": 2359296,
+            "input_layers": [
+                66
+            ],
+            "output_layers": [
+                86
+            ],
+            "extras": {
+                "name": "layer3.2.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "78": {
+            "forward_pass_units": 4657284,
+            "backward_pass_units": 11408259,
+            "communication_units": 4194304,
+            "input_layers": [
+                87,
+                67
+            ],
+            "output_layers": [
+                88
+            ],
+            "extras": {
+                "name": "layer4.1.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "79": {
+            "forward_pass_units": 4546158,
+            "backward_pass_units": 11475090,
+            "communication_units": 4194304,
+            "input_layers": [
+                87,
+                89,
+                67
+            ],
+            "output_layers": [
+                90
+            ],
+            "extras": {
+                "name": "layer4.2.conv1",
+                "type": "Conv2d"
+            }
+        },
+        "80": {
+            "forward_pass_units": 1051758,
+            "backward_pass_units": 5589935,
+            "communication_units": 8196000,
+            "input_layers": [
+                87,
+                91,
+                89,
+                67
+            ],
+            "output_layers": [],
+            "extras": {
+                "name": "fc",
+                "type": "Linear"
+            }
+        },
+        "81": {
+            "forward_pass_units": 6439803,
+            "backward_pass_units": 12695812,
+            "communication_units": 2359296,
+            "input_layers": [
+                68
+            ],
+            "output_layers": [
+                92
+            ],
+            "extras": {
+                "name": "layer3.1.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "82": {
+            "forward_pass_units": 6276326,
+            "backward_pass_units": 12794759,
+            "communication_units": 2359296,
+            "input_layers": [
+                69
+            ],
+            "output_layers": [
+                93
+            ],
+            "extras": {
+                "name": "layer3.5.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "83": {
+            "forward_pass_units": 6246364,
+            "backward_pass_units": 12686256,
+            "communication_units": 2359296,
+            "input_layers": [
+                70
+            ],
+            "output_layers": [
+                94
+            ],
+            "extras": {
+                "name": "layer3.3.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "35": {
+            "forward_pass_units": 3896592,
+            "backward_pass_units": 7969224,
+            "communication_units": 4096,
+            "input_layers": [
+                71
+            ],
+            "output_layers": [
+                23,
+                22,
+                26
+            ],
+            "extras": {
+                "name": "layer2.3.bn3",
+                "type": "BatchNorm2d"
+            }
+        },
+        "61": {
+            "forward_pass_units": 2485514,
+            "backward_pass_units": 3236043,
+            "communication_units": 8192,
+            "input_layers": [
+                72
+            ],
+            "output_layers": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+            ],
+            "extras": {
+                "name": "layer3.0.bn3",
+                "type": "BatchNorm2d"
+            }
+        },
+        "33": {
+            "forward_pass_units": 3961198,
+            "backward_pass_units": 7505591,
+            "communication_units": 4096,
+            "input_layers": [
+                73
+            ],
+            "output_layers": [
+                24,
+                22,
+                26,
+                23
+            ],
+            "extras": {
+                "name": "layer2.2.bn3",
+                "type": "BatchNorm2d"
+            }
+        },
+        "32": {
+            "forward_pass_units": 3966193,
+            "backward_pass_units": 7624883,
+            "communication_units": 4096,
+            "input_layers": [
+                74
+            ],
+            "output_layers": [
+                22,
+                23,
+                24,
+                25,
+                26
+            ],
+            "extras": {
+                "name": "layer2.1.bn3",
+                "type": "BatchNorm2d"
+            }
+        },
+        "84": {
+            "forward_pass_units": 789877,
+            "backward_pass_units": 1273528,
+            "communication_units": 4096,
+            "input_layers": [
+                75
+            ],
+            "output_layers": [
+                95
+            ],
+            "extras": {
+                "name": "layer4.0.bn2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "85": {
+            "forward_pass_units": 766861,
+            "backward_pass_units": 1072410,
+            "communication_units": 2048,
+            "input_layers": [
+                76
+            ],
+            "output_layers": [
+                96
+            ],
+            "extras": {
+                "name": "layer3.4.bn2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "86": {
+            "forward_pass_units": 741481,
+            "backward_pass_units": 1091643,
+            "communication_units": 2048,
+            "input_layers": [
+                77
+            ],
+            "output_layers": [
+                97
+            ],
+            "extras": {
+                "name": "layer3.2.bn2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "88": {
+            "forward_pass_units": 765372,
+            "backward_pass_units": 1622965,
+            "communication_units": 4096,
+            "input_layers": [
+                78
+            ],
+            "output_layers": [
+                98
+            ],
+            "extras": {
+                "name": "layer4.1.bn1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "90": {
+            "forward_pass_units": 807726,
+            "backward_pass_units": 1583266,
+            "communication_units": 4096,
+            "input_layers": [
+                79
+            ],
+            "output_layers": [
+                99
+            ],
+            "extras": {
+                "name": "layer4.2.bn1",
+                "type": "BatchNorm2d"
+            }
+        },
+        "92": {
+            "forward_pass_units": 876497,
+            "backward_pass_units": 1097594,
+            "communication_units": 2048,
+            "input_layers": [
+                81
+            ],
+            "output_layers": [
+                100
+            ],
+            "extras": {
+                "name": "layer3.1.bn2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "93": {
+            "forward_pass_units": 730823,
+            "backward_pass_units": 1100922,
+            "communication_units": 2048,
+            "input_layers": [
+                82
+            ],
+            "output_layers": [
+                101
+            ],
+            "extras": {
+                "name": "layer3.5.bn2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "94": {
+            "forward_pass_units": 768727,
+            "backward_pass_units": 1089093,
+            "communication_units": 2048,
+            "input_layers": [
+                83
+            ],
+            "output_layers": [
+                102
+            ],
+            "extras": {
+                "name": "layer3.3.bn2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "95": {
+            "forward_pass_units": 4500758,
+            "backward_pass_units": 11491125,
+            "communication_units": 4194304,
+            "input_layers": [
+                84
+            ],
+            "output_layers": [
+                87
+            ],
+            "extras": {
+                "name": "layer4.0.conv3",
+                "type": "Conv2d"
+            }
+        },
+        "96": {
+            "forward_pass_units": 4028529,
+            "backward_pass_units": 8561076,
+            "communication_units": 1048576,
+            "input_layers": [
+                85
+            ],
+            "output_layers": [
+                62
+            ],
+            "extras": {
+                "name": "layer3.4.conv3",
+                "type": "Conv2d"
+            }
+        },
+        "97": {
+            "forward_pass_units": 4045897,
+            "backward_pass_units": 8577427,
+            "communication_units": 1048576,
+            "input_layers": [
+                86
+            ],
+            "output_layers": [
+                58
+            ],
+            "extras": {
+                "name": "layer3.2.conv3",
+                "type": "Conv2d"
+            }
+        },
+        "98": {
+            "forward_pass_units": 6032666,
+            "backward_pass_units": 18116349,
+            "communication_units": 9437184,
+            "input_layers": [
+                88
+            ],
+            "output_layers": [
+                103
+            ],
+            "extras": {
+                "name": "layer4.1.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "99": {
+            "forward_pass_units": 6104195,
+            "backward_pass_units": 22133780,
+            "communication_units": 9437184,
+            "input_layers": [
+                90
+            ],
+            "output_layers": [
+                104
+            ],
+            "extras": {
+                "name": "layer4.2.conv2",
+                "type": "Conv2d"
+            }
+        },
+        "100": {
+            "forward_pass_units": 4136654,
+            "backward_pass_units": 8547407,
+            "communication_units": 1048576,
+            "input_layers": [
+                92
+            ],
+            "output_layers": [
+                59
+            ],
+            "extras": {
+                "name": "layer3.1.conv3",
+                "type": "Conv2d"
+            }
+        },
+        "101": {
+            "forward_pass_units": 3932049,
+            "backward_pass_units": 8691103,
+            "communication_units": 1048576,
+            "input_layers": [
+                93
+            ],
+            "output_layers": [
+                63
+            ],
+            "extras": {
+                "name": "layer3.5.conv3",
+                "type": "Conv2d"
+            }
+        },
+        "102": {
+            "forward_pass_units": 3942609,
+            "backward_pass_units": 8467966,
+            "communication_units": 1048576,
+            "input_layers": [
+                94
+            ],
+            "output_layers": [
+                60
+            ],
+            "extras": {
+                "name": "layer3.3.conv3",
+                "type": "Conv2d"
+            }
+        },
+        "87": {
+            "forward_pass_units": 2083193,
+            "backward_pass_units": 3847674,
+            "communication_units": 16384,
+            "input_layers": [
+                95
+            ],
+            "output_layers": [
+                78,
+                79,
+                80
+            ],
+            "extras": {
+                "name": "layer4.0.bn3",
+                "type": "BatchNorm2d"
+            }
+        },
+        "62": {
+            "forward_pass_units": 2378916,
+            "backward_pass_units": 4999764,
+            "communication_units": 8192,
+            "input_layers": [
+                96
+            ],
+            "output_layers": [
+                50,
+                47,
+                48,
+                52
+            ],
+            "extras": {
+                "name": "layer3.4.bn3",
+                "type": "BatchNorm2d"
+            }
+        },
+        "58": {
+            "forward_pass_units": 2410644,
+            "backward_pass_units": 4373650,
+            "communication_units": 8192,
+            "input_layers": [
+                97
+            ],
+            "output_layers": [
+                47,
+                52,
+                48,
+                49,
+                50,
+                53
+            ],
+            "extras": {
+                "name": "layer3.2.bn3",
+                "type": "BatchNorm2d"
+            }
+        },
+        "103": {
+            "forward_pass_units": 610399,
+            "backward_pass_units": 1544100,
+            "communication_units": 4096,
+            "input_layers": [
+                98
+            ],
+            "output_layers": [
+                105
+            ],
+            "extras": {
+                "name": "layer4.1.bn2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "104": {
+            "forward_pass_units": 626281,
+            "backward_pass_units": 1464677,
+            "communication_units": 4096,
+            "input_layers": [
+                99
+            ],
+            "output_layers": [
+                106
+            ],
+            "extras": {
+                "name": "layer4.2.bn2",
+                "type": "BatchNorm2d"
+            }
+        },
+        "59": {
+            "forward_pass_units": 2539514,
+            "backward_pass_units": 4361857,
+            "communication_units": 8192,
+            "input_layers": [
+                100
+            ],
+            "output_layers": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+            ],
+            "extras": {
+                "name": "layer3.1.bn3",
+                "type": "BatchNorm2d"
+            }
+        },
+        "63": {
+            "forward_pass_units": 2516947,
+            "backward_pass_units": 4937614,
+            "communication_units": 8192,
+            "input_layers": [
+                101
+            ],
+            "output_layers": [
+                50,
+                47,
+                52
+            ],
+            "extras": {
+                "name": "layer3.5.bn3",
+                "type": "BatchNorm2d"
+            }
+        },
+        "60": {
+            "forward_pass_units": 2474910,
+            "backward_pass_units": 4650465,
+            "communication_units": 8192,
+            "input_layers": [
+                102
+            ],
+            "output_layers": [
+                47,
+                52,
+                48,
+                50,
+                53
+            ],
+            "extras": {
+                "name": "layer3.3.bn3",
+                "type": "BatchNorm2d"
+            }
+        },
+        "105": {
+            "forward_pass_units": 4366880,
+            "backward_pass_units": 11331297,
+            "communication_units": 4194304,
+            "input_layers": [
+                103
+            ],
+            "output_layers": [
+                89
+            ],
+            "extras": {
+                "name": "layer4.1.conv3",
+                "type": "Conv2d"
+            }
+        },
+        "106": {
+            "forward_pass_units": 4477915,
+            "backward_pass_units": 11429240,
+            "communication_units": 4194304,
+            "input_layers": [
+                104
+            ],
+            "output_layers": [
+                91
+            ],
+            "extras": {
+                "name": "layer4.2.conv3",
+                "type": "Conv2d"
+            }
+        },
+        "89": {
+            "forward_pass_units": 2309263,
+            "backward_pass_units": 5381184,
+            "communication_units": 16384,
+            "input_layers": [
+                105
+            ],
+            "output_layers": [
+                78,
+                79,
+                80
+            ],
+            "extras": {
+                "name": "layer4.1.bn3",
+                "type": "BatchNorm2d"
+            }
+        },
+        "91": {
+            "forward_pass_units": 2300308,
+            "backward_pass_units": 7582294,
+            "communication_units": 16384,
+            "input_layers": [
+                106
+            ],
+            "output_layers": [
+                79,
+                80
+            ],
+            "extras": {
+                "name": "layer4.2.bn3",
+                "type": "BatchNorm2d"
+            }
+        }
+    }
+}

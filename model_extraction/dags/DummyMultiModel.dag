@@ -1,0 +1,218 @@
+{
+    "extras": {
+        "name": "DummyMultiModel",
+        "$local$comm_unit": "B",
+        "$local$forward_pass_unit": null,
+        "$local$backward_pass_unit": null,
+        "$local$extraction_info": {
+            "library": "pytorch",
+            "skip_untrainable_layers": false
+        }
+    },
+    "layers": {
+        "0": {
+            "forward_pass_units": 0,
+            "backward_pass_units": 0,
+            "communication_units": 264192,
+            "input_layers": [],
+            "output_layers": [
+                1
+            ],
+            "extras": {
+                "name": "linear1",
+                "type": "Linear"
+            }
+        },
+        "2": {
+            "forward_pass_units": 0,
+            "backward_pass_units": 0,
+            "communication_units": 49408,
+            "input_layers": [],
+            "output_layers": [
+                3
+            ],
+            "extras": {
+                "name": "conv1",
+                "type": "Conv2d"
+            }
+        },
+        "1": {
+            "forward_pass_units": 0,
+            "backward_pass_units": 0,
+            "communication_units": 0,
+            "input_layers": [
+                0
+            ],
+            "output_layers": [
+                4
+            ],
+            "extras": {
+                "name": "relu4",
+                "type": "ReLU"
+            }
+        },
+        "3": {
+            "forward_pass_units": 0,
+            "backward_pass_units": 0,
+            "communication_units": 0,
+            "input_layers": [
+                2
+            ],
+            "output_layers": [
+                5
+            ],
+            "extras": {
+                "name": "relu1",
+                "type": "ReLU"
+            }
+        },
+        "4": {
+            "forward_pass_units": 0,
+            "backward_pass_units": 0,
+            "communication_units": 5244928,
+            "input_layers": [
+                6,
+                1
+            ],
+            "output_layers": [
+                7
+            ],
+            "extras": {
+                "name": "linear2",
+                "type": "Linear"
+            }
+        },
+        "5": {
+            "forward_pass_units": 0,
+            "backward_pass_units": 0,
+            "communication_units": 0,
+            "input_layers": [
+                3
+            ],
+            "output_layers": [
+                8
+            ],
+            "extras": {
+                "name": "pool1",
+                "type": "MaxPool2d"
+            }
+        },
+        "7": {
+            "forward_pass_units": 0,
+            "backward_pass_units": 0,
+            "communication_units": 0,
+            "input_layers": [
+                4
+            ],
+            "output_layers": [
+                9
+            ],
+            "extras": {
+                "name": "relu5",
+                "type": "ReLU"
+            }
+        },
+        "8": {
+            "forward_pass_units": 0,
+            "backward_pass_units": 0,
+            "communication_units": 2097664,
+            "input_layers": [
+                5
+            ],
+            "output_layers": [
+                10
+            ],
+            "extras": {
+                "name": "conv2",
+                "type": "Conv2d"
+            }
+        },
+        "9": {
+            "forward_pass_units": 0,
+            "backward_pass_units": 0,
+            "communication_units": 525312,
+            "input_layers": [
+                7
+            ],
+            "output_layers": [
+                11
+            ],
+            "extras": {
+                "name": "linear3",
+                "type": "Linear"
+            }
+        },
+        "10": {
+            "forward_pass_units": 0,
+            "backward_pass_units": 0,
+            "communication_units": 0,
+            "input_layers": [
+                8
+            ],
+            "output_layers": [
+                6
+            ],
+            "extras": {
+                "name": "relu2",
+                "type": "ReLU"
+            }
+        },
+        "11": {
+            "forward_pass_units": 0,
+            "backward_pass_units": 0,
+            "communication_units": 0,
+            "input_layers": [
+                9
+            ],
+            "output_layers": [],
+            "extras": {
+                "name": "relu6",
+                "type": "ReLU"
+            }
+        },
+        "6": {
+            "forward_pass_units": 0,
+            "backward_pass_units": 0,
+            "communication_units": 0,
+            "input_layers": [
+                10
+            ],
+            "output_layers": [
+                12,
+                4
+            ],
+            "extras": {
+                "name": "pool2",
+                "type": "MaxPool2d"
+            }
+        },
+        "12": {
+            "forward_pass_units": 0,
+            "backward_pass_units": 0,
+            "communication_units": 2098176,
+            "input_layers": [
+                6
+            ],
+            "output_layers": [
+                13
+            ],
+            "extras": {
+                "name": "conv3",
+                "type": "Conv2d"
+            }
+        },
+        "13": {
+            "forward_pass_units": 0,
+            "backward_pass_units": 0,
+            "communication_units": 0,
+            "input_layers": [
+                12
+            ],
+            "output_layers": [],
+            "extras": {
+                "name": "relu3",
+                "type": "ReLU"
+            }
+        }
+    }
+}
