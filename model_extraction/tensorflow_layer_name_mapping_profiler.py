@@ -14,8 +14,7 @@ import sys
 import argparse
 from datetime import datetime
 import socket
-sys.path.append("..")
-from model_extraction.tensorflow_utils import *
+from tensorflow_utils import *
 
 # A random sequence of characters to use in wrapping layer names to ensure they can be identified even
 # after tensorflow adds its own prefixes and suffixes
@@ -152,7 +151,7 @@ def get_pids(trace, pid_scheme):
     return matched_pids, unmatched_pids
 
 
-def parse_traces(model, traces, optimizer, pid_scheme="task", verbosity=1, skip_untrainable_layers=False):
+def parse_traces(model, traces, optimizer, pid_scheme="task_stream", verbosity=1, skip_untrainable_layers=False):
     """
     :param model:
     :param traces:
@@ -309,7 +308,7 @@ def parse_traces(model, traces, optimizer, pid_scheme="task", verbosity=1, skip_
 
 
 def profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8, trials=1, verbosity=1, device="gpu",
-            pid_scheme=None, skip_untrainable_layers=False):
+            pid_scheme="task_stream", skip_untrainable_layers=False):
     """
     The function takes a keras model and attempts to estimate the cost of each layer in the model in terms of
     the forward pass and backward pass.
@@ -406,7 +405,7 @@ if __name__ == "__main__":
                         help="The number of batches to run")
     parser.add_argument("-t", "--trials", type=int, default=1,
                         help="The number of training function calls to do.")
-    parser.add_argument("-pi", "--pid_scheme", default="task", choices=["all", "task", "stream", "task_stream"],
+    parser.add_argument("-pi", "--pid_scheme", default="task_stream", choices=["all", "task", "stream", "task_stream"],
                         help="The scheme in which we choose which pid groups from the trace to include in the costs."
                              "See documentation for more details.")
     parser.add_argument("--skip", default=False, action="store_true",
