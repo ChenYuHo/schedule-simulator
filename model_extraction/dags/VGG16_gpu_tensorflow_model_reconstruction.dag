@@ -42,8 +42,7 @@
             ],
             "extras": {
                 "name": "block1_conv1",
-                "type": "Conv2D",
-                "index": 0
+                "type": "Conv2D"
             }
         },
         "1": {
@@ -58,8 +57,7 @@
             ],
             "extras": {
                 "name": "block1_conv2",
-                "type": "Conv2D",
-                "index": 1
+                "type": "Conv2D"
             }
         },
         "2": {
@@ -74,8 +72,7 @@
             ],
             "extras": {
                 "name": "block2_conv1",
-                "type": "Conv2D",
-                "index": 2
+                "type": "Conv2D"
             }
         },
         "3": {
@@ -90,8 +87,7 @@
             ],
             "extras": {
                 "name": "block2_conv2",
-                "type": "Conv2D",
-                "index": 3
+                "type": "Conv2D"
             }
         },
         "4": {
@@ -106,8 +102,7 @@
             ],
             "extras": {
                 "name": "block3_conv1",
-                "type": "Conv2D",
-                "index": 4
+                "type": "Conv2D"
             }
         },
         "5": {
@@ -122,8 +117,7 @@
             ],
             "extras": {
                 "name": "block3_conv2",
-                "type": "Conv2D",
-                "index": 5
+                "type": "Conv2D"
             }
         },
         "6": {
@@ -138,8 +132,7 @@
             ],
             "extras": {
                 "name": "block3_conv3",
-                "type": "Conv2D",
-                "index": 6
+                "type": "Conv2D"
             }
         },
         "7": {
@@ -154,8 +147,7 @@
             ],
             "extras": {
                 "name": "block4_conv1",
-                "type": "Conv2D",
-                "index": 7
+                "type": "Conv2D"
             }
         },
         "8": {
@@ -170,8 +162,7 @@
             ],
             "extras": {
                 "name": "block4_conv2",
-                "type": "Conv2D",
-                "index": 8
+                "type": "Conv2D"
             }
         },
         "9": {
@@ -186,8 +177,7 @@
             ],
             "extras": {
                 "name": "block4_conv3",
-                "type": "Conv2D",
-                "index": 9
+                "type": "Conv2D"
             }
         },
         "10": {
@@ -202,8 +192,7 @@
             ],
             "extras": {
                 "name": "block5_conv1",
-                "type": "Conv2D",
-                "index": 10
+                "type": "Conv2D"
             }
         },
         "11": {
@@ -218,8 +207,7 @@
             ],
             "extras": {
                 "name": "block5_conv2",
-                "type": "Conv2D",
-                "index": 11
+                "type": "Conv2D"
             }
         },
         "12": {
@@ -234,8 +222,7 @@
             ],
             "extras": {
                 "name": "block5_conv3",
-                "type": "Conv2D",
-                "index": 12
+                "type": "Conv2D"
             }
         },
         "13": {
@@ -250,8 +237,7 @@
             ],
             "extras": {
                 "name": "fc1",
-                "type": "Dense",
-                "index": 13
+                "type": "Dense"
             }
         },
         "14": {
@@ -266,8 +252,7 @@
             ],
             "extras": {
                 "name": "fc2",
-                "type": "Dense",
-                "index": 14
+                "type": "Dense"
             }
         },
         "15": {
@@ -280,8 +265,7 @@
             "output_layers": [],
             "extras": {
                 "name": "predictions",
-                "type": "Dense",
-                "index": 15
+                "type": "Dense"
             }
         }
     }

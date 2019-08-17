@@ -27,8 +27,8 @@ class Layer:
         self.forward_pass_units = forward_pass_units
         self.backward_pass_units = backward_pass_units
         self.communication_units = communication_units
-        self.input_layers = input_layers
-        self.output_layers = output_layers
+        self.input_layers = input_layers if input_layers is not None else set()
+        self.output_layers = output_layers if output_layers is not None else set()
         self.extras = extras
         self._forward_dependencies = None
         self._backward_dependencies = None
@@ -42,19 +42,19 @@ class LayerFactory:
     A class that is used to generate layers. Mainly used with distributions to allow for some randomness when building
     a dag.
     """
-    def __init__(self, forward_pass_units, backward_pass_units, communication_units, indexing_offset=0, **extras):
+    def __init__(self, forward_pass_units, backward_pass_units, communication_units, naming_offset=0, **extras):
         """
         :param forward_pass_units: Constant or distribution
         :param backward_pass_units: Constant or distribution
         :param communication_units: Constant or distribution
-        :param indexing_offset: Layers will be given incremental indices in their extras field. Should we offset the
+        :param naming_offset: Layers will be given incremental indices in their extras field. Should we offset the
         starting index ?
         :param extras: Any extras that will be passed on when creating the layer and later passed on to all created jobs
         """
         self.forward_pass_units = forward_pass_units
         self.backward_pass_units = backward_pass_units
         self.communication_units = communication_units
-        self.indexing_offset = indexing_offset
+        self.naming_offset = naming_offset
         self.extras = extras
         self.count = 0
 
@@ -66,7 +66,7 @@ class LayerFactory:
             except AttributeError:
                 attributes.append(attr)
         extras = self.extras.copy()
-        extras['index'] = self.count + self.indexing_offset
+        extras['name'] = self.count + self.naming_offset
         self.count += 1
         return Layer(*attributes, **extras)
 
@@ -103,6 +103,7 @@ class DAG:
             self.dag_output_layers.update(layer.input_layers)
 
     def set_output_layers(self):
+        self.dag_output_layers = set()
         def process_node(node):
             if len(node.output_layers) == 0:
                 self.dag_output_layers.add(node)
@@ -110,11 +111,12 @@ class DAG:
 
     def produce_topological_order(self, use_sorted_traversal=True):
         self.topological_order = list()
-
         def add_node(node):
             self.topological_order.append(node)
         self.traverse_DFS(add_node, order="post-order", sort=use_sorted_traversal)
         self.topological_order.reverse()
+        for i, node in enumerate(self.topological_order):
+            node.extras["topological_order_index"] = i
 
     def _traverse_BFS(self, processing_function):
         """
@@ -274,8 +276,8 @@ class HomogeneousLinearDAG(LinearDag):
     A DAG that consists of a linear graph of identical layers which all contain trainable parameters.
     Used for quick verification.
     """
-    def __init__(self, n_of_layers, fp_units, bp_units, comm_units, is_trainable=True, indexing_offset=0):
-        layer_factory = LayerFactory(fp_units, bp_units, comm_units, indexing_offset=indexing_offset)
+    def __init__(self, n_of_layers, fp_units, bp_units, comm_units, is_trainable=True, naming_offset=0):
+        layer_factory = LayerFactory(fp_units, bp_units, comm_units, naming_offset=naming_offset)
         super().__init__(n_of_layers, layer_factory)
 
 
@@ -320,7 +322,9 @@ def serialize_dag(dag: DAG, formatted=True):
                     temp_ids[output_layer] = i
                     i += 1
                 sl["output_layers"].append(temp_ids[output_layer])
-        sl["extras"] = layer.extras
+        extras_ = layer.extras.copy()
+        del extras_["topological_order_index"]
+        sl["extras"] = extras_
         serialized_dag["layers"][temp_ids[layer]] = sl
     dag.traverse_DFS(add_layer)
     return json.dumps(serialized_dag, indent=4) if formatted else json.dumps(serialized_dag)
@@ -359,6 +363,5 @@ if __name__ == "__main__":
     """
     dag = HomogeneousLinearDAG(5, 4, 4, 4)
     print(serialize_dag(dag))
-    def p(node):
-        print(node.extras['index'])
-    dag.traverse_DFS(p, order="pre-order")
+    for i, node in enumerate(dag.topological_order):
+        print("{}: {}".format(i, node))

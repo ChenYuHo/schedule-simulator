@@ -22,8 +22,7 @@ def keras_model_to_DAG(model, skip_untrainable_layers=False):
         param_count = keras_layer.count_params()
         comm_units = param_count * 4  # Each parameter is a 4 bytes
         comp_units = 0  # To be applied through profiling reports
-        sim_layer = Layer(comp_units, comp_units, comm_units, name=keras_layer.name, type=type(keras_layer).__name__,
-                          index=i)
+        sim_layer = Layer(comp_units, comp_units, comm_units, name=keras_layer.name, type=type(keras_layer).__name__)
         all_layers[keras_layer.name] = sim_layer
         i += 1
 

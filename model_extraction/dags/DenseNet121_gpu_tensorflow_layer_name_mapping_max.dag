@@ -131,8 +131,7 @@
             ],
             "extras": {
                 "name": "conv1/conv",
-                "type": "Conv2D",
-                "index": 2
+                "type": "Conv2D"
             }
         },
         "1": {
@@ -153,8 +152,7 @@
             ],
             "extras": {
                 "name": "conv1/bn",
-                "type": "BatchNormalization",
-                "index": 3
+                "type": "BatchNormalization"
             }
         },
         "2": {
@@ -169,8 +167,7 @@
             ],
             "extras": {
                 "name": "conv2_block1_0_bn",
-                "type": "BatchNormalization",
-                "index": 423
+                "type": "BatchNormalization"
             }
         },
         "3": {
@@ -186,8 +183,7 @@
             ],
             "extras": {
                 "name": "conv2_block2_0_bn",
-                "type": "BatchNormalization",
-                "index": 417
+                "type": "BatchNormalization"
             }
         },
         "4": {
@@ -204,8 +200,7 @@
             ],
             "extras": {
                 "name": "conv2_block3_0_bn",
-                "type": "BatchNormalization",
-                "index": 411
+                "type": "BatchNormalization"
             }
         },
         "5": {
@@ -223,8 +218,7 @@
             ],
             "extras": {
                 "name": "conv2_block4_0_bn",
-                "type": "BatchNormalization",
-                "index": 405
+                "type": "BatchNormalization"
             }
         },
         "6": {
@@ -243,8 +237,7 @@
             ],
             "extras": {
                 "name": "conv2_block5_0_bn",
-                "type": "BatchNormalization",
-                "index": 11
+                "type": "BatchNormalization"
             }
         },
         "7": {
@@ -264,8 +257,7 @@
             ],
             "extras": {
                 "name": "conv2_block6_0_bn",
-                "type": "BatchNormalization",
-                "index": 399
+                "type": "BatchNormalization"
             }
         },
         "8": {
@@ -286,8 +278,7 @@
             ],
             "extras": {
                 "name": "pool2_bn",
-                "type": "BatchNormalization",
-                "index": 19
+                "type": "BatchNormalization"
             }
         },
         "9": {
@@ -302,8 +293,7 @@
             ],
             "extras": {
                 "name": "conv2_block1_1_conv",
-                "type": "Conv2D",
-                "index": 425
+                "type": "Conv2D"
             }
         },
         "11": {
@@ -318,8 +308,7 @@
             ],
             "extras": {
                 "name": "conv2_block2_1_conv",
-                "type": "Conv2D",
-                "index": 419
+                "type": "Conv2D"
             }
         },
         "13": {
@@ -334,8 +323,7 @@
             ],
             "extras": {
                 "name": "conv2_block3_1_conv",
-                "type": "Conv2D",
-                "index": 413
+                "type": "Conv2D"
             }
         },
         "15": {
@@ -350,8 +338,7 @@
             ],
             "extras": {
                 "name": "conv2_block4_1_conv",
-                "type": "Conv2D",
-                "index": 407
+                "type": "Conv2D"
             }
         },
         "17": {
@@ -366,8 +353,7 @@
             ],
             "extras": {
                 "name": "conv2_block5_1_conv",
-                "type": "Conv2D",
-                "index": 13
+                "type": "Conv2D"
             }
         },
         "19": {
@@ -382,8 +368,7 @@
             ],
             "extras": {
                 "name": "conv2_block6_1_conv",
-                "type": "Conv2D",
-                "index": 401
+                "type": "Conv2D"
             }
         },
         "21": {
@@ -410,8 +395,7 @@
             ],
             "extras": {
                 "name": "pool2_conv",
-                "type": "Conv2D",
-                "index": 21
+                "type": "Conv2D"
             }
         },
         "22": {
@@ -426,8 +410,7 @@
             ],
             "extras": {
                 "name": "conv2_block1_1_bn",
-                "type": "BatchNormalization",
-                "index": 426
+                "type": "BatchNormalization"
             }
         },
         "23": {
@@ -442,8 +425,7 @@
             ],
             "extras": {
                 "name": "conv2_block2_1_bn",
-                "type": "BatchNormalization",
-                "index": 420
+                "type": "BatchNormalization"
             }
         },
         "24": {
@@ -458,8 +440,7 @@
             ],
             "extras": {
                 "name": "conv2_block3_1_bn",
-                "type": "BatchNormalization",
-                "index": 414
+                "type": "BatchNormalization"
             }
         },
         "25": {
@@ -474,8 +455,7 @@
             ],
             "extras": {
                 "name": "conv2_block4_1_bn",
-                "type": "BatchNormalization",
-                "index": 408
+                "type": "BatchNormalization"
             }
         },
         "26": {
@@ -490,8 +470,7 @@
             ],
             "extras": {
                 "name": "conv2_block5_1_bn",
-                "type": "BatchNormalization",
-                "index": 14
+                "type": "BatchNormalization"
             }
         },
         "27": {
@@ -506,8 +485,7 @@
             ],
             "extras": {
                 "name": "conv2_block6_1_bn",
-                "type": "BatchNormalization",
-                "index": 402
+                "type": "BatchNormalization"
             }
         },
         "28": {
@@ -522,8 +500,7 @@
             ],
             "extras": {
                 "name": "conv3_block1_0_bn",
-                "type": "BatchNormalization",
-                "index": 393
+                "type": "BatchNormalization"
             }
         },
         "29": {
@@ -539,8 +516,7 @@
             ],
             "extras": {
                 "name": "conv3_block2_0_bn",
-                "type": "BatchNormalization",
-                "index": 24
+                "type": "BatchNormalization"
             }
         },
         "30": {
@@ -557,8 +533,7 @@
             ],
             "extras": {
                 "name": "conv3_block3_0_bn",
-                "type": "BatchNormalization",
-                "index": 387
+                "type": "BatchNormalization"
             }
         },
         "31": {
@@ -576,8 +551,7 @@
             ],
             "extras": {
                 "name": "conv3_block4_0_bn",
-                "type": "BatchNormalization",
-                "index": 32
+                "type": "BatchNormalization"
             }
         },
         "32": {
@@ -596,8 +570,7 @@
             ],
             "extras": {
                 "name": "conv3_block5_0_bn",
-                "type": "BatchNormalization",
-                "index": 39
+                "type": "BatchNormalization"
             }
         },
         "33": {
@@ -617,8 +590,7 @@
             ],
             "extras": {
                 "name": "conv3_block6_0_bn",
-                "type": "BatchNormalization",
-                "index": 381
+                "type": "BatchNormalization"
             }
         },
         "34": {
@@ -639,8 +611,7 @@
             ],
             "extras": {
                 "name": "conv3_block7_0_bn",
-                "type": "BatchNormalization",
-                "index": 375
+                "type": "BatchNormalization"
             }
         },
         "35": {
@@ -662,8 +633,7 @@
             ],
             "extras": {
                 "name": "conv3_block8_0_bn",
-                "type": "BatchNormalization",
-                "index": 369
+                "type": "BatchNormalization"
             }
         },
         "36": {
@@ -686,8 +656,7 @@
             ],
             "extras": {
                 "name": "conv3_block9_0_bn",
-                "type": "BatchNormalization",
-                "index": 49
+                "type": "BatchNormalization"
             }
         },
         "37": {
@@ -711,8 +680,7 @@
             ],
             "extras": {
                 "name": "conv3_block10_0_bn",
-                "type": "BatchNormalization",
-                "index": 363
+                "type": "BatchNormalization"
             }
         },
         "38": {
@@ -737,8 +705,7 @@
             ],
             "extras": {
                 "name": "conv3_block11_0_bn",
-                "type": "BatchNormalization",
-                "index": 357
+                "type": "BatchNormalization"
             }
         },
         "39": {
@@ -764,8 +731,7 @@
             ],
             "extras": {
                 "name": "conv3_block12_0_bn",
-                "type": "BatchNormalization",
-                "index": 58
+                "type": "BatchNormalization"
             }
         },
         "40": {
@@ -792,8 +758,7 @@
             ],
             "extras": {
                 "name": "pool3_bn",
-                "type": "BatchNormalization",
-                "index": 65
+                "type": "BatchNormalization"
             }
         },
         "10": {
@@ -813,8 +778,7 @@
             ],
             "extras": {
                 "name": "conv2_block1_2_conv",
-                "type": "Conv2D",
-                "index": 428
+                "type": "Conv2D"
             }
         },
         "12": {
@@ -833,8 +797,7 @@
             ],
             "extras": {
                 "name": "conv2_block2_2_conv",
-                "type": "Conv2D",
-                "index": 422
+                "type": "Conv2D"
             }
         },
         "14": {
@@ -852,8 +815,7 @@
             ],
             "extras": {
                 "name": "conv2_block3_2_conv",
-                "type": "Conv2D",
-                "index": 416
+                "type": "Conv2D"
             }
         },
         "16": {
@@ -870,8 +832,7 @@
             ],
             "extras": {
                 "name": "conv2_block4_2_conv",
-                "type": "Conv2D",
-                "index": 410
+                "type": "Conv2D"
             }
         },
         "18": {
@@ -887,8 +848,7 @@
             ],
             "extras": {
                 "name": "conv2_block5_2_conv",
-                "type": "Conv2D",
-                "index": 16
+                "type": "Conv2D"
             }
         },
         "20": {
@@ -903,8 +863,7 @@
             ],
             "extras": {
                 "name": "conv2_block6_2_conv",
-                "type": "Conv2D",
-                "index": 404
+                "type": "Conv2D"
             }
         },
         "41": {
@@ -919,8 +878,7 @@
             ],
             "extras": {
                 "name": "conv3_block1_1_conv",
-                "type": "Conv2D",
-                "index": 395
+                "type": "Conv2D"
             }
         },
         "43": {
@@ -935,8 +893,7 @@
             ],
             "extras": {
                 "name": "conv3_block2_1_conv",
-                "type": "Conv2D",
-                "index": 26
+                "type": "Conv2D"
             }
         },
         "45": {
@@ -951,8 +908,7 @@
             ],
             "extras": {
                 "name": "conv3_block3_1_conv",
-                "type": "Conv2D",
-                "index": 389
+                "type": "Conv2D"
             }
         },
         "47": {
@@ -967,8 +923,7 @@
             ],
             "extras": {
                 "name": "conv3_block4_1_conv",
-                "type": "Conv2D",
-                "index": 34
+                "type": "Conv2D"
             }
         },
         "49": {
@@ -983,8 +938,7 @@
             ],
             "extras": {
                 "name": "conv3_block5_1_conv",
-                "type": "Conv2D",
-                "index": 41
+                "type": "Conv2D"
             }
         },
         "51": {
@@ -999,8 +953,7 @@
             ],
             "extras": {
                 "name": "conv3_block6_1_conv",
-                "type": "Conv2D",
-                "index": 383
+                "type": "Conv2D"
             }
         },
         "53": {
@@ -1015,8 +968,7 @@
             ],
             "extras": {
                 "name": "conv3_block7_1_conv",
-                "type": "Conv2D",
-                "index": 377
+                "type": "Conv2D"
             }
         },
         "55": {
@@ -1031,8 +983,7 @@
             ],
             "extras": {
                 "name": "conv3_block8_1_conv",
-                "type": "Conv2D",
-                "index": 371
+                "type": "Conv2D"
             }
         },
         "57": {
@@ -1047,8 +998,7 @@
             ],
             "extras": {
                 "name": "conv3_block9_1_conv",
-                "type": "Conv2D",
-                "index": 51
+                "type": "Conv2D"
             }
         },
         "59": {
@@ -1063,8 +1013,7 @@
             ],
             "extras": {
                 "name": "conv3_block10_1_conv",
-                "type": "Conv2D",
-                "index": 365
+                "type": "Conv2D"
             }
         },
         "61": {
@@ -1079,8 +1028,7 @@
             ],
             "extras": {
                 "name": "conv3_block11_1_conv",
-                "type": "Conv2D",
-                "index": 359
+                "type": "Conv2D"
             }
         },
         "63": {
@@ -1095,8 +1043,7 @@
             ],
             "extras": {
                 "name": "conv3_block12_1_conv",
-                "type": "Conv2D",
-                "index": 60
+                "type": "Conv2D"
             }
         },
         "65": {
@@ -1135,8 +1082,7 @@
             ],
             "extras": {
                 "name": "pool3_conv",
-                "type": "Conv2D",
-                "index": 67
+                "type": "Conv2D"
             }
         },
         "66": {
@@ -1151,8 +1097,7 @@
             ],
             "extras": {
                 "name": "conv3_block1_1_bn",
-                "type": "BatchNormalization",
-                "index": 396
+                "type": "BatchNormalization"
             }
         },
         "67": {
@@ -1167,8 +1112,7 @@
             ],
             "extras": {
                 "name": "conv3_block2_1_bn",
-                "type": "BatchNormalization",
-                "index": 27
+                "type": "BatchNormalization"
             }
         },
         "68": {
@@ -1183,8 +1127,7 @@
             ],
             "extras": {
                 "name": "conv3_block3_1_bn",
-                "type": "BatchNormalization",
-                "index": 390
+                "type": "BatchNormalization"
             }
         },
         "69": {
@@ -1199,8 +1142,7 @@
             ],
             "extras": {
                 "name": "conv3_block4_1_bn",
-                "type": "BatchNormalization",
-                "index": 35
+                "type": "BatchNormalization"
             }
         },
         "70": {
@@ -1215,8 +1157,7 @@
             ],
             "extras": {
                 "name": "conv3_block5_1_bn",
-                "type": "BatchNormalization",
-                "index": 42
+                "type": "BatchNormalization"
             }
         },
         "71": {
@@ -1231,8 +1172,7 @@
             ],
             "extras": {
                 "name": "conv3_block6_1_bn",
-                "type": "BatchNormalization",
-                "index": 384
+                "type": "BatchNormalization"
             }
         },
         "72": {
@@ -1247,8 +1187,7 @@
             ],
             "extras": {
                 "name": "conv3_block7_1_bn",
-                "type": "BatchNormalization",
-                "index": 378
+                "type": "BatchNormalization"
             }
         },
         "73": {
@@ -1263,8 +1202,7 @@
             ],
             "extras": {
                 "name": "conv3_block8_1_bn",
-                "type": "BatchNormalization",
-                "index": 372
+                "type": "BatchNormalization"
             }
         },
         "74": {
@@ -1279,8 +1217,7 @@
             ],
             "extras": {
                 "name": "conv3_block9_1_bn",
-                "type": "BatchNormalization",
-                "index": 52
+                "type": "BatchNormalization"
             }
         },
         "75": {
@@ -1295,8 +1232,7 @@
             ],
             "extras": {
                 "name": "conv3_block10_1_bn",
-                "type": "BatchNormalization",
-                "index": 366
+                "type": "BatchNormalization"
             }
         },
         "76": {
@@ -1311,8 +1247,7 @@
             ],
             "extras": {
                 "name": "conv3_block11_1_bn",
-                "type": "BatchNormalization",
-                "index": 360
+                "type": "BatchNormalization"
             }
         },
         "77": {
@@ -1327,8 +1262,7 @@
             ],
             "extras": {
                 "name": "conv3_block12_1_bn",
-                "type": "BatchNormalization",
-                "index": 61
+                "type": "BatchNormalization"
             }
         },
         "78": {
@@ -1343,8 +1277,7 @@
             ],
             "extras": {
                 "name": "conv4_block1_0_bn",
-                "type": "BatchNormalization",
-                "index": 351
+                "type": "BatchNormalization"
             }
         },
         "79": {
@@ -1360,8 +1293,7 @@
             ],
             "extras": {
                 "name": "conv4_block2_0_bn",
-                "type": "BatchNormalization",
-                "index": 70
+                "type": "BatchNormalization"
             }
         },
         "80": {
@@ -1378,8 +1310,7 @@
             ],
             "extras": {
                 "name": "conv4_block3_0_bn",
-                "type": "BatchNormalization",
-                "index": 345
+                "type": "BatchNormalization"
             }
         },
         "81": {
@@ -1397,8 +1328,7 @@
             ],
             "extras": {
                 "name": "conv4_block4_0_bn",
-                "type": "BatchNormalization",
-                "index": 78
+                "type": "BatchNormalization"
             }
         },
         "82": {
@@ -1417,8 +1347,7 @@
             ],
             "extras": {
                 "name": "conv4_block5_0_bn",
-                "type": "BatchNormalization",
-                "index": 85
+                "type": "BatchNormalization"
             }
         },
         "83": {
@@ -1438,8 +1367,7 @@
             ],
             "extras": {
                 "name": "conv4_block6_0_bn",
-                "type": "BatchNormalization",
-                "index": 92
+                "type": "BatchNormalization"
             }
         },
         "84": {
@@ -1460,8 +1388,7 @@
             ],
             "extras": {
                 "name": "conv4_block7_0_bn",
-                "type": "BatchNormalization",
-                "index": 339
+                "type": "BatchNormalization"
             }
         },
         "85": {
@@ -1483,8 +1410,7 @@
             ],
             "extras": {
                 "name": "conv4_block8_0_bn",
-                "type": "BatchNormalization",
-                "index": 100
+                "type": "BatchNormalization"
             }
         },
         "86": {
@@ -1507,8 +1433,7 @@
             ],
             "extras": {
                 "name": "conv4_block9_0_bn",
-                "type": "BatchNormalization",
-                "index": 333
+                "type": "BatchNormalization"
             }
         },
         "87": {
@@ -1532,8 +1457,7 @@
             ],
             "extras": {
                 "name": "conv4_block10_0_bn",
-                "type": "BatchNormalization",
-                "index": 108
+                "type": "BatchNormalization"
             }
         },
         "88": {
@@ -1558,8 +1482,7 @@
             ],
             "extras": {
                 "name": "conv4_block11_0_bn",
-                "type": "BatchNormalization",
-                "index": 327
+                "type": "BatchNormalization"
             }
         },
         "89": {
@@ -1585,8 +1508,7 @@
             ],
             "extras": {
                 "name": "conv4_block12_0_bn",
-                "type": "BatchNormalization",
-                "index": 116
+                "type": "BatchNormalization"
             }
         },
         "90": {
@@ -1613,8 +1535,7 @@
             ],
             "extras": {
                 "name": "conv4_block13_0_bn",
-                "type": "BatchNormalization",
-                "index": 321
+                "type": "BatchNormalization"
             }
         },
         "91": {
@@ -1642,8 +1563,7 @@
             ],
             "extras": {
                 "name": "conv4_block14_0_bn",
-                "type": "BatchNormalization",
-                "index": 124
+                "type": "BatchNormalization"
             }
         },
         "92": {
@@ -1672,8 +1592,7 @@
             ],
             "extras": {
                 "name": "conv4_block15_0_bn",
-                "type": "BatchNormalization",
-                "index": 131
+                "type": "BatchNormalization"
             }
         },
         "93": {
@@ -1703,8 +1622,7 @@
             ],
             "extras": {
                 "name": "conv4_block16_0_bn",
-                "type": "BatchNormalization",
-                "index": 315
+                "type": "BatchNormalization"
             }
         },
         "94": {
@@ -1735,8 +1653,7 @@
             ],
             "extras": {
                 "name": "conv4_block17_0_bn",
-                "type": "BatchNormalization",
-                "index": 139
+                "type": "BatchNormalization"
             }
         },
         "95": {
@@ -1768,8 +1685,7 @@
             ],
             "extras": {
                 "name": "conv4_block18_0_bn",
-                "type": "BatchNormalization",
-                "index": 146
+                "type": "BatchNormalization"
             }
         },
         "96": {
@@ -1802,8 +1718,7 @@
             ],
             "extras": {
                 "name": "conv4_block19_0_bn",
-                "type": "BatchNormalization",
-                "index": 309
+                "type": "BatchNormalization"
             }
         },
         "97": {
@@ -1837,8 +1752,7 @@
             ],
             "extras": {
                 "name": "conv4_block20_0_bn",
-                "type": "BatchNormalization",
-                "index": 154
+                "type": "BatchNormalization"
             }
         },
         "98": {
@@ -1873,8 +1787,7 @@
             ],
             "extras": {
                 "name": "conv4_block21_0_bn",
-                "type": "BatchNormalization",
-                "index": 303
+                "type": "BatchNormalization"
             }
         },
         "99": {
@@ -1910,8 +1823,7 @@
             ],
             "extras": {
                 "name": "conv4_block22_0_bn",
-                "type": "BatchNormalization",
-                "index": 162
+                "type": "BatchNormalization"
             }
         },
         "100": {
@@ -1948,8 +1860,7 @@
             ],
             "extras": {
                 "name": "conv4_block23_0_bn",
-                "type": "BatchNormalization",
-                "index": 297
+                "type": "BatchNormalization"
             }
         },
         "101": {
@@ -1987,8 +1898,7 @@
             ],
             "extras": {
                 "name": "conv4_block24_0_bn",
-                "type": "BatchNormalization",
-                "index": 170
+                "type": "BatchNormalization"
             }
         },
         "102": {
@@ -2027,8 +1937,7 @@
             ],
             "extras": {
                 "name": "pool4_bn",
-                "type": "BatchNormalization",
-                "index": 177
+                "type": "BatchNormalization"
             }
         },
         "42": {
@@ -2054,8 +1963,7 @@
             ],
             "extras": {
                 "name": "conv3_block1_2_conv",
-                "type": "Conv2D",
-                "index": 398
+                "type": "Conv2D"
             }
         },
         "44": {
@@ -2080,8 +1988,7 @@
             ],
             "extras": {
                 "name": "conv3_block2_2_conv",
-                "type": "Conv2D",
-                "index": 29
+                "type": "Conv2D"
             }
         },
         "46": {
@@ -2105,8 +2012,7 @@
             ],
             "extras": {
                 "name": "conv3_block3_2_conv",
-                "type": "Conv2D",
-                "index": 392
+                "type": "Conv2D"
             }
         },
         "48": {
@@ -2129,8 +2035,7 @@
             ],
             "extras": {
                 "name": "conv3_block4_2_conv",
-                "type": "Conv2D",
-                "index": 37
+                "type": "Conv2D"
             }
         },
         "50": {
@@ -2152,8 +2057,7 @@
             ],
             "extras": {
                 "name": "conv3_block5_2_conv",
-                "type": "Conv2D",
-                "index": 44
+                "type": "Conv2D"
             }
         },
         "52": {
@@ -2174,8 +2078,7 @@
             ],
             "extras": {
                 "name": "conv3_block6_2_conv",
-                "type": "Conv2D",
-                "index": 386
+                "type": "Conv2D"
             }
         },
         "54": {
@@ -2195,8 +2098,7 @@
             ],
             "extras": {
                 "name": "conv3_block7_2_conv",
-                "type": "Conv2D",
-                "index": 380
+                "type": "Conv2D"
             }
         },
         "56": {
@@ -2215,8 +2117,7 @@
             ],
             "extras": {
                 "name": "conv3_block8_2_conv",
-                "type": "Conv2D",
-                "index": 374
+                "type": "Conv2D"
             }
         },
         "58": {
@@ -2234,8 +2135,7 @@
             ],
             "extras": {
                 "name": "conv3_block9_2_conv",
-                "type": "Conv2D",
-                "index": 54
+                "type": "Conv2D"
             }
         },
         "60": {
@@ -2252,8 +2152,7 @@
             ],
             "extras": {
                 "name": "conv3_block10_2_conv",
-                "type": "Conv2D",
-                "index": 368
+                "type": "Conv2D"
             }
         },
         "62": {
@@ -2269,8 +2168,7 @@
             ],
             "extras": {
                 "name": "conv3_block11_2_conv",
-                "type": "Conv2D",
-                "index": 362
+                "type": "Conv2D"
             }
         },
         "64": {
@@ -2285,8 +2183,7 @@
             ],
             "extras": {
                 "name": "conv3_block12_2_conv",
-                "type": "Conv2D",
-                "index": 63
+                "type": "Conv2D"
             }
         },
         "103": {
@@ -2301,8 +2198,7 @@
             ],
             "extras": {
                 "name": "conv4_block1_1_conv",
-                "type": "Conv2D",
-                "index": 353
+                "type": "Conv2D"
             }
         },
         "105": {
@@ -2317,8 +2213,7 @@
             ],
             "extras": {
                 "name": "conv4_block2_1_conv",
-                "type": "Conv2D",
-                "index": 72
+                "type": "Conv2D"
             }
         },
         "107": {
@@ -2333,8 +2228,7 @@
             ],
             "extras": {
                 "name": "conv4_block3_1_conv",
-                "type": "Conv2D",
-                "index": 347
+                "type": "Conv2D"
             }
         },
         "109": {
@@ -2349,8 +2243,7 @@
             ],
             "extras": {
                 "name": "conv4_block4_1_conv",
-                "type": "Conv2D",
-                "index": 80
+                "type": "Conv2D"
             }
         },
         "111": {
@@ -2365,8 +2258,7 @@
             ],
             "extras": {
                 "name": "conv4_block5_1_conv",
-                "type": "Conv2D",
-                "index": 87
+                "type": "Conv2D"
             }
         },
         "113": {
@@ -2381,8 +2273,7 @@
             ],
             "extras": {
                 "name": "conv4_block6_1_conv",
-                "type": "Conv2D",
-                "index": 94
+                "type": "Conv2D"
             }
         },
         "115": {
@@ -2397,8 +2288,7 @@
             ],
             "extras": {
                 "name": "conv4_block7_1_conv",
-                "type": "Conv2D",
-                "index": 341
+                "type": "Conv2D"
             }
         },
         "117": {
@@ -2413,8 +2303,7 @@
             ],
             "extras": {
                 "name": "conv4_block8_1_conv",
-                "type": "Conv2D",
-                "index": 102
+                "type": "Conv2D"
             }
         },
         "119": {
@@ -2429,8 +2318,7 @@
             ],
             "extras": {
                 "name": "conv4_block9_1_conv",
-                "type": "Conv2D",
-                "index": 335
+                "type": "Conv2D"
             }
         },
         "121": {
@@ -2445,8 +2333,7 @@
             ],
             "extras": {
                 "name": "conv4_block10_1_conv",
-                "type": "Conv2D",
-                "index": 110
+                "type": "Conv2D"
             }
         },
         "123": {
@@ -2461,8 +2348,7 @@
             ],
             "extras": {
                 "name": "conv4_block11_1_conv",
-                "type": "Conv2D",
-                "index": 329
+                "type": "Conv2D"
             }
         },
         "125": {
@@ -2477,8 +2363,7 @@
             ],
             "extras": {
                 "name": "conv4_block12_1_conv",
-                "type": "Conv2D",
-                "index": 118
+                "type": "Conv2D"
             }
         },
         "127": {
@@ -2493,8 +2378,7 @@
             ],
             "extras": {
                 "name": "conv4_block13_1_conv",
-                "type": "Conv2D",
-                "index": 323
+                "type": "Conv2D"
             }
         },
         "129": {
@@ -2509,8 +2393,7 @@
             ],
             "extras": {
                 "name": "conv4_block14_1_conv",
-                "type": "Conv2D",
-                "index": 126
+                "type": "Conv2D"
             }
         },
         "131": {
@@ -2525,8 +2408,7 @@
             ],
             "extras": {
                 "name": "conv4_block15_1_conv",
-                "type": "Conv2D",
-                "index": 133
+                "type": "Conv2D"
             }
         },
         "133": {
@@ -2541,8 +2423,7 @@
             ],
             "extras": {
                 "name": "conv4_block16_1_conv",
-                "type": "Conv2D",
-                "index": 317
+                "type": "Conv2D"
             }
         },
         "135": {
@@ -2557,8 +2438,7 @@
             ],
             "extras": {
                 "name": "conv4_block17_1_conv",
-                "type": "Conv2D",
-                "index": 141
+                "type": "Conv2D"
             }
         },
         "137": {
@@ -2573,8 +2453,7 @@
             ],
             "extras": {
                 "name": "conv4_block18_1_conv",
-                "type": "Conv2D",
-                "index": 148
+                "type": "Conv2D"
             }
         },
         "139": {
@@ -2589,8 +2468,7 @@
             ],
             "extras": {
                 "name": "conv4_block19_1_conv",
-                "type": "Conv2D",
-                "index": 311
+                "type": "Conv2D"
             }
         },
         "141": {
@@ -2605,8 +2483,7 @@
             ],
             "extras": {
                 "name": "conv4_block20_1_conv",
-                "type": "Conv2D",
-                "index": 156
+                "type": "Conv2D"
             }
         },
         "143": {
@@ -2621,8 +2498,7 @@
             ],
             "extras": {
                 "name": "conv4_block21_1_conv",
-                "type": "Conv2D",
-                "index": 305
+                "type": "Conv2D"
             }
         },
         "145": {
@@ -2637,8 +2513,7 @@
             ],
             "extras": {
                 "name": "conv4_block22_1_conv",
-                "type": "Conv2D",
-                "index": 164
+                "type": "Conv2D"
             }
         },
         "147": {
@@ -2653,8 +2528,7 @@
             ],
             "extras": {
                 "name": "conv4_block23_1_conv",
-                "type": "Conv2D",
-                "index": 299
+                "type": "Conv2D"
             }
         },
         "149": {
@@ -2669,8 +2543,7 @@
             ],
             "extras": {
                 "name": "conv4_block24_1_conv",
-                "type": "Conv2D",
-                "index": 172
+                "type": "Conv2D"
             }
         },
         "151": {
@@ -2701,8 +2574,7 @@
             ],
             "extras": {
                 "name": "pool4_conv",
-                "type": "Conv2D",
-                "index": 179
+                "type": "Conv2D"
             }
         },
         "152": {
@@ -2717,8 +2589,7 @@
             ],
             "extras": {
                 "name": "conv4_block1_1_bn",
-                "type": "BatchNormalization",
-                "index": 354
+                "type": "BatchNormalization"
             }
         },
         "153": {
@@ -2733,8 +2604,7 @@
             ],
             "extras": {
                 "name": "conv4_block2_1_bn",
-                "type": "BatchNormalization",
-                "index": 73
+                "type": "BatchNormalization"
             }
         },
         "154": {
@@ -2749,8 +2619,7 @@
             ],
             "extras": {
                 "name": "conv4_block3_1_bn",
-                "type": "BatchNormalization",
-                "index": 348
+                "type": "BatchNormalization"
             }
         },
         "155": {
@@ -2765,8 +2634,7 @@
             ],
             "extras": {
                 "name": "conv4_block4_1_bn",
-                "type": "BatchNormalization",
-                "index": 81
+                "type": "BatchNormalization"
             }
         },
         "156": {
@@ -2781,8 +2649,7 @@
             ],
             "extras": {
                 "name": "conv4_block5_1_bn",
-                "type": "BatchNormalization",
-                "index": 88
+                "type": "BatchNormalization"
             }
         },
         "157": {
@@ -2797,8 +2664,7 @@
             ],
             "extras": {
                 "name": "conv4_block6_1_bn",
-                "type": "BatchNormalization",
-                "index": 95
+                "type": "BatchNormalization"
             }
         },
         "158": {
@@ -2813,8 +2679,7 @@
             ],
             "extras": {
                 "name": "conv4_block7_1_bn",
-                "type": "BatchNormalization",
-                "index": 342
+                "type": "BatchNormalization"
             }
         },
         "159": {
@@ -2829,8 +2694,7 @@
             ],
             "extras": {
                 "name": "conv4_block8_1_bn",
-                "type": "BatchNormalization",
-                "index": 103
+                "type": "BatchNormalization"
             }
         },
         "160": {
@@ -2845,8 +2709,7 @@
             ],
             "extras": {
                 "name": "conv4_block9_1_bn",
-                "type": "BatchNormalization",
-                "index": 336
+                "type": "BatchNormalization"
             }
         },
         "161": {
@@ -2861,8 +2724,7 @@
             ],
             "extras": {
                 "name": "conv4_block10_1_bn",
-                "type": "BatchNormalization",
-                "index": 111
+                "type": "BatchNormalization"
             }
         },
         "162": {
@@ -2877,8 +2739,7 @@
             ],
             "extras": {
                 "name": "conv4_block11_1_bn",
-                "type": "BatchNormalization",
-                "index": 330
+                "type": "BatchNormalization"
             }
         },
         "163": {
@@ -2893,8 +2754,7 @@
             ],
             "extras": {
                 "name": "conv4_block12_1_bn",
-                "type": "BatchNormalization",
-                "index": 119
+                "type": "BatchNormalization"
             }
         },
         "164": {
@@ -2909,8 +2769,7 @@
             ],
             "extras": {
                 "name": "conv4_block13_1_bn",
-                "type": "BatchNormalization",
-                "index": 324
+                "type": "BatchNormalization"
             }
         },
         "165": {
@@ -2925,8 +2784,7 @@
             ],
             "extras": {
                 "name": "conv4_block14_1_bn",
-                "type": "BatchNormalization",
-                "index": 127
+                "type": "BatchNormalization"
             }
         },
         "166": {
@@ -2941,8 +2799,7 @@
             ],
             "extras": {
                 "name": "conv4_block15_1_bn",
-                "type": "BatchNormalization",
-                "index": 134
+                "type": "BatchNormalization"
             }
         },
         "167": {
@@ -2957,8 +2814,7 @@
             ],
             "extras": {
                 "name": "conv4_block16_1_bn",
-                "type": "BatchNormalization",
-                "index": 318
+                "type": "BatchNormalization"
             }
         },
         "168": {
@@ -2973,8 +2829,7 @@
             ],
             "extras": {
                 "name": "conv4_block17_1_bn",
-                "type": "BatchNormalization",
-                "index": 142
+                "type": "BatchNormalization"
             }
         },
         "169": {
@@ -2989,8 +2844,7 @@
             ],
             "extras": {
                 "name": "conv4_block18_1_bn",
-                "type": "BatchNormalization",
-                "index": 149
+                "type": "BatchNormalization"
             }
         },
         "170": {
@@ -3005,8 +2859,7 @@
             ],
             "extras": {
                 "name": "conv4_block19_1_bn",
-                "type": "BatchNormalization",
-                "index": 312
+                "type": "BatchNormalization"
             }
         },
         "171": {
@@ -3021,8 +2874,7 @@
             ],
             "extras": {
                 "name": "conv4_block20_1_bn",
-                "type": "BatchNormalization",
-                "index": 157
+                "type": "BatchNormalization"
             }
         },
         "172": {
@@ -3037,8 +2889,7 @@
             ],
             "extras": {
                 "name": "conv4_block21_1_bn",
-                "type": "BatchNormalization",
-                "index": 306
+                "type": "BatchNormalization"
             }
         },
         "173": {
@@ -3053,8 +2904,7 @@
             ],
             "extras": {
                 "name": "conv4_block22_1_bn",
-                "type": "BatchNormalization",
-                "index": 165
+                "type": "BatchNormalization"
             }
         },
         "174": {
@@ -3069,8 +2919,7 @@
             ],
             "extras": {
                 "name": "conv4_block23_1_bn",
-                "type": "BatchNormalization",
-                "index": 300
+                "type": "BatchNormalization"
             }
         },
         "175": {
@@ -3085,8 +2934,7 @@
             ],
             "extras": {
                 "name": "conv4_block24_1_bn",
-                "type": "BatchNormalization",
-                "index": 173
+                "type": "BatchNormalization"
             }
         },
         "176": {
@@ -3101,8 +2949,7 @@
             ],
             "extras": {
                 "name": "conv5_block1_0_bn",
-                "type": "BatchNormalization",
-                "index": 291
+                "type": "BatchNormalization"
             }
         },
         "177": {
@@ -3118,8 +2965,7 @@
             ],
             "extras": {
                 "name": "conv5_block2_0_bn",
-                "type": "BatchNormalization",
-                "index": 182
+                "type": "BatchNormalization"
             }
         },
         "178": {
@@ -3136,8 +2982,7 @@
             ],
             "extras": {
                 "name": "conv5_block3_0_bn",
-                "type": "BatchNormalization",
-                "index": 189
+                "type": "BatchNormalization"
             }
         },
         "179": {
@@ -3155,8 +3000,7 @@
             ],
             "extras": {
                 "name": "conv5_block4_0_bn",
-                "type": "BatchNormalization",
-                "index": 196
+                "type": "BatchNormalization"
             }
         },
         "180": {
@@ -3175,8 +3019,7 @@
             ],
             "extras": {
                 "name": "conv5_block5_0_bn",
-                "type": "BatchNormalization",
-                "index": 285
+                "type": "BatchNormalization"
             }
         },
         "181": {
@@ -3196,8 +3039,7 @@
             ],
             "extras": {
                 "name": "conv5_block6_0_bn",
-                "type": "BatchNormalization",
-                "index": 204
+                "type": "BatchNormalization"
             }
         },
         "182": {
@@ -3218,8 +3060,7 @@
             ],
             "extras": {
                 "name": "conv5_block7_0_bn",
-                "type": "BatchNormalization",
-                "index": 211
+                "type": "BatchNormalization"
             }
         },
         "183": {
@@ -3241,8 +3082,7 @@
             ],
             "extras": {
                 "name": "conv5_block8_0_bn",
-                "type": "BatchNormalization",
-                "index": 279
+                "type": "BatchNormalization"
             }
         },
         "184": {
@@ -3265,8 +3105,7 @@
             ],
             "extras": {
                 "name": "conv5_block9_0_bn",
-                "type": "BatchNormalization",
-                "index": 273
+                "type": "BatchNormalization"
             }
         },
         "185": {
@@ -3290,8 +3129,7 @@
             ],
             "extras": {
                 "name": "conv5_block10_0_bn",
-                "type": "BatchNormalization",
-                "index": 220
+                "type": "BatchNormalization"
             }
         },
         "186": {
@@ -3316,8 +3154,7 @@
             ],
             "extras": {
                 "name": "conv5_block11_0_bn",
-                "type": "BatchNormalization",
-                "index": 267
+                "type": "BatchNormalization"
             }
         },
         "187": {
@@ -3343,8 +3180,7 @@
             ],
             "extras": {
                 "name": "conv5_block12_0_bn",
-                "type": "BatchNormalization",
-                "index": 261
+                "type": "BatchNormalization"
             }
         },
         "188": {
@@ -3371,8 +3207,7 @@
             ],
             "extras": {
                 "name": "conv5_block13_0_bn",
-                "type": "BatchNormalization",
-                "index": 229
+                "type": "BatchNormalization"
             }
         },
         "189": {
@@ -3400,8 +3235,7 @@
             ],
             "extras": {
                 "name": "conv5_block14_0_bn",
-                "type": "BatchNormalization",
-                "index": 236
+                "type": "BatchNormalization"
             }
         },
         "190": {
@@ -3430,8 +3264,7 @@
             ],
             "extras": {
                 "name": "conv5_block15_0_bn",
-                "type": "BatchNormalization",
-                "index": 243
+                "type": "BatchNormalization"
             }
         },
         "191": {
@@ -3461,8 +3294,7 @@
             ],
             "extras": {
                 "name": "conv5_block16_0_bn",
-                "type": "BatchNormalization",
-                "index": 255
+                "type": "BatchNormalization"
             }
         },
         "192": {
@@ -3493,8 +3325,7 @@
             ],
             "extras": {
                 "name": "bn",
-                "type": "BatchNormalization",
-                "index": 251
+                "type": "BatchNormalization"
             }
         },
         "104": {
@@ -3532,8 +3363,7 @@
             ],
             "extras": {
                 "name": "conv4_block1_2_conv",
-                "type": "Conv2D",
-                "index": 356
+                "type": "Conv2D"
             }
         },
         "106": {
@@ -3570,8 +3400,7 @@
             ],
             "extras": {
                 "name": "conv4_block2_2_conv",
-                "type": "Conv2D",
-                "index": 75
+                "type": "Conv2D"
             }
         },
         "108": {
@@ -3607,8 +3436,7 @@
             ],
             "extras": {
                 "name": "conv4_block3_2_conv",
-                "type": "Conv2D",
-                "index": 350
+                "type": "Conv2D"
             }
         },
         "110": {
@@ -3643,8 +3471,7 @@
             ],
             "extras": {
                 "name": "conv4_block4_2_conv",
-                "type": "Conv2D",
-                "index": 83
+                "type": "Conv2D"
             }
         },
         "112": {
@@ -3678,8 +3505,7 @@
             ],
             "extras": {
                 "name": "conv4_block5_2_conv",
-                "type": "Conv2D",
-                "index": 90
+                "type": "Conv2D"
             }
         },
         "114": {
@@ -3712,8 +3538,7 @@
             ],
             "extras": {
                 "name": "conv4_block6_2_conv",
-                "type": "Conv2D",
-                "index": 97
+                "type": "Conv2D"
             }
         },
         "116": {
@@ -3745,8 +3570,7 @@
             ],
             "extras": {
                 "name": "conv4_block7_2_conv",
-                "type": "Conv2D",
-                "index": 344
+                "type": "Conv2D"
             }
         },
         "118": {
@@ -3777,8 +3601,7 @@
             ],
             "extras": {
                 "name": "conv4_block8_2_conv",
-                "type": "Conv2D",
-                "index": 105
+                "type": "Conv2D"
             }
         },
         "120": {
@@ -3808,8 +3631,7 @@
             ],
             "extras": {
                 "name": "conv4_block9_2_conv",
-                "type": "Conv2D",
-                "index": 338
+                "type": "Conv2D"
             }
         },
         "122": {
@@ -3838,8 +3660,7 @@
             ],
             "extras": {
                 "name": "conv4_block10_2_conv",
-                "type": "Conv2D",
-                "index": 113
+                "type": "Conv2D"
             }
         },
         "124": {
@@ -3867,8 +3688,7 @@
             ],
             "extras": {
                 "name": "conv4_block11_2_conv",
-                "type": "Conv2D",
-                "index": 332
+                "type": "Conv2D"
             }
         },
         "126": {
@@ -3895,8 +3715,7 @@
             ],
             "extras": {
                 "name": "conv4_block12_2_conv",
-                "type": "Conv2D",
-                "index": 121
+                "type": "Conv2D"
             }
         },
         "128": {
@@ -3922,8 +3741,7 @@
             ],
             "extras": {
                 "name": "conv4_block13_2_conv",
-                "type": "Conv2D",
-                "index": 326
+                "type": "Conv2D"
             }
         },
         "130": {
@@ -3948,8 +3766,7 @@
             ],
             "extras": {
                 "name": "conv4_block14_2_conv",
-                "type": "Conv2D",
-                "index": 129
+                "type": "Conv2D"
             }
         },
         "132": {
@@ -3973,8 +3790,7 @@
             ],
             "extras": {
                 "name": "conv4_block15_2_conv",
-                "type": "Conv2D",
-                "index": 136
+                "type": "Conv2D"
             }
         },
         "134": {
@@ -3997,8 +3813,7 @@
             ],
             "extras": {
                 "name": "conv4_block16_2_conv",
-                "type": "Conv2D",
-                "index": 320
+                "type": "Conv2D"
             }
         },
         "136": {
@@ -4020,8 +3835,7 @@
             ],
             "extras": {
                 "name": "conv4_block17_2_conv",
-                "type": "Conv2D",
-                "index": 144
+                "type": "Conv2D"
             }
         },
         "138": {
@@ -4042,8 +3856,7 @@
             ],
             "extras": {
                 "name": "conv4_block18_2_conv",
-                "type": "Conv2D",
-                "index": 151
+                "type": "Conv2D"
             }
         },
         "140": {
@@ -4063,8 +3876,7 @@
             ],
             "extras": {
                 "name": "conv4_block19_2_conv",
-                "type": "Conv2D",
-                "index": 314
+                "type": "Conv2D"
             }
         },
         "142": {
@@ -4083,8 +3895,7 @@
             ],
             "extras": {
                 "name": "conv4_block20_2_conv",
-                "type": "Conv2D",
-                "index": 159
+                "type": "Conv2D"
             }
         },
         "144": {
@@ -4102,8 +3913,7 @@
             ],
             "extras": {
                 "name": "conv4_block21_2_conv",
-                "type": "Conv2D",
-                "index": 308
+                "type": "Conv2D"
             }
         },
         "146": {
@@ -4120,8 +3930,7 @@
             ],
             "extras": {
                 "name": "conv4_block22_2_conv",
-                "type": "Conv2D",
-                "index": 167
+                "type": "Conv2D"
             }
         },
         "148": {
@@ -4137,8 +3946,7 @@
             ],
             "extras": {
                 "name": "conv4_block23_2_conv",
-                "type": "Conv2D",
-                "index": 302
+                "type": "Conv2D"
             }
         },
         "150": {
@@ -4153,8 +3961,7 @@
             ],
             "extras": {
                 "name": "conv4_block24_2_conv",
-                "type": "Conv2D",
-                "index": 175
+                "type": "Conv2D"
             }
         },
         "193": {
@@ -4169,8 +3976,7 @@
             ],
             "extras": {
                 "name": "conv5_block1_1_conv",
-                "type": "Conv2D",
-                "index": 293
+                "type": "Conv2D"
             }
         },
         "195": {
@@ -4185,8 +3991,7 @@
             ],
             "extras": {
                 "name": "conv5_block2_1_conv",
-                "type": "Conv2D",
-                "index": 184
+                "type": "Conv2D"
             }
         },
         "197": {
@@ -4201,8 +4006,7 @@
             ],
             "extras": {
                 "name": "conv5_block3_1_conv",
-                "type": "Conv2D",
-                "index": 191
+                "type": "Conv2D"
             }
         },
         "199": {
@@ -4217,8 +4021,7 @@
             ],
             "extras": {
                 "name": "conv5_block4_1_conv",
-                "type": "Conv2D",
-                "index": 198
+                "type": "Conv2D"
             }
         },
         "201": {
@@ -4233,8 +4036,7 @@
             ],
             "extras": {
                 "name": "conv5_block5_1_conv",
-                "type": "Conv2D",
-                "index": 287
+                "type": "Conv2D"
             }
         },
         "203": {
@@ -4249,8 +4051,7 @@
             ],
             "extras": {
                 "name": "conv5_block6_1_conv",
-                "type": "Conv2D",
-                "index": 206
+                "type": "Conv2D"
             }
         },
         "205": {
@@ -4265,8 +4066,7 @@
             ],
             "extras": {
                 "name": "conv5_block7_1_conv",
-                "type": "Conv2D",
-                "index": 213
+                "type": "Conv2D"
             }
         },
         "207": {
@@ -4281,8 +4081,7 @@
             ],
             "extras": {
                 "name": "conv5_block8_1_conv",
-                "type": "Conv2D",
-                "index": 281
+                "type": "Conv2D"
             }
         },
         "209": {
@@ -4297,8 +4096,7 @@
             ],
             "extras": {
                 "name": "conv5_block9_1_conv",
-                "type": "Conv2D",
-                "index": 275
+                "type": "Conv2D"
             }
         },
         "211": {
@@ -4313,8 +4111,7 @@
             ],
             "extras": {
                 "name": "conv5_block10_1_conv",
-                "type": "Conv2D",
-                "index": 222
+                "type": "Conv2D"
             }
         },
         "213": {
@@ -4329,8 +4126,7 @@
             ],
             "extras": {
                 "name": "conv5_block11_1_conv",
-                "type": "Conv2D",
-                "index": 269
+                "type": "Conv2D"
             }
         },
         "215": {
@@ -4345,8 +4141,7 @@
             ],
             "extras": {
                 "name": "conv5_block12_1_conv",
-                "type": "Conv2D",
-                "index": 263
+                "type": "Conv2D"
             }
         },
         "217": {
@@ -4361,8 +4156,7 @@
             ],
             "extras": {
                 "name": "conv5_block13_1_conv",
-                "type": "Conv2D",
-                "index": 231
+                "type": "Conv2D"
             }
         },
         "219": {
@@ -4377,8 +4171,7 @@
             ],
             "extras": {
                 "name": "conv5_block14_1_conv",
-                "type": "Conv2D",
-                "index": 238
+                "type": "Conv2D"
             }
         },
         "221": {
@@ -4393,8 +4186,7 @@
             ],
             "extras": {
                 "name": "conv5_block15_1_conv",
-                "type": "Conv2D",
-                "index": 245
+                "type": "Conv2D"
             }
         },
         "223": {
@@ -4409,8 +4201,7 @@
             ],
             "extras": {
                 "name": "conv5_block16_1_conv",
-                "type": "Conv2D",
-                "index": 257
+                "type": "Conv2D"
             }
         },
         "225": {
@@ -4423,8 +4214,7 @@
             "output_layers": [],
             "extras": {
                 "name": "fc1000",
-                "type": "Dense",
-                "index": 254
+                "type": "Dense"
             }
         },
         "226": {
@@ -4439,8 +4229,7 @@
             ],
             "extras": {
                 "name": "conv5_block1_1_bn",
-                "type": "BatchNormalization",
-                "index": 294
+                "type": "BatchNormalization"
             }
         },
         "227": {
@@ -4455,8 +4244,7 @@
             ],
             "extras": {
                 "name": "conv5_block2_1_bn",
-                "type": "BatchNormalization",
-                "index": 185
+                "type": "BatchNormalization"
             }
         },
         "228": {
@@ -4471,8 +4259,7 @@
             ],
             "extras": {
                 "name": "conv5_block3_1_bn",
-                "type": "BatchNormalization",
-                "index": 192
+                "type": "BatchNormalization"
             }
         },
         "229": {
@@ -4487,8 +4274,7 @@
             ],
             "extras": {
                 "name": "conv5_block4_1_bn",
-                "type": "BatchNormalization",
-                "index": 199
+                "type": "BatchNormalization"
             }
         },
         "230": {
@@ -4503,8 +4289,7 @@
             ],
             "extras": {
                 "name": "conv5_block5_1_bn",
-                "type": "BatchNormalization",
-                "index": 288
+                "type": "BatchNormalization"
             }
         },
         "231": {
@@ -4519,8 +4304,7 @@
             ],
             "extras": {
                 "name": "conv5_block6_1_bn",
-                "type": "BatchNormalization",
-                "index": 207
+                "type": "BatchNormalization"
             }
         },
         "232": {
@@ -4535,8 +4319,7 @@
             ],
             "extras": {
                 "name": "conv5_block7_1_bn",
-                "type": "BatchNormalization",
-                "index": 214
+                "type": "BatchNormalization"
             }
         },
         "233": {
@@ -4551,8 +4334,7 @@
             ],
             "extras": {
                 "name": "conv5_block8_1_bn",
-                "type": "BatchNormalization",
-                "index": 282
+                "type": "BatchNormalization"
             }
         },
         "234": {
@@ -4567,8 +4349,7 @@
             ],
             "extras": {
                 "name": "conv5_block9_1_bn",
-                "type": "BatchNormalization",
-                "index": 276
+                "type": "BatchNormalization"
             }
         },
         "235": {
@@ -4583,8 +4364,7 @@
             ],
             "extras": {
                 "name": "conv5_block10_1_bn",
-                "type": "BatchNormalization",
-                "index": 223
+                "type": "BatchNormalization"
             }
         },
         "236": {
@@ -4599,8 +4379,7 @@
             ],
             "extras": {
                 "name": "conv5_block11_1_bn",
-                "type": "BatchNormalization",
-                "index": 270
+                "type": "BatchNormalization"
             }
         },
         "237": {
@@ -4615,8 +4394,7 @@
             ],
             "extras": {
                 "name": "conv5_block12_1_bn",
-                "type": "BatchNormalization",
-                "index": 264
+                "type": "BatchNormalization"
             }
         },
         "238": {
@@ -4631,8 +4409,7 @@
             ],
             "extras": {
                 "name": "conv5_block13_1_bn",
-                "type": "BatchNormalization",
-                "index": 232
+                "type": "BatchNormalization"
             }
         },
         "239": {
@@ -4647,8 +4424,7 @@
             ],
             "extras": {
                 "name": "conv5_block14_1_bn",
-                "type": "BatchNormalization",
-                "index": 239
+                "type": "BatchNormalization"
             }
         },
         "240": {
@@ -4663,8 +4439,7 @@
             ],
             "extras": {
                 "name": "conv5_block15_1_bn",
-                "type": "BatchNormalization",
-                "index": 246
+                "type": "BatchNormalization"
             }
         },
         "241": {
@@ -4679,8 +4454,7 @@
             ],
             "extras": {
                 "name": "conv5_block16_1_bn",
-                "type": "BatchNormalization",
-                "index": 258
+                "type": "BatchNormalization"
             }
         },
         "194": {
@@ -4710,8 +4484,7 @@
             ],
             "extras": {
                 "name": "conv5_block1_2_conv",
-                "type": "Conv2D",
-                "index": 296
+                "type": "Conv2D"
             }
         },
         "196": {
@@ -4740,8 +4513,7 @@
             ],
             "extras": {
                 "name": "conv5_block2_2_conv",
-                "type": "Conv2D",
-                "index": 187
+                "type": "Conv2D"
             }
         },
         "198": {
@@ -4769,8 +4541,7 @@
             ],
             "extras": {
                 "name": "conv5_block3_2_conv",
-                "type": "Conv2D",
-                "index": 194
+                "type": "Conv2D"
             }
         },
         "200": {
@@ -4797,8 +4568,7 @@
             ],
             "extras": {
                 "name": "conv5_block4_2_conv",
-                "type": "Conv2D",
-                "index": 201
+                "type": "Conv2D"
             }
         },
         "202": {
@@ -4824,8 +4594,7 @@
             ],
             "extras": {
                 "name": "conv5_block5_2_conv",
-                "type": "Conv2D",
-                "index": 290
+                "type": "Conv2D"
             }
         },
         "204": {
@@ -4850,8 +4619,7 @@
             ],
             "extras": {
                 "name": "conv5_block6_2_conv",
-                "type": "Conv2D",
-                "index": 209
+                "type": "Conv2D"
             }
         },
         "206": {
@@ -4875,8 +4643,7 @@
             ],
             "extras": {
                 "name": "conv5_block7_2_conv",
-                "type": "Conv2D",
-                "index": 216
+                "type": "Conv2D"
             }
         },
         "208": {
@@ -4899,8 +4666,7 @@
             ],
             "extras": {
                 "name": "conv5_block8_2_conv",
-                "type": "Conv2D",
-                "index": 284
+                "type": "Conv2D"
             }
         },
         "210": {
@@ -4922,8 +4688,7 @@
             ],
             "extras": {
                 "name": "conv5_block9_2_conv",
-                "type": "Conv2D",
-                "index": 278
+                "type": "Conv2D"
             }
         },
         "212": {
@@ -4944,8 +4709,7 @@
             ],
             "extras": {
                 "name": "conv5_block10_2_conv",
-                "type": "Conv2D",
-                "index": 225
+                "type": "Conv2D"
             }
         },
         "214": {
@@ -4965,8 +4729,7 @@
             ],
             "extras": {
                 "name": "conv5_block11_2_conv",
-                "type": "Conv2D",
-                "index": 272
+                "type": "Conv2D"
             }
         },
         "216": {
@@ -4985,8 +4748,7 @@
             ],
             "extras": {
                 "name": "conv5_block12_2_conv",
-                "type": "Conv2D",
-                "index": 266
+                "type": "Conv2D"
             }
         },
         "218": {
@@ -5004,8 +4766,7 @@
             ],
             "extras": {
                 "name": "conv5_block13_2_conv",
-                "type": "Conv2D",
-                "index": 234
+                "type": "Conv2D"
             }
         },
         "220": {
@@ -5022,8 +4783,7 @@
             ],
             "extras": {
                 "name": "conv5_block14_2_conv",
-                "type": "Conv2D",
-                "index": 241
+                "type": "Conv2D"
             }
         },
         "222": {
@@ -5039,8 +4799,7 @@
             ],
             "extras": {
                 "name": "conv5_block15_2_conv",
-                "type": "Conv2D",
-                "index": 248
+                "type": "Conv2D"
             }
         },
         "224": {
@@ -5055,8 +4814,7 @@
             ],
             "extras": {
                 "name": "conv5_block16_2_conv",
-                "type": "Conv2D",
-                "index": 260
+                "type": "Conv2D"
             }
         }
     }

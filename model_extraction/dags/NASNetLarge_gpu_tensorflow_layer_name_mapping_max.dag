@@ -137,8 +137,7 @@
             "output_layers": [],
             "extras": {
                 "name": "predictions",
-                "type": "Dense",
-                "index": 146
+                "type": "Dense"
             }
         },
         "4": {
@@ -153,8 +152,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left5_18",
-                "type": "BatchNormalization",
-                "index": 152
+                "type": "BatchNormalization"
             }
         },
         "8": {
@@ -169,8 +167,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left5_18",
-                "type": "SeparableConv2D",
-                "index": 151
+                "type": "SeparableConv2D"
             }
         },
         "9": {
@@ -185,8 +182,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left5_18",
-                "type": "BatchNormalization",
-                "index": 149
+                "type": "BatchNormalization"
             }
         },
         "10": {
@@ -201,8 +197,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left5_18",
-                "type": "SeparableConv2D",
-                "index": 148
+                "type": "SeparableConv2D"
             }
         },
         "5": {
@@ -217,8 +212,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left1_18",
-                "type": "BatchNormalization",
-                "index": 141
+                "type": "BatchNormalization"
             }
         },
         "11": {
@@ -233,8 +227,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left1_18",
-                "type": "SeparableConv2D",
-                "index": 140
+                "type": "SeparableConv2D"
             }
         },
         "12": {
@@ -249,8 +242,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left1_18",
-                "type": "BatchNormalization",
-                "index": 138
+                "type": "BatchNormalization"
             }
         },
         "13": {
@@ -265,8 +257,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left1_18",
-                "type": "SeparableConv2D",
-                "index": 137
+                "type": "SeparableConv2D"
             }
         },
         "3": {
@@ -283,8 +274,7 @@
             ],
             "extras": {
                 "name": "normal_bn_1_18",
-                "type": "BatchNormalization",
-                "index": 135
+                "type": "BatchNormalization"
             }
         },
         "14": {
@@ -305,8 +295,7 @@
             ],
             "extras": {
                 "name": "normal_conv_1_18",
-                "type": "Conv2D",
-                "index": 134
+                "type": "Conv2D"
             }
         },
         "18": {
@@ -321,8 +310,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left2_17",
-                "type": "BatchNormalization",
-                "index": 179
+                "type": "BatchNormalization"
             }
         },
         "22": {
@@ -337,8 +325,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left2_17",
-                "type": "SeparableConv2D",
-                "index": 178
+                "type": "SeparableConv2D"
             }
         },
         "23": {
@@ -353,8 +340,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left2_17",
-                "type": "BatchNormalization",
-                "index": 176
+                "type": "BatchNormalization"
             }
         },
         "24": {
@@ -369,8 +355,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left2_17",
-                "type": "SeparableConv2D",
-                "index": 175
+                "type": "SeparableConv2D"
             }
         },
         "21": {
@@ -385,8 +370,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right2_17",
-                "type": "BatchNormalization",
-                "index": 161
+                "type": "BatchNormalization"
             }
         },
         "25": {
@@ -401,8 +385,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right2_17",
-                "type": "SeparableConv2D",
-                "index": 160
+                "type": "SeparableConv2D"
             }
         },
         "26": {
@@ -417,8 +400,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right2_17",
-                "type": "BatchNormalization",
-                "index": 158
+                "type": "BatchNormalization"
             }
         },
         "27": {
@@ -433,8 +415,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right2_17",
-                "type": "SeparableConv2D",
-                "index": 157
+                "type": "SeparableConv2D"
             }
         },
         "19": {
@@ -449,8 +430,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right1_17",
-                "type": "BatchNormalization",
-                "index": 168
+                "type": "BatchNormalization"
             }
         },
         "28": {
@@ -465,8 +445,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right1_17",
-                "type": "SeparableConv2D",
-                "index": 167
+                "type": "SeparableConv2D"
             }
         },
         "29": {
@@ -481,8 +460,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right1_17",
-                "type": "BatchNormalization",
-                "index": 165
+                "type": "BatchNormalization"
             }
         },
         "30": {
@@ -497,8 +475,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right1_17",
-                "type": "SeparableConv2D",
-                "index": 164
+                "type": "SeparableConv2D"
             }
         },
         "15": {
@@ -516,8 +493,7 @@
             ],
             "extras": {
                 "name": "adjust_bn_17",
-                "type": "BatchNormalization",
-                "index": 131
+                "type": "BatchNormalization"
             }
         },
         "31": {
@@ -538,8 +514,7 @@
             ],
             "extras": {
                 "name": "adjust_conv_projection_17",
-                "type": "Conv2D",
-                "index": 130
+                "type": "Conv2D"
             }
         },
         "20": {
@@ -554,8 +529,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left5_17",
-                "type": "BatchNormalization",
-                "index": 227
+                "type": "BatchNormalization"
             }
         },
         "39": {
@@ -570,8 +544,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left5_17",
-                "type": "SeparableConv2D",
-                "index": 226
+                "type": "SeparableConv2D"
             }
         },
         "40": {
@@ -586,8 +559,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left5_17",
-                "type": "BatchNormalization",
-                "index": 224
+                "type": "BatchNormalization"
             }
         },
         "41": {
@@ -602,8 +574,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left5_17",
-                "type": "SeparableConv2D",
-                "index": 223
+                "type": "SeparableConv2D"
             }
         },
         "17": {
@@ -618,8 +589,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left1_17",
-                "type": "BatchNormalization",
-                "index": 219
+                "type": "BatchNormalization"
             }
         },
         "42": {
@@ -634,8 +604,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left1_17",
-                "type": "SeparableConv2D",
-                "index": 218
+                "type": "SeparableConv2D"
             }
         },
         "43": {
@@ -650,8 +619,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left1_17",
-                "type": "BatchNormalization",
-                "index": 216
+                "type": "BatchNormalization"
             }
         },
         "44": {
@@ -666,8 +634,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left1_17",
-                "type": "SeparableConv2D",
-                "index": 215
+                "type": "SeparableConv2D"
             }
         },
         "16": {
@@ -684,8 +651,7 @@
             ],
             "extras": {
                 "name": "normal_bn_1_17",
-                "type": "BatchNormalization",
-                "index": 213
+                "type": "BatchNormalization"
             }
         },
         "45": {
@@ -706,8 +672,7 @@
             ],
             "extras": {
                 "name": "normal_conv_1_17",
-                "type": "Conv2D",
-                "index": 212
+                "type": "Conv2D"
             }
         },
         "6": {
@@ -722,8 +687,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right1_18",
-                "type": "BatchNormalization",
-                "index": 207
+                "type": "BatchNormalization"
             }
         },
         "53": {
@@ -738,8 +702,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right1_18",
-                "type": "SeparableConv2D",
-                "index": 206
+                "type": "SeparableConv2D"
             }
         },
         "54": {
@@ -754,8 +717,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right1_18",
-                "type": "BatchNormalization",
-                "index": 204
+                "type": "BatchNormalization"
             }
         },
         "55": {
@@ -770,8 +732,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right1_18",
-                "type": "SeparableConv2D",
-                "index": 203
+                "type": "SeparableConv2D"
             }
         },
         "1": {
@@ -786,8 +747,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left2_18",
-                "type": "BatchNormalization",
-                "index": 194
+                "type": "BatchNormalization"
             }
         },
         "56": {
@@ -802,8 +762,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left2_18",
-                "type": "SeparableConv2D",
-                "index": 193
+                "type": "SeparableConv2D"
             }
         },
         "57": {
@@ -818,8 +777,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left2_18",
-                "type": "BatchNormalization",
-                "index": 191
+                "type": "BatchNormalization"
             }
         },
         "58": {
@@ -834,8 +792,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left2_18",
-                "type": "SeparableConv2D",
-                "index": 190
+                "type": "SeparableConv2D"
             }
         },
         "2": {
@@ -850,8 +807,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right2_18",
-                "type": "BatchNormalization",
-                "index": 201
+                "type": "BatchNormalization"
             }
         },
         "59": {
@@ -866,8 +822,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right2_18",
-                "type": "SeparableConv2D",
-                "index": 200
+                "type": "SeparableConv2D"
             }
         },
         "60": {
@@ -882,8 +837,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right2_18",
-                "type": "BatchNormalization",
-                "index": 198
+                "type": "BatchNormalization"
             }
         },
         "61": {
@@ -898,8 +852,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right2_18",
-                "type": "SeparableConv2D",
-                "index": 197
+                "type": "SeparableConv2D"
             }
         },
         "7": {
@@ -917,8 +870,7 @@
             ],
             "extras": {
                 "name": "adjust_bn_18",
-                "type": "BatchNormalization",
-                "index": 188
+                "type": "BatchNormalization"
             }
         },
         "62": {
@@ -939,8 +891,7 @@
             ],
             "extras": {
                 "name": "adjust_conv_projection_18",
-                "type": "Conv2D",
-                "index": 187
+                "type": "Conv2D"
             }
         },
         "52": {
@@ -956,8 +907,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left1_16",
-                "type": "BatchNormalization",
-                "index": 240
+                "type": "BatchNormalization"
             }
         },
         "63": {
@@ -972,8 +922,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left1_16",
-                "type": "SeparableConv2D",
-                "index": 239
+                "type": "SeparableConv2D"
             }
         },
         "64": {
@@ -988,8 +937,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left1_16",
-                "type": "BatchNormalization",
-                "index": 237
+                "type": "BatchNormalization"
             }
         },
         "65": {
@@ -1004,8 +952,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left1_16",
-                "type": "SeparableConv2D",
-                "index": 236
+                "type": "SeparableConv2D"
             }
         },
         "46": {
@@ -1021,8 +968,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left5_16",
-                "type": "BatchNormalization",
-                "index": 233
+                "type": "BatchNormalization"
             }
         },
         "66": {
@@ -1037,8 +983,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left5_16",
-                "type": "SeparableConv2D",
-                "index": 232
+                "type": "SeparableConv2D"
             }
         },
         "67": {
@@ -1053,8 +998,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left5_16",
-                "type": "BatchNormalization",
-                "index": 230
+                "type": "BatchNormalization"
             }
         },
         "68": {
@@ -1069,8 +1013,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left5_16",
-                "type": "SeparableConv2D",
-                "index": 229
+                "type": "SeparableConv2D"
             }
         },
         "48": {
@@ -1088,8 +1031,7 @@
             ],
             "extras": {
                 "name": "normal_bn_1_16",
-                "type": "BatchNormalization",
-                "index": 182
+                "type": "BatchNormalization"
             }
         },
         "69": {
@@ -1110,8 +1052,7 @@
             ],
             "extras": {
                 "name": "normal_conv_1_16",
-                "type": "Conv2D",
-                "index": 181
+                "type": "Conv2D"
             }
         },
         "35": {
@@ -1127,8 +1068,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right2_15",
-                "type": "BatchNormalization",
-                "index": 302
+                "type": "BatchNormalization"
             }
         },
         "70": {
@@ -1143,8 +1083,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right2_15",
-                "type": "SeparableConv2D",
-                "index": 301
+                "type": "SeparableConv2D"
             }
         },
         "71": {
@@ -1159,8 +1098,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right2_15",
-                "type": "BatchNormalization",
-                "index": 299
+                "type": "BatchNormalization"
             }
         },
         "72": {
@@ -1175,8 +1113,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right2_15",
-                "type": "SeparableConv2D",
-                "index": 298
+                "type": "SeparableConv2D"
             }
         },
         "34": {
@@ -1192,8 +1129,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right1_15",
-                "type": "BatchNormalization",
-                "index": 309
+                "type": "BatchNormalization"
             }
         },
         "73": {
@@ -1208,8 +1144,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right1_15",
-                "type": "SeparableConv2D",
-                "index": 308
+                "type": "SeparableConv2D"
             }
         },
         "74": {
@@ -1224,8 +1159,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right1_15",
-                "type": "BatchNormalization",
-                "index": 306
+                "type": "BatchNormalization"
             }
         },
         "75": {
@@ -1240,8 +1174,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right1_15",
-                "type": "SeparableConv2D",
-                "index": 305
+                "type": "SeparableConv2D"
             }
         },
         "32": {
@@ -1257,8 +1190,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left2_15",
-                "type": "BatchNormalization",
-                "index": 293
+                "type": "BatchNormalization"
             }
         },
         "76": {
@@ -1273,8 +1205,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left2_15",
-                "type": "SeparableConv2D",
-                "index": 292
+                "type": "SeparableConv2D"
             }
         },
         "77": {
@@ -1289,8 +1220,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left2_15",
-                "type": "BatchNormalization",
-                "index": 290
+                "type": "BatchNormalization"
             }
         },
         "78": {
@@ -1305,8 +1235,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left2_15",
-                "type": "SeparableConv2D",
-                "index": 289
+                "type": "SeparableConv2D"
             }
         },
         "38": {
@@ -1325,8 +1254,7 @@
             ],
             "extras": {
                 "name": "adjust_bn_15",
-                "type": "BatchNormalization",
-                "index": 287
+                "type": "BatchNormalization"
             }
         },
         "79": {
@@ -1347,8 +1275,7 @@
             ],
             "extras": {
                 "name": "adjust_conv_projection_15",
-                "type": "Conv2D",
-                "index": 286
+                "type": "Conv2D"
             }
         },
         "37": {
@@ -1364,8 +1291,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left1_15",
-                "type": "BatchNormalization",
-                "index": 126
+                "type": "BatchNormalization"
             }
         },
         "87": {
@@ -1380,8 +1306,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left1_15",
-                "type": "SeparableConv2D",
-                "index": 125
+                "type": "SeparableConv2D"
             }
         },
         "88": {
@@ -1396,8 +1321,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left1_15",
-                "type": "BatchNormalization",
-                "index": 123
+                "type": "BatchNormalization"
             }
         },
         "89": {
@@ -1412,8 +1336,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left1_15",
-                "type": "SeparableConv2D",
-                "index": 122
+                "type": "SeparableConv2D"
             }
         },
         "36": {
@@ -1429,8 +1352,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left5_15",
-                "type": "BatchNormalization",
-                "index": 248
+                "type": "BatchNormalization"
             }
         },
         "90": {
@@ -1445,8 +1367,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left5_15",
-                "type": "SeparableConv2D",
-                "index": 247
+                "type": "SeparableConv2D"
             }
         },
         "91": {
@@ -1461,8 +1382,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left5_15",
-                "type": "BatchNormalization",
-                "index": 245
+                "type": "BatchNormalization"
             }
         },
         "92": {
@@ -1477,8 +1397,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left5_15",
-                "type": "SeparableConv2D",
-                "index": 244
+                "type": "SeparableConv2D"
             }
         },
         "33": {
@@ -1496,8 +1415,7 @@
             ],
             "extras": {
                 "name": "normal_bn_1_15",
-                "type": "BatchNormalization",
-                "index": 120
+                "type": "BatchNormalization"
             }
         },
         "93": {
@@ -1518,8 +1436,7 @@
             ],
             "extras": {
                 "name": "normal_conv_1_15",
-                "type": "Conv2D",
-                "index": 119
+                "type": "Conv2D"
             }
         },
         "49": {
@@ -1535,8 +1452,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right1_16",
-                "type": "BatchNormalization",
-                "index": 266
+                "type": "BatchNormalization"
             }
         },
         "101": {
@@ -1551,8 +1467,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right1_16",
-                "type": "SeparableConv2D",
-                "index": 265
+                "type": "SeparableConv2D"
             }
         },
         "102": {
@@ -1567,8 +1482,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right1_16",
-                "type": "BatchNormalization",
-                "index": 263
+                "type": "BatchNormalization"
             }
         },
         "103": {
@@ -1583,8 +1497,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right1_16",
-                "type": "SeparableConv2D",
-                "index": 262
+                "type": "SeparableConv2D"
             }
         },
         "51": {
@@ -1600,8 +1513,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right2_16",
-                "type": "BatchNormalization",
-                "index": 259
+                "type": "BatchNormalization"
             }
         },
         "104": {
@@ -1616,8 +1528,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right2_16",
-                "type": "SeparableConv2D",
-                "index": 258
+                "type": "SeparableConv2D"
             }
         },
         "105": {
@@ -1632,8 +1543,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right2_16",
-                "type": "BatchNormalization",
-                "index": 256
+                "type": "BatchNormalization"
             }
         },
         "106": {
@@ -1648,8 +1558,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right2_16",
-                "type": "SeparableConv2D",
-                "index": 255
+                "type": "SeparableConv2D"
             }
         },
         "50": {
@@ -1665,8 +1574,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left2_16",
-                "type": "BatchNormalization",
-                "index": 272
+                "type": "BatchNormalization"
             }
         },
         "107": {
@@ -1681,8 +1589,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left2_16",
-                "type": "SeparableConv2D",
-                "index": 271
+                "type": "SeparableConv2D"
             }
         },
         "108": {
@@ -1697,8 +1604,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left2_16",
-                "type": "BatchNormalization",
-                "index": 269
+                "type": "BatchNormalization"
             }
         },
         "109": {
@@ -1713,8 +1619,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left2_16",
-                "type": "SeparableConv2D",
-                "index": 268
+                "type": "SeparableConv2D"
             }
         },
         "47": {
@@ -1733,8 +1638,7 @@
             ],
             "extras": {
                 "name": "adjust_bn_16",
-                "type": "BatchNormalization",
-                "index": 253
+                "type": "BatchNormalization"
             }
         },
         "110": {
@@ -1755,8 +1659,7 @@
             ],
             "extras": {
                 "name": "adjust_conv_projection_16",
-                "type": "Conv2D",
-                "index": 252
+                "type": "Conv2D"
             }
         },
         "96": {
@@ -1772,8 +1675,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left5_14",
-                "type": "BatchNormalization",
-                "index": 284
+                "type": "BatchNormalization"
             }
         },
         "111": {
@@ -1788,8 +1690,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left5_14",
-                "type": "SeparableConv2D",
-                "index": 283
+                "type": "SeparableConv2D"
             }
         },
         "112": {
@@ -1804,8 +1705,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left5_14",
-                "type": "BatchNormalization",
-                "index": 281
+                "type": "BatchNormalization"
             }
         },
         "113": {
@@ -1820,8 +1720,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left5_14",
-                "type": "SeparableConv2D",
-                "index": 280
+                "type": "SeparableConv2D"
             }
         },
         "95": {
@@ -1837,8 +1736,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left1_14",
-                "type": "BatchNormalization",
-                "index": 115
+                "type": "BatchNormalization"
             }
         },
         "114": {
@@ -1853,8 +1751,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left1_14",
-                "type": "SeparableConv2D",
-                "index": 114
+                "type": "SeparableConv2D"
             }
         },
         "115": {
@@ -1869,8 +1766,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left1_14",
-                "type": "BatchNormalization",
-                "index": 112
+                "type": "BatchNormalization"
             }
         },
         "116": {
@@ -1885,8 +1781,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left1_14",
-                "type": "SeparableConv2D",
-                "index": 111
+                "type": "SeparableConv2D"
             }
         },
         "99": {
@@ -1904,8 +1799,7 @@
             ],
             "extras": {
                 "name": "normal_bn_1_14",
-                "type": "BatchNormalization",
-                "index": 109
+                "type": "BatchNormalization"
             }
         },
         "117": {
@@ -1926,8 +1820,7 @@
             ],
             "extras": {
                 "name": "normal_conv_1_14",
-                "type": "Conv2D",
-                "index": 108
+                "type": "Conv2D"
             }
         },
         "86": {
@@ -1943,8 +1836,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right2_13",
-                "type": "BatchNormalization",
-                "index": 318
+                "type": "BatchNormalization"
             }
         },
         "118": {
@@ -1959,8 +1851,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right2_13",
-                "type": "SeparableConv2D",
-                "index": 317
+                "type": "SeparableConv2D"
             }
         },
         "119": {
@@ -1975,8 +1866,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right2_13",
-                "type": "BatchNormalization",
-                "index": 315
+                "type": "BatchNormalization"
             }
         },
         "120": {
@@ -1991,8 +1881,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right2_13",
-                "type": "SeparableConv2D",
-                "index": 314
+                "type": "SeparableConv2D"
             }
         },
         "82": {
@@ -2008,8 +1897,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right1_13",
-                "type": "BatchNormalization",
-                "index": 104
+                "type": "BatchNormalization"
             }
         },
         "121": {
@@ -2024,8 +1912,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right1_13",
-                "type": "SeparableConv2D",
-                "index": 103
+                "type": "SeparableConv2D"
             }
         },
         "122": {
@@ -2040,8 +1927,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right1_13",
-                "type": "BatchNormalization",
-                "index": 101
+                "type": "BatchNormalization"
             }
         },
         "123": {
@@ -2056,8 +1942,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right1_13",
-                "type": "SeparableConv2D",
-                "index": 100
+                "type": "SeparableConv2D"
             }
         },
         "84": {
@@ -2073,8 +1958,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left2_13",
-                "type": "BatchNormalization",
-                "index": 326
+                "type": "BatchNormalization"
             }
         },
         "124": {
@@ -2089,8 +1973,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left2_13",
-                "type": "SeparableConv2D",
-                "index": 325
+                "type": "SeparableConv2D"
             }
         },
         "125": {
@@ -2105,8 +1988,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left2_13",
-                "type": "BatchNormalization",
-                "index": 323
+                "type": "BatchNormalization"
             }
         },
         "126": {
@@ -2121,8 +2003,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left2_13",
-                "type": "SeparableConv2D",
-                "index": 322
+                "type": "SeparableConv2D"
             }
         },
         "85": {
@@ -2142,8 +2023,7 @@
             ],
             "extras": {
                 "name": "adjust_bn_13",
-                "type": "BatchNormalization",
-                "index": 98
+                "type": "BatchNormalization"
             }
         },
         "127": {
@@ -2164,8 +2044,7 @@
             ],
             "extras": {
                 "name": "adjust_conv_2_13",
-                "type": "Conv2D",
-                "index": 96
+                "type": "Conv2D"
             }
         },
         "80": {
@@ -2181,8 +2060,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left5_13",
-                "type": "BatchNormalization",
-                "index": 387
+                "type": "BatchNormalization"
             }
         },
         "136": {
@@ -2197,8 +2075,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left5_13",
-                "type": "SeparableConv2D",
-                "index": 386
+                "type": "SeparableConv2D"
             }
         },
         "137": {
@@ -2213,8 +2090,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left5_13",
-                "type": "BatchNormalization",
-                "index": 384
+                "type": "BatchNormalization"
             }
         },
         "138": {
@@ -2229,8 +2105,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left5_13",
-                "type": "SeparableConv2D",
-                "index": 383
+                "type": "SeparableConv2D"
             }
         },
         "81": {
@@ -2246,8 +2121,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left1_13",
-                "type": "BatchNormalization",
-                "index": 394
+                "type": "BatchNormalization"
             }
         },
         "139": {
@@ -2262,8 +2136,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left1_13",
-                "type": "SeparableConv2D",
-                "index": 393
+                "type": "SeparableConv2D"
             }
         },
         "140": {
@@ -2278,8 +2151,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left1_13",
-                "type": "BatchNormalization",
-                "index": 391
+                "type": "BatchNormalization"
             }
         },
         "141": {
@@ -2294,8 +2166,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left1_13",
-                "type": "SeparableConv2D",
-                "index": 390
+                "type": "SeparableConv2D"
             }
         },
         "83": {
@@ -2313,8 +2184,7 @@
             ],
             "extras": {
                 "name": "normal_bn_1_13",
-                "type": "BatchNormalization",
-                "index": 381
+                "type": "BatchNormalization"
             }
         },
         "142": {
@@ -2334,8 +2204,7 @@
             ],
             "extras": {
                 "name": "normal_conv_1_13",
-                "type": "Conv2D",
-                "index": 380
+                "type": "Conv2D"
             }
         },
         "100": {
@@ -2351,8 +2220,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right1_14",
-                "type": "BatchNormalization",
-                "index": 362
+                "type": "BatchNormalization"
             }
         },
         "149": {
@@ -2367,8 +2235,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right1_14",
-                "type": "SeparableConv2D",
-                "index": 361
+                "type": "SeparableConv2D"
             }
         },
         "150": {
@@ -2383,8 +2250,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right1_14",
-                "type": "BatchNormalization",
-                "index": 359
+                "type": "BatchNormalization"
             }
         },
         "151": {
@@ -2399,8 +2265,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right1_14",
-                "type": "SeparableConv2D",
-                "index": 358
+                "type": "SeparableConv2D"
             }
         },
         "94": {
@@ -2416,8 +2281,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left2_14",
-                "type": "BatchNormalization",
-                "index": 375
+                "type": "BatchNormalization"
             }
         },
         "152": {
@@ -2432,8 +2296,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left2_14",
-                "type": "SeparableConv2D",
-                "index": 374
+                "type": "SeparableConv2D"
             }
         },
         "153": {
@@ -2448,8 +2311,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left2_14",
-                "type": "BatchNormalization",
-                "index": 372
+                "type": "BatchNormalization"
             }
         },
         "154": {
@@ -2464,8 +2326,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left2_14",
-                "type": "SeparableConv2D",
-                "index": 371
+                "type": "SeparableConv2D"
             }
         },
         "97": {
@@ -2481,8 +2342,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right2_14",
-                "type": "BatchNormalization",
-                "index": 368
+                "type": "BatchNormalization"
             }
         },
         "155": {
@@ -2497,8 +2357,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right2_14",
-                "type": "SeparableConv2D",
-                "index": 367
+                "type": "SeparableConv2D"
             }
         },
         "156": {
@@ -2513,8 +2372,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right2_14",
-                "type": "BatchNormalization",
-                "index": 365
+                "type": "BatchNormalization"
             }
         },
         "157": {
@@ -2529,8 +2387,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right2_14",
-                "type": "SeparableConv2D",
-                "index": 364
+                "type": "SeparableConv2D"
             }
         },
         "98": {
@@ -2549,8 +2406,7 @@
             ],
             "extras": {
                 "name": "adjust_bn_14",
-                "type": "BatchNormalization",
-                "index": 356
+                "type": "BatchNormalization"
             }
         },
         "158": {
@@ -2570,8 +2426,7 @@
             ],
             "extras": {
                 "name": "adjust_conv_projection_14",
-                "type": "Conv2D",
-                "index": 355
+                "type": "Conv2D"
             }
         },
         "148": {
@@ -2587,8 +2442,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_reduction_left4_reduce_12",
-                "type": "BatchNormalization",
-                "index": 401
+                "type": "BatchNormalization"
             }
         },
         "159": {
@@ -2603,8 +2457,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_reduction_left4_reduce_12",
-                "type": "SeparableConv2D",
-                "index": 400
+                "type": "SeparableConv2D"
             }
         },
         "160": {
@@ -2619,8 +2472,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_reduction_left4_reduce_12",
-                "type": "BatchNormalization",
-                "index": 398
+                "type": "BatchNormalization"
             }
         },
         "161": {
@@ -2636,8 +2488,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_reduction_left4_reduce_12",
-                "type": "SeparableConv2D",
-                "index": 397
+                "type": "SeparableConv2D"
             }
         },
         "147": {
@@ -2654,8 +2505,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_reduction_left1_reduce_12",
-                "type": "BatchNormalization",
-                "index": 349
+                "type": "BatchNormalization"
             }
         },
         "162": {
@@ -2670,8 +2520,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_reduction_left1_reduce_12",
-                "type": "SeparableConv2D",
-                "index": 348
+                "type": "SeparableConv2D"
             }
         },
         "163": {
@@ -2686,8 +2535,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_reduction_left1_reduce_12",
-                "type": "BatchNormalization",
-                "index": 346
+                "type": "BatchNormalization"
             }
         },
         "164": {
@@ -2702,8 +2550,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_reduction_left1_reduce_12",
-                "type": "SeparableConv2D",
-                "index": 345
+                "type": "SeparableConv2D"
             }
         },
         "146": {
@@ -2720,8 +2567,7 @@
             ],
             "extras": {
                 "name": "reduction_bn_1_reduce_12",
-                "type": "BatchNormalization",
-                "index": 342
+                "type": "BatchNormalization"
             }
         },
         "165": {
@@ -2742,8 +2588,7 @@
             ],
             "extras": {
                 "name": "reduction_conv_1_reduce_12",
-                "type": "Conv2D",
-                "index": 341
+                "type": "Conv2D"
             }
         },
         "166": {
@@ -2758,8 +2603,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left5_12",
-                "type": "BatchNormalization",
-                "index": 414
+                "type": "BatchNormalization"
             }
         },
         "173": {
@@ -2774,8 +2618,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left5_12",
-                "type": "SeparableConv2D",
-                "index": 413
+                "type": "SeparableConv2D"
             }
         },
         "174": {
@@ -2790,8 +2633,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left5_12",
-                "type": "BatchNormalization",
-                "index": 411
+                "type": "BatchNormalization"
             }
         },
         "175": {
@@ -2806,8 +2648,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left5_12",
-                "type": "SeparableConv2D",
-                "index": 410
+                "type": "SeparableConv2D"
             }
         },
         "167": {
@@ -2822,8 +2663,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left1_12",
-                "type": "BatchNormalization",
-                "index": 337
+                "type": "BatchNormalization"
             }
         },
         "176": {
@@ -2838,8 +2678,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left1_12",
-                "type": "SeparableConv2D",
-                "index": 336
+                "type": "SeparableConv2D"
             }
         },
         "177": {
@@ -2854,8 +2693,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left1_12",
-                "type": "BatchNormalization",
-                "index": 334
+                "type": "BatchNormalization"
             }
         },
         "178": {
@@ -2870,8 +2708,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left1_12",
-                "type": "SeparableConv2D",
-                "index": 333
+                "type": "SeparableConv2D"
             }
         },
         "171": {
@@ -2888,8 +2725,7 @@
             ],
             "extras": {
                 "name": "normal_bn_1_12",
-                "type": "BatchNormalization",
-                "index": 331
+                "type": "BatchNormalization"
             }
         },
         "179": {
@@ -2910,8 +2746,7 @@
             ],
             "extras": {
                 "name": "normal_conv_1_12",
-                "type": "Conv2D",
-                "index": 330
+                "type": "Conv2D"
             }
         },
         "128": {
@@ -2932,8 +2767,7 @@
             ],
             "extras": {
                 "name": "adjust_conv_1_13",
-                "type": "Conv2D",
-                "index": 328
+                "type": "Conv2D"
             }
         },
         "145": {
@@ -2949,8 +2783,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_reduction_right2_reduce_12",
-                "type": "BatchNormalization",
-                "index": 427
+                "type": "BatchNormalization"
             }
         },
         "180": {
@@ -2965,8 +2798,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_reduction_right2_reduce_12",
-                "type": "SeparableConv2D",
-                "index": 426
+                "type": "SeparableConv2D"
             }
         },
         "181": {
@@ -2981,8 +2813,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_reduction_right2_reduce_12",
-                "type": "BatchNormalization",
-                "index": 424
+                "type": "BatchNormalization"
             }
         },
         "182": {
@@ -2997,8 +2828,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_reduction_right2_reduce_12",
-                "type": "SeparableConv2D",
-                "index": 423
+                "type": "SeparableConv2D"
             }
         },
         "144": {
@@ -3015,8 +2845,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_reduction_right1_reduce_12",
-                "type": "BatchNormalization",
-                "index": 441
+                "type": "BatchNormalization"
             }
         },
         "184": {
@@ -3031,8 +2860,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_reduction_right1_reduce_12",
-                "type": "SeparableConv2D",
-                "index": 440
+                "type": "SeparableConv2D"
             }
         },
         "185": {
@@ -3047,8 +2875,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_reduction_right1_reduce_12",
-                "type": "BatchNormalization",
-                "index": 438
+                "type": "BatchNormalization"
             }
         },
         "186": {
@@ -3063,8 +2890,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_reduction_right1_reduce_12",
-                "type": "SeparableConv2D",
-                "index": 437
+                "type": "SeparableConv2D"
             }
         },
         "143": {
@@ -3080,8 +2906,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_reduction_right3_reduce_12",
-                "type": "BatchNormalization",
-                "index": 434
+                "type": "BatchNormalization"
             }
         },
         "187": {
@@ -3096,8 +2921,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_reduction_right3_reduce_12",
-                "type": "SeparableConv2D",
-                "index": 433
+                "type": "SeparableConv2D"
             }
         },
         "188": {
@@ -3112,8 +2936,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_reduction_right3_reduce_12",
-                "type": "BatchNormalization",
-                "index": 431
+                "type": "BatchNormalization"
             }
         },
         "189": {
@@ -3128,8 +2951,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_reduction_right3_reduce_12",
-                "type": "SeparableConv2D",
-                "index": 430
+                "type": "SeparableConv2D"
             }
         },
         "183": {
@@ -3146,8 +2968,7 @@
             ],
             "extras": {
                 "name": "adjust_bn_reduce_12",
-                "type": "BatchNormalization",
-                "index": 420
+                "type": "BatchNormalization"
             }
         },
         "190": {
@@ -3168,8 +2989,7 @@
             ],
             "extras": {
                 "name": "adjust_conv_projection_reduce_12",
-                "type": "Conv2D",
-                "index": 419
+                "type": "Conv2D"
             }
         },
         "135": {
@@ -3187,8 +3007,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left1_11",
-                "type": "BatchNormalization",
-                "index": 487
+                "type": "BatchNormalization"
             }
         },
         "191": {
@@ -3203,8 +3022,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left1_11",
-                "type": "SeparableConv2D",
-                "index": 486
+                "type": "SeparableConv2D"
             }
         },
         "192": {
@@ -3219,8 +3037,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left1_11",
-                "type": "BatchNormalization",
-                "index": 484
+                "type": "BatchNormalization"
             }
         },
         "193": {
@@ -3235,8 +3052,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left1_11",
-                "type": "SeparableConv2D",
-                "index": 483
+                "type": "SeparableConv2D"
             }
         },
         "133": {
@@ -3254,8 +3070,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left5_11",
-                "type": "BatchNormalization",
-                "index": 479
+                "type": "BatchNormalization"
             }
         },
         "194": {
@@ -3270,8 +3085,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left5_11",
-                "type": "SeparableConv2D",
-                "index": 478
+                "type": "SeparableConv2D"
             }
         },
         "195": {
@@ -3286,8 +3100,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left5_11",
-                "type": "BatchNormalization",
-                "index": 476
+                "type": "BatchNormalization"
             }
         },
         "196": {
@@ -3302,8 +3115,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left5_11",
-                "type": "SeparableConv2D",
-                "index": 475
+                "type": "SeparableConv2D"
             }
         },
         "130": {
@@ -3323,8 +3135,7 @@
             ],
             "extras": {
                 "name": "normal_bn_1_11",
-                "type": "BatchNormalization",
-                "index": 473
+                "type": "BatchNormalization"
             }
         },
         "197": {
@@ -3345,8 +3156,7 @@
             ],
             "extras": {
                 "name": "normal_conv_1_11",
-                "type": "Conv2D",
-                "index": 472
+                "type": "Conv2D"
             }
         },
         "169": {
@@ -3361,8 +3171,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left2_12",
-                "type": "BatchNormalization",
-                "index": 504
+                "type": "BatchNormalization"
             }
         },
         "205": {
@@ -3377,8 +3186,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left2_12",
-                "type": "SeparableConv2D",
-                "index": 503
+                "type": "SeparableConv2D"
             }
         },
         "206": {
@@ -3393,8 +3201,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left2_12",
-                "type": "BatchNormalization",
-                "index": 501
+                "type": "BatchNormalization"
             }
         },
         "207": {
@@ -3409,8 +3216,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left2_12",
-                "type": "SeparableConv2D",
-                "index": 500
+                "type": "SeparableConv2D"
             }
         },
         "168": {
@@ -3425,8 +3231,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right1_12",
-                "type": "BatchNormalization",
-                "index": 496
+                "type": "BatchNormalization"
             }
         },
         "208": {
@@ -3441,8 +3246,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right1_12",
-                "type": "SeparableConv2D",
-                "index": 495
+                "type": "SeparableConv2D"
             }
         },
         "209": {
@@ -3457,8 +3261,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right1_12",
-                "type": "BatchNormalization",
-                "index": 493
+                "type": "BatchNormalization"
             }
         },
         "210": {
@@ -3473,8 +3276,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right1_12",
-                "type": "SeparableConv2D",
-                "index": 492
+                "type": "SeparableConv2D"
             }
         },
         "172": {
@@ -3489,8 +3291,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right2_12",
-                "type": "BatchNormalization",
-                "index": 512
+                "type": "BatchNormalization"
             }
         },
         "211": {
@@ -3505,8 +3306,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right2_12",
-                "type": "SeparableConv2D",
-                "index": 511
+                "type": "SeparableConv2D"
             }
         },
         "212": {
@@ -3521,8 +3321,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right2_12",
-                "type": "BatchNormalization",
-                "index": 509
+                "type": "BatchNormalization"
             }
         },
         "213": {
@@ -3537,8 +3336,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right2_12",
-                "type": "SeparableConv2D",
-                "index": 508
+                "type": "SeparableConv2D"
             }
         },
         "170": {
@@ -3556,8 +3354,7 @@
             ],
             "extras": {
                 "name": "adjust_bn_12",
-                "type": "BatchNormalization",
-                "index": 490
+                "type": "BatchNormalization"
             }
         },
         "214": {
@@ -3578,8 +3375,7 @@
             ],
             "extras": {
                 "name": "adjust_conv_projection_12",
-                "type": "Conv2D",
-                "index": 489
+                "type": "Conv2D"
             }
         },
         "200": {
@@ -3595,8 +3391,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right1_10",
-                "type": "BatchNormalization",
-                "index": 577
+                "type": "BatchNormalization"
             }
         },
         "215": {
@@ -3611,8 +3406,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right1_10",
-                "type": "SeparableConv2D",
-                "index": 576
+                "type": "SeparableConv2D"
             }
         },
         "216": {
@@ -3627,8 +3421,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right1_10",
-                "type": "BatchNormalization",
-                "index": 574
+                "type": "BatchNormalization"
             }
         },
         "217": {
@@ -3643,8 +3436,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right1_10",
-                "type": "SeparableConv2D",
-                "index": 573
+                "type": "SeparableConv2D"
             }
         },
         "199": {
@@ -3660,8 +3452,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right2_10",
-                "type": "BatchNormalization",
-                "index": 585
+                "type": "BatchNormalization"
             }
         },
         "218": {
@@ -3676,8 +3467,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right2_10",
-                "type": "SeparableConv2D",
-                "index": 584
+                "type": "SeparableConv2D"
             }
         },
         "219": {
@@ -3692,8 +3482,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right2_10",
-                "type": "BatchNormalization",
-                "index": 582
+                "type": "BatchNormalization"
             }
         },
         "220": {
@@ -3708,8 +3497,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right2_10",
-                "type": "SeparableConv2D",
-                "index": 581
+                "type": "SeparableConv2D"
             }
         },
         "204": {
@@ -3725,8 +3513,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left2_10",
-                "type": "BatchNormalization",
-                "index": 570
+                "type": "BatchNormalization"
             }
         },
         "221": {
@@ -3741,8 +3528,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left2_10",
-                "type": "SeparableConv2D",
-                "index": 569
+                "type": "SeparableConv2D"
             }
         },
         "222": {
@@ -3757,8 +3543,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left2_10",
-                "type": "BatchNormalization",
-                "index": 567
+                "type": "BatchNormalization"
             }
         },
         "223": {
@@ -3773,8 +3558,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left2_10",
-                "type": "SeparableConv2D",
-                "index": 566
+                "type": "SeparableConv2D"
             }
         },
         "198": {
@@ -3793,8 +3577,7 @@
             ],
             "extras": {
                 "name": "adjust_bn_10",
-                "type": "BatchNormalization",
-                "index": 564
+                "type": "BatchNormalization"
             }
         },
         "224": {
@@ -3815,8 +3598,7 @@
             ],
             "extras": {
                 "name": "adjust_conv_projection_10",
-                "type": "Conv2D",
-                "index": 563
+                "type": "Conv2D"
             }
         },
         "131": {
@@ -3834,8 +3616,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left2_11",
-                "type": "BatchNormalization",
-                "index": 447
+                "type": "BatchNormalization"
             }
         },
         "232": {
@@ -3850,8 +3631,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left2_11",
-                "type": "SeparableConv2D",
-                "index": 446
+                "type": "SeparableConv2D"
             }
         },
         "233": {
@@ -3866,8 +3646,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left2_11",
-                "type": "BatchNormalization",
-                "index": 444
+                "type": "BatchNormalization"
             }
         },
         "234": {
@@ -3882,8 +3661,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left2_11",
-                "type": "SeparableConv2D",
-                "index": 443
+                "type": "SeparableConv2D"
             }
         },
         "129": {
@@ -3901,8 +3679,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right2_11",
-                "type": "BatchNormalization",
-                "index": 454
+                "type": "BatchNormalization"
             }
         },
         "235": {
@@ -3917,8 +3694,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right2_11",
-                "type": "SeparableConv2D",
-                "index": 453
+                "type": "SeparableConv2D"
             }
         },
         "236": {
@@ -3933,8 +3709,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right2_11",
-                "type": "BatchNormalization",
-                "index": 451
+                "type": "BatchNormalization"
             }
         },
         "237": {
@@ -3949,8 +3724,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right2_11",
-                "type": "SeparableConv2D",
-                "index": 450
+                "type": "SeparableConv2D"
             }
         },
         "132": {
@@ -3968,8 +3742,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right1_11",
-                "type": "BatchNormalization",
-                "index": 462
+                "type": "BatchNormalization"
             }
         },
         "238": {
@@ -3984,8 +3757,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right1_11",
-                "type": "SeparableConv2D",
-                "index": 461
+                "type": "SeparableConv2D"
             }
         },
         "239": {
@@ -4000,8 +3772,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right1_11",
-                "type": "BatchNormalization",
-                "index": 459
+                "type": "BatchNormalization"
             }
         },
         "240": {
@@ -4016,8 +3787,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right1_11",
-                "type": "SeparableConv2D",
-                "index": 458
+                "type": "SeparableConv2D"
             }
         },
         "134": {
@@ -4038,8 +3808,7 @@
             ],
             "extras": {
                 "name": "adjust_bn_11",
-                "type": "BatchNormalization",
-                "index": 89
+                "type": "BatchNormalization"
             }
         },
         "241": {
@@ -4060,8 +3829,7 @@
             ],
             "extras": {
                 "name": "adjust_conv_projection_11",
-                "type": "Conv2D",
-                "index": 88
+                "type": "Conv2D"
             }
         },
         "201": {
@@ -4077,8 +3845,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left1_10",
-                "type": "BatchNormalization",
-                "index": 519
+                "type": "BatchNormalization"
             }
         },
         "249": {
@@ -4093,8 +3860,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left1_10",
-                "type": "SeparableConv2D",
-                "index": 518
+                "type": "SeparableConv2D"
             }
         },
         "250": {
@@ -4109,8 +3875,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left1_10",
-                "type": "BatchNormalization",
-                "index": 516
+                "type": "BatchNormalization"
             }
         },
         "251": {
@@ -4125,8 +3890,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left1_10",
-                "type": "SeparableConv2D",
-                "index": 515
+                "type": "SeparableConv2D"
             }
         },
         "202": {
@@ -4142,8 +3906,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left5_10",
-                "type": "BatchNormalization",
-                "index": 526
+                "type": "BatchNormalization"
             }
         },
         "252": {
@@ -4158,8 +3921,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left5_10",
-                "type": "SeparableConv2D",
-                "index": 525
+                "type": "SeparableConv2D"
             }
         },
         "253": {
@@ -4174,8 +3936,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left5_10",
-                "type": "BatchNormalization",
-                "index": 523
+                "type": "BatchNormalization"
             }
         },
         "254": {
@@ -4190,8 +3951,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left5_10",
-                "type": "SeparableConv2D",
-                "index": 522
+                "type": "SeparableConv2D"
             }
         },
         "203": {
@@ -4209,8 +3969,7 @@
             ],
             "extras": {
                 "name": "normal_bn_1_10",
-                "type": "BatchNormalization",
-                "index": 467
+                "type": "BatchNormalization"
             }
         },
         "255": {
@@ -4231,8 +3990,7 @@
             ],
             "extras": {
                 "name": "normal_conv_1_10",
-                "type": "Conv2D",
-                "index": 466
+                "type": "Conv2D"
             }
         },
         "246": {
@@ -4248,8 +4006,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left5_9",
-                "type": "BatchNormalization",
-                "index": 597
+                "type": "BatchNormalization"
             }
         },
         "256": {
@@ -4264,8 +4021,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left5_9",
-                "type": "SeparableConv2D",
-                "index": 596
+                "type": "SeparableConv2D"
             }
         },
         "257": {
@@ -4280,8 +4036,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left5_9",
-                "type": "BatchNormalization",
-                "index": 594
+                "type": "BatchNormalization"
             }
         },
         "258": {
@@ -4296,8 +4051,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left5_9",
-                "type": "SeparableConv2D",
-                "index": 593
+                "type": "SeparableConv2D"
             }
         },
         "244": {
@@ -4313,8 +4067,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left1_9",
-                "type": "BatchNormalization",
-                "index": 603
+                "type": "BatchNormalization"
             }
         },
         "259": {
@@ -4329,8 +4082,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left1_9",
-                "type": "SeparableConv2D",
-                "index": 602
+                "type": "SeparableConv2D"
             }
         },
         "260": {
@@ -4345,8 +4097,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left1_9",
-                "type": "BatchNormalization",
-                "index": 600
+                "type": "BatchNormalization"
             }
         },
         "261": {
@@ -4361,8 +4112,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left1_9",
-                "type": "SeparableConv2D",
-                "index": 599
+                "type": "SeparableConv2D"
             }
         },
         "248": {
@@ -4380,8 +4130,7 @@
             ],
             "extras": {
                 "name": "normal_bn_1_9",
-                "type": "BatchNormalization",
-                "index": 589
+                "type": "BatchNormalization"
             }
         },
         "262": {
@@ -4402,8 +4151,7 @@
             ],
             "extras": {
                 "name": "normal_conv_1_9",
-                "type": "Conv2D",
-                "index": 588
+                "type": "Conv2D"
             }
         },
         "227": {
@@ -4419,8 +4167,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left2_8",
-                "type": "BatchNormalization",
-                "index": 641
+                "type": "BatchNormalization"
             }
         },
         "263": {
@@ -4435,8 +4182,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left2_8",
-                "type": "SeparableConv2D",
-                "index": 640
+                "type": "SeparableConv2D"
             }
         },
         "264": {
@@ -4451,8 +4197,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left2_8",
-                "type": "BatchNormalization",
-                "index": 638
+                "type": "BatchNormalization"
             }
         },
         "265": {
@@ -4467,8 +4212,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left2_8",
-                "type": "SeparableConv2D",
-                "index": 637
+                "type": "SeparableConv2D"
             }
         },
         "226": {
@@ -4484,8 +4228,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right1_8",
-                "type": "BatchNormalization",
-                "index": 635
+                "type": "BatchNormalization"
             }
         },
         "266": {
@@ -4500,8 +4243,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right1_8",
-                "type": "SeparableConv2D",
-                "index": 634
+                "type": "SeparableConv2D"
             }
         },
         "267": {
@@ -4516,8 +4258,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right1_8",
-                "type": "BatchNormalization",
-                "index": 632
+                "type": "BatchNormalization"
             }
         },
         "268": {
@@ -4532,8 +4273,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right1_8",
-                "type": "SeparableConv2D",
-                "index": 631
+                "type": "SeparableConv2D"
             }
         },
         "228": {
@@ -4549,8 +4289,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right2_8",
-                "type": "BatchNormalization",
-                "index": 648
+                "type": "BatchNormalization"
             }
         },
         "269": {
@@ -4565,8 +4304,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right2_8",
-                "type": "SeparableConv2D",
-                "index": 647
+                "type": "SeparableConv2D"
             }
         },
         "270": {
@@ -4581,8 +4319,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right2_8",
-                "type": "BatchNormalization",
-                "index": 645
+                "type": "BatchNormalization"
             }
         },
         "271": {
@@ -4597,8 +4334,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right2_8",
-                "type": "SeparableConv2D",
-                "index": 644
+                "type": "SeparableConv2D"
             }
         },
         "230": {
@@ -4617,8 +4353,7 @@
             ],
             "extras": {
                 "name": "adjust_bn_8",
-                "type": "BatchNormalization",
-                "index": 629
+                "type": "BatchNormalization"
             }
         },
         "272": {
@@ -4638,8 +4373,7 @@
             ],
             "extras": {
                 "name": "adjust_conv_projection_8",
-                "type": "Conv2D",
-                "index": 628
+                "type": "Conv2D"
             }
         },
         "231": {
@@ -4655,8 +4389,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left5_8",
-                "type": "BatchNormalization",
-                "index": 559
+                "type": "BatchNormalization"
             }
         },
         "279": {
@@ -4671,8 +4404,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left5_8",
-                "type": "SeparableConv2D",
-                "index": 558
+                "type": "SeparableConv2D"
             }
         },
         "280": {
@@ -4687,8 +4419,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left5_8",
-                "type": "BatchNormalization",
-                "index": 556
+                "type": "BatchNormalization"
             }
         },
         "281": {
@@ -4703,8 +4434,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left5_8",
-                "type": "SeparableConv2D",
-                "index": 555
+                "type": "SeparableConv2D"
             }
         },
         "225": {
@@ -4720,8 +4450,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left1_8",
-                "type": "BatchNormalization",
-                "index": 611
+                "type": "BatchNormalization"
             }
         },
         "282": {
@@ -4736,8 +4465,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left1_8",
-                "type": "SeparableConv2D",
-                "index": 610
+                "type": "SeparableConv2D"
             }
         },
         "283": {
@@ -4752,8 +4480,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left1_8",
-                "type": "BatchNormalization",
-                "index": 608
+                "type": "BatchNormalization"
             }
         },
         "284": {
@@ -4768,8 +4495,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left1_8",
-                "type": "SeparableConv2D",
-                "index": 607
+                "type": "SeparableConv2D"
             }
         },
         "229": {
@@ -4787,8 +4513,7 @@
             ],
             "extras": {
                 "name": "normal_bn_1_8",
-                "type": "BatchNormalization",
-                "index": 553
+                "type": "BatchNormalization"
             }
         },
         "285": {
@@ -4809,8 +4534,7 @@
             ],
             "extras": {
                 "name": "normal_conv_1_8",
-                "type": "Conv2D",
-                "index": 552
+                "type": "Conv2D"
             }
         },
         "245": {
@@ -4826,8 +4550,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right2_9",
-                "type": "BatchNormalization",
-                "index": 549
+                "type": "BatchNormalization"
             }
         },
         "293": {
@@ -4842,8 +4565,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right2_9",
-                "type": "SeparableConv2D",
-                "index": 548
+                "type": "SeparableConv2D"
             }
         },
         "294": {
@@ -4858,8 +4580,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right2_9",
-                "type": "BatchNormalization",
-                "index": 546
+                "type": "BatchNormalization"
             }
         },
         "295": {
@@ -4874,8 +4595,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right2_9",
-                "type": "SeparableConv2D",
-                "index": 545
+                "type": "SeparableConv2D"
             }
         },
         "242": {
@@ -4891,8 +4611,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left2_9",
-                "type": "BatchNormalization",
-                "index": 532
+                "type": "BatchNormalization"
             }
         },
         "296": {
@@ -4907,8 +4626,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left2_9",
-                "type": "SeparableConv2D",
-                "index": 531
+                "type": "SeparableConv2D"
             }
         },
         "297": {
@@ -4923,8 +4641,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left2_9",
-                "type": "BatchNormalization",
-                "index": 529
+                "type": "BatchNormalization"
             }
         },
         "298": {
@@ -4939,8 +4656,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left2_9",
-                "type": "SeparableConv2D",
-                "index": 528
+                "type": "SeparableConv2D"
             }
         },
         "243": {
@@ -4956,8 +4672,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right1_9",
-                "type": "BatchNormalization",
-                "index": 540
+                "type": "BatchNormalization"
             }
         },
         "299": {
@@ -4972,8 +4687,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right1_9",
-                "type": "SeparableConv2D",
-                "index": 539
+                "type": "SeparableConv2D"
             }
         },
         "300": {
@@ -4988,8 +4702,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right1_9",
-                "type": "BatchNormalization",
-                "index": 537
+                "type": "BatchNormalization"
             }
         },
         "301": {
@@ -5004,8 +4717,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right1_9",
-                "type": "SeparableConv2D",
-                "index": 536
+                "type": "SeparableConv2D"
             }
         },
         "247": {
@@ -5024,8 +4736,7 @@
             ],
             "extras": {
                 "name": "adjust_bn_9",
-                "type": "BatchNormalization",
-                "index": 85
+                "type": "BatchNormalization"
             }
         },
         "302": {
@@ -5046,8 +4757,7 @@
             ],
             "extras": {
                 "name": "adjust_conv_projection_9",
-                "type": "Conv2D",
-                "index": 84
+                "type": "Conv2D"
             }
         },
         "287": {
@@ -5063,8 +4773,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left5_7",
-                "type": "BatchNormalization",
-                "index": 626
+                "type": "BatchNormalization"
             }
         },
         "303": {
@@ -5079,8 +4788,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left5_7",
-                "type": "SeparableConv2D",
-                "index": 625
+                "type": "SeparableConv2D"
             }
         },
         "304": {
@@ -5095,8 +4803,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left5_7",
-                "type": "BatchNormalization",
-                "index": 623
+                "type": "BatchNormalization"
             }
         },
         "305": {
@@ -5111,8 +4818,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left5_7",
-                "type": "SeparableConv2D",
-                "index": 622
+                "type": "SeparableConv2D"
             }
         },
         "291": {
@@ -5128,8 +4834,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left1_7",
-                "type": "BatchNormalization",
-                "index": 618
+                "type": "BatchNormalization"
             }
         },
         "306": {
@@ -5144,8 +4849,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left1_7",
-                "type": "SeparableConv2D",
-                "index": 617
+                "type": "SeparableConv2D"
             }
         },
         "307": {
@@ -5160,8 +4864,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left1_7",
-                "type": "BatchNormalization",
-                "index": 615
+                "type": "BatchNormalization"
             }
         },
         "308": {
@@ -5176,8 +4879,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left1_7",
-                "type": "SeparableConv2D",
-                "index": 614
+                "type": "SeparableConv2D"
             }
         },
         "290": {
@@ -5195,8 +4897,7 @@
             ],
             "extras": {
                 "name": "normal_bn_1_7",
-                "type": "BatchNormalization",
-                "index": 79
+                "type": "BatchNormalization"
             }
         },
         "309": {
@@ -5216,8 +4917,7 @@
             ],
             "extras": {
                 "name": "normal_conv_1_7",
-                "type": "Conv2D",
-                "index": 78
+                "type": "Conv2D"
             }
         },
         "275": {
@@ -5233,8 +4933,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_reduction_left4_reduce_6",
-                "type": "BatchNormalization",
-                "index": 675
+                "type": "BatchNormalization"
             }
         },
         "310": {
@@ -5249,8 +4948,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_reduction_left4_reduce_6",
-                "type": "SeparableConv2D",
-                "index": 674
+                "type": "SeparableConv2D"
             }
         },
         "311": {
@@ -5265,8 +4963,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_reduction_left4_reduce_6",
-                "type": "BatchNormalization",
-                "index": 672
+                "type": "BatchNormalization"
             }
         },
         "312": {
@@ -5282,8 +4979,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_reduction_left4_reduce_6",
-                "type": "SeparableConv2D",
-                "index": 671
+                "type": "SeparableConv2D"
             }
         },
         "277": {
@@ -5300,8 +4996,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_reduction_left1_reduce_6",
-                "type": "BatchNormalization",
-                "index": 723
+                "type": "BatchNormalization"
             }
         },
         "313": {
@@ -5316,8 +5011,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_reduction_left1_reduce_6",
-                "type": "SeparableConv2D",
-                "index": 722
+                "type": "SeparableConv2D"
             }
         },
         "314": {
@@ -5332,8 +5026,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_reduction_left1_reduce_6",
-                "type": "BatchNormalization",
-                "index": 720
+                "type": "BatchNormalization"
             }
         },
         "315": {
@@ -5348,8 +5041,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_reduction_left1_reduce_6",
-                "type": "SeparableConv2D",
-                "index": 719
+                "type": "SeparableConv2D"
             }
         },
         "278": {
@@ -5366,8 +5058,7 @@
             ],
             "extras": {
                 "name": "reduction_bn_1_reduce_6",
-                "type": "BatchNormalization",
-                "index": 716
+                "type": "BatchNormalization"
             }
         },
         "316": {
@@ -5388,8 +5079,7 @@
             ],
             "extras": {
                 "name": "reduction_conv_1_reduce_6",
-                "type": "Conv2D",
-                "index": 715
+                "type": "Conv2D"
             }
         },
         "318": {
@@ -5404,8 +5094,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left5_5",
-                "type": "BatchNormalization",
-                "index": 733
+                "type": "BatchNormalization"
             }
         },
         "324": {
@@ -5420,8 +5109,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left5_5",
-                "type": "SeparableConv2D",
-                "index": 732
+                "type": "SeparableConv2D"
             }
         },
         "325": {
@@ -5436,8 +5124,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left5_5",
-                "type": "BatchNormalization",
-                "index": 730
+                "type": "BatchNormalization"
             }
         },
         "326": {
@@ -5452,8 +5139,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left5_5",
-                "type": "SeparableConv2D",
-                "index": 729
+                "type": "SeparableConv2D"
             }
         },
         "323": {
@@ -5468,8 +5154,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left1_5",
-                "type": "BatchNormalization",
-                "index": 740
+                "type": "BatchNormalization"
             }
         },
         "327": {
@@ -5484,8 +5169,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left1_5",
-                "type": "SeparableConv2D",
-                "index": 739
+                "type": "SeparableConv2D"
             }
         },
         "328": {
@@ -5500,8 +5184,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left1_5",
-                "type": "BatchNormalization",
-                "index": 737
+                "type": "BatchNormalization"
             }
         },
         "329": {
@@ -5516,8 +5199,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left1_5",
-                "type": "SeparableConv2D",
-                "index": 736
+                "type": "SeparableConv2D"
             }
         },
         "321": {
@@ -5534,8 +5216,7 @@
             ],
             "extras": {
                 "name": "normal_bn_1_5",
-                "type": "BatchNormalization",
-                "index": 710
+                "type": "BatchNormalization"
             }
         },
         "330": {
@@ -5556,8 +5237,7 @@
             ],
             "extras": {
                 "name": "normal_conv_1_5",
-                "type": "Conv2D",
-                "index": 709
+                "type": "Conv2D"
             }
         },
         "288": {
@@ -5573,8 +5253,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right1_7",
-                "type": "BatchNormalization",
-                "index": 687
+                "type": "BatchNormalization"
             }
         },
         "338": {
@@ -5589,8 +5268,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right1_7",
-                "type": "SeparableConv2D",
-                "index": 686
+                "type": "SeparableConv2D"
             }
         },
         "339": {
@@ -5605,8 +5283,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right1_7",
-                "type": "BatchNormalization",
-                "index": 684
+                "type": "BatchNormalization"
             }
         },
         "340": {
@@ -5621,8 +5298,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right1_7",
-                "type": "SeparableConv2D",
-                "index": 683
+                "type": "SeparableConv2D"
             }
         },
         "289": {
@@ -5638,8 +5314,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right2_7",
-                "type": "BatchNormalization",
-                "index": 703
+                "type": "BatchNormalization"
             }
         },
         "341": {
@@ -5654,8 +5329,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right2_7",
-                "type": "SeparableConv2D",
-                "index": 702
+                "type": "SeparableConv2D"
             }
         },
         "342": {
@@ -5670,8 +5344,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right2_7",
-                "type": "BatchNormalization",
-                "index": 700
+                "type": "BatchNormalization"
             }
         },
         "343": {
@@ -5686,8 +5359,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right2_7",
-                "type": "SeparableConv2D",
-                "index": 699
+                "type": "SeparableConv2D"
             }
         },
         "292": {
@@ -5703,8 +5375,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left2_7",
-                "type": "BatchNormalization",
-                "index": 696
+                "type": "BatchNormalization"
             }
         },
         "344": {
@@ -5719,8 +5390,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left2_7",
-                "type": "SeparableConv2D",
-                "index": 695
+                "type": "SeparableConv2D"
             }
         },
         "345": {
@@ -5735,8 +5405,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left2_7",
-                "type": "BatchNormalization",
-                "index": 693
+                "type": "BatchNormalization"
             }
         },
         "346": {
@@ -5751,8 +5420,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left2_7",
-                "type": "SeparableConv2D",
-                "index": 692
+                "type": "SeparableConv2D"
             }
         },
         "286": {
@@ -5772,8 +5440,7 @@
             ],
             "extras": {
                 "name": "adjust_bn_7",
-                "type": "BatchNormalization",
-                "index": 681
+                "type": "BatchNormalization"
             }
         },
         "348": {
@@ -5794,8 +5461,7 @@
             ],
             "extras": {
                 "name": "adjust_conv_2_7",
-                "type": "Conv2D",
-                "index": 707
+                "type": "Conv2D"
             }
         },
         "347": {
@@ -5816,8 +5482,7 @@
             ],
             "extras": {
                 "name": "adjust_conv_1_7",
-                "type": "Conv2D",
-                "index": 679
+                "type": "Conv2D"
             }
         },
         "274": {
@@ -5833,8 +5498,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_reduction_right3_reduce_6",
-                "type": "BatchNormalization",
-                "index": 74
+                "type": "BatchNormalization"
             }
         },
         "349": {
@@ -5849,8 +5513,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_reduction_right3_reduce_6",
-                "type": "SeparableConv2D",
-                "index": 73
+                "type": "SeparableConv2D"
             }
         },
         "350": {
@@ -5865,8 +5528,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_reduction_right3_reduce_6",
-                "type": "BatchNormalization",
-                "index": 71
+                "type": "BatchNormalization"
             }
         },
         "351": {
@@ -5881,8 +5543,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_reduction_right3_reduce_6",
-                "type": "SeparableConv2D",
-                "index": 70
+                "type": "SeparableConv2D"
             }
         },
         "273": {
@@ -5898,8 +5559,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_reduction_right2_reduce_6",
-                "type": "BatchNormalization",
-                "index": 658
+                "type": "BatchNormalization"
             }
         },
         "353": {
@@ -5914,8 +5574,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_reduction_right2_reduce_6",
-                "type": "SeparableConv2D",
-                "index": 657
+                "type": "SeparableConv2D"
             }
         },
         "354": {
@@ -5930,8 +5589,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_reduction_right2_reduce_6",
-                "type": "BatchNormalization",
-                "index": 655
+                "type": "BatchNormalization"
             }
         },
         "355": {
@@ -5946,8 +5604,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_reduction_right2_reduce_6",
-                "type": "SeparableConv2D",
-                "index": 654
+                "type": "SeparableConv2D"
             }
         },
         "276": {
@@ -5964,8 +5621,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_reduction_right1_reduce_6",
-                "type": "BatchNormalization",
-                "index": 667
+                "type": "BatchNormalization"
             }
         },
         "356": {
@@ -5980,8 +5636,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_reduction_right1_reduce_6",
-                "type": "SeparableConv2D",
-                "index": 666
+                "type": "SeparableConv2D"
             }
         },
         "357": {
@@ -5996,8 +5651,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_reduction_right1_reduce_6",
-                "type": "BatchNormalization",
-                "index": 664
+                "type": "BatchNormalization"
             }
         },
         "358": {
@@ -6012,8 +5666,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_reduction_right1_reduce_6",
-                "type": "SeparableConv2D",
-                "index": 663
+                "type": "SeparableConv2D"
             }
         },
         "352": {
@@ -6030,8 +5683,7 @@
             ],
             "extras": {
                 "name": "adjust_bn_reduce_6",
-                "type": "BatchNormalization",
-                "index": 67
+                "type": "BatchNormalization"
             }
         },
         "359": {
@@ -6052,8 +5704,7 @@
             ],
             "extras": {
                 "name": "adjust_conv_projection_reduce_6",
-                "type": "Conv2D",
-                "index": 66
+                "type": "Conv2D"
             }
         },
         "333": {
@@ -6071,8 +5722,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left2_4",
-                "type": "BatchNormalization",
-                "index": 809
+                "type": "BatchNormalization"
             }
         },
         "360": {
@@ -6087,8 +5737,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left2_4",
-                "type": "SeparableConv2D",
-                "index": 808
+                "type": "SeparableConv2D"
             }
         },
         "361": {
@@ -6103,8 +5752,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left2_4",
-                "type": "BatchNormalization",
-                "index": 806
+                "type": "BatchNormalization"
             }
         },
         "362": {
@@ -6119,8 +5767,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left2_4",
-                "type": "SeparableConv2D",
-                "index": 805
+                "type": "SeparableConv2D"
             }
         },
         "332": {
@@ -6138,8 +5785,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right1_4",
-                "type": "BatchNormalization",
-                "index": 796
+                "type": "BatchNormalization"
             }
         },
         "363": {
@@ -6154,8 +5800,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right1_4",
-                "type": "SeparableConv2D",
-                "index": 795
+                "type": "SeparableConv2D"
             }
         },
         "364": {
@@ -6170,8 +5815,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right1_4",
-                "type": "BatchNormalization",
-                "index": 793
+                "type": "BatchNormalization"
             }
         },
         "365": {
@@ -6186,8 +5830,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right1_4",
-                "type": "SeparableConv2D",
-                "index": 792
+                "type": "SeparableConv2D"
             }
         },
         "336": {
@@ -6205,8 +5848,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right2_4",
-                "type": "BatchNormalization",
-                "index": 802
+                "type": "BatchNormalization"
             }
         },
         "366": {
@@ -6221,8 +5863,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right2_4",
-                "type": "SeparableConv2D",
-                "index": 801
+                "type": "SeparableConv2D"
             }
         },
         "367": {
@@ -6237,8 +5878,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right2_4",
-                "type": "BatchNormalization",
-                "index": 799
+                "type": "BatchNormalization"
             }
         },
         "368": {
@@ -6253,8 +5893,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right2_4",
-                "type": "SeparableConv2D",
-                "index": 798
+                "type": "SeparableConv2D"
             }
         },
         "337": {
@@ -6275,8 +5914,7 @@
             ],
             "extras": {
                 "name": "adjust_bn_4",
-                "type": "BatchNormalization",
-                "index": 787
+                "type": "BatchNormalization"
             }
         },
         "369": {
@@ -6297,8 +5935,7 @@
             ],
             "extras": {
                 "name": "adjust_conv_projection_4",
-                "type": "Conv2D",
-                "index": 786
+                "type": "Conv2D"
             }
         },
         "319": {
@@ -6313,8 +5950,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right1_5",
-                "type": "BatchNormalization",
-                "index": 768
+                "type": "BatchNormalization"
             }
         },
         "377": {
@@ -6329,8 +5965,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right1_5",
-                "type": "SeparableConv2D",
-                "index": 767
+                "type": "SeparableConv2D"
             }
         },
         "378": {
@@ -6345,8 +5980,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right1_5",
-                "type": "BatchNormalization",
-                "index": 765
+                "type": "BatchNormalization"
             }
         },
         "379": {
@@ -6361,8 +5995,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right1_5",
-                "type": "SeparableConv2D",
-                "index": 764
+                "type": "SeparableConv2D"
             }
         },
         "320": {
@@ -6377,8 +6010,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right2_5",
-                "type": "BatchNormalization",
-                "index": 775
+                "type": "BatchNormalization"
             }
         },
         "380": {
@@ -6393,8 +6025,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right2_5",
-                "type": "SeparableConv2D",
-                "index": 774
+                "type": "SeparableConv2D"
             }
         },
         "381": {
@@ -6409,8 +6040,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right2_5",
-                "type": "BatchNormalization",
-                "index": 772
+                "type": "BatchNormalization"
             }
         },
         "382": {
@@ -6425,8 +6055,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right2_5",
-                "type": "SeparableConv2D",
-                "index": 771
+                "type": "SeparableConv2D"
             }
         },
         "322": {
@@ -6441,8 +6070,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left2_5",
-                "type": "BatchNormalization",
-                "index": 759
+                "type": "BatchNormalization"
             }
         },
         "383": {
@@ -6457,8 +6085,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left2_5",
-                "type": "SeparableConv2D",
-                "index": 758
+                "type": "SeparableConv2D"
             }
         },
         "384": {
@@ -6473,8 +6100,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left2_5",
-                "type": "BatchNormalization",
-                "index": 756
+                "type": "BatchNormalization"
             }
         },
         "385": {
@@ -6489,8 +6115,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left2_5",
-                "type": "SeparableConv2D",
-                "index": 755
+                "type": "SeparableConv2D"
             }
         },
         "317": {
@@ -6508,8 +6133,7 @@
             ],
             "extras": {
                 "name": "adjust_bn_5",
-                "type": "BatchNormalization",
-                "index": 753
+                "type": "BatchNormalization"
             }
         },
         "386": {
@@ -6530,8 +6154,7 @@
             ],
             "extras": {
                 "name": "adjust_conv_projection_5",
-                "type": "Conv2D",
-                "index": 752
+                "type": "Conv2D"
             }
         },
         "334": {
@@ -6549,8 +6172,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left5_4",
-                "type": "BatchNormalization",
-                "index": 747
+                "type": "BatchNormalization"
             }
         },
         "394": {
@@ -6565,8 +6187,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left5_4",
-                "type": "SeparableConv2D",
-                "index": 746
+                "type": "SeparableConv2D"
             }
         },
         "395": {
@@ -6581,8 +6202,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left5_4",
-                "type": "BatchNormalization",
-                "index": 744
+                "type": "BatchNormalization"
             }
         },
         "396": {
@@ -6597,8 +6217,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left5_4",
-                "type": "SeparableConv2D",
-                "index": 743
+                "type": "SeparableConv2D"
             }
         },
         "335": {
@@ -6616,8 +6235,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left1_4",
-                "type": "BatchNormalization",
-                "index": 62
+                "type": "BatchNormalization"
             }
         },
         "397": {
@@ -6632,8 +6250,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left1_4",
-                "type": "SeparableConv2D",
-                "index": 61
+                "type": "SeparableConv2D"
             }
         },
         "398": {
@@ -6648,8 +6265,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left1_4",
-                "type": "BatchNormalization",
-                "index": 59
+                "type": "BatchNormalization"
             }
         },
         "399": {
@@ -6664,8 +6280,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left1_4",
-                "type": "SeparableConv2D",
-                "index": 58
+                "type": "SeparableConv2D"
             }
         },
         "331": {
@@ -6685,8 +6300,7 @@
             ],
             "extras": {
                 "name": "normal_bn_1_4",
-                "type": "BatchNormalization",
-                "index": 56
+                "type": "BatchNormalization"
             }
         },
         "400": {
@@ -6707,8 +6321,7 @@
             ],
             "extras": {
                 "name": "normal_conv_1_4",
-                "type": "Conv2D",
-                "index": 55
+                "type": "Conv2D"
             }
         },
         "393": {
@@ -6724,8 +6337,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left1_3",
-                "type": "BatchNormalization",
-                "index": 51
+                "type": "BatchNormalization"
             }
         },
         "401": {
@@ -6740,8 +6352,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left1_3",
-                "type": "SeparableConv2D",
-                "index": 50
+                "type": "SeparableConv2D"
             }
         },
         "402": {
@@ -6756,8 +6367,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left1_3",
-                "type": "BatchNormalization",
-                "index": 48
+                "type": "BatchNormalization"
             }
         },
         "403": {
@@ -6772,8 +6382,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left1_3",
-                "type": "SeparableConv2D",
-                "index": 47
+                "type": "SeparableConv2D"
             }
         },
         "387": {
@@ -6789,8 +6398,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left5_3",
-                "type": "BatchNormalization",
-                "index": 784
+                "type": "BatchNormalization"
             }
         },
         "404": {
@@ -6805,8 +6413,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left5_3",
-                "type": "SeparableConv2D",
-                "index": 783
+                "type": "SeparableConv2D"
             }
         },
         "405": {
@@ -6821,8 +6428,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left5_3",
-                "type": "BatchNormalization",
-                "index": 781
+                "type": "BatchNormalization"
             }
         },
         "406": {
@@ -6837,8 +6443,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left5_3",
-                "type": "SeparableConv2D",
-                "index": 780
+                "type": "SeparableConv2D"
             }
         },
         "388": {
@@ -6856,8 +6461,7 @@
             ],
             "extras": {
                 "name": "normal_bn_1_3",
-                "type": "BatchNormalization",
-                "index": 45
+                "type": "BatchNormalization"
             }
         },
         "407": {
@@ -6878,8 +6482,7 @@
             ],
             "extras": {
                 "name": "normal_conv_1_3",
-                "type": "Conv2D",
-                "index": 44
+                "type": "Conv2D"
             }
         },
         "370": {
@@ -6895,8 +6498,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right2_2",
-                "type": "BatchNormalization",
-                "index": 871
+                "type": "BatchNormalization"
             }
         },
         "408": {
@@ -6911,8 +6513,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right2_2",
-                "type": "SeparableConv2D",
-                "index": 870
+                "type": "SeparableConv2D"
             }
         },
         "409": {
@@ -6927,8 +6528,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right2_2",
-                "type": "BatchNormalization",
-                "index": 868
+                "type": "BatchNormalization"
             }
         },
         "410": {
@@ -6943,8 +6543,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right2_2",
-                "type": "SeparableConv2D",
-                "index": 867
+                "type": "SeparableConv2D"
             }
         },
         "372": {
@@ -6960,8 +6559,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right1_2",
-                "type": "BatchNormalization",
-                "index": 886
+                "type": "BatchNormalization"
             }
         },
         "411": {
@@ -6976,8 +6574,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right1_2",
-                "type": "SeparableConv2D",
-                "index": 885
+                "type": "SeparableConv2D"
             }
         },
         "412": {
@@ -6992,8 +6589,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right1_2",
-                "type": "BatchNormalization",
-                "index": 883
+                "type": "BatchNormalization"
             }
         },
         "413": {
@@ -7008,8 +6604,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right1_2",
-                "type": "SeparableConv2D",
-                "index": 882
+                "type": "SeparableConv2D"
             }
         },
         "376": {
@@ -7025,8 +6620,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left2_2",
-                "type": "BatchNormalization",
-                "index": 878
+                "type": "BatchNormalization"
             }
         },
         "414": {
@@ -7041,8 +6635,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left2_2",
-                "type": "SeparableConv2D",
-                "index": 877
+                "type": "SeparableConv2D"
             }
         },
         "415": {
@@ -7057,8 +6650,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left2_2",
-                "type": "BatchNormalization",
-                "index": 875
+                "type": "BatchNormalization"
             }
         },
         "416": {
@@ -7073,8 +6665,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left2_2",
-                "type": "SeparableConv2D",
-                "index": 874
+                "type": "SeparableConv2D"
             }
         },
         "374": {
@@ -7093,8 +6684,7 @@
             ],
             "extras": {
                 "name": "adjust_bn_2",
-                "type": "BatchNormalization",
-                "index": 865
+                "type": "BatchNormalization"
             }
         },
         "417": {
@@ -7115,8 +6705,7 @@
             ],
             "extras": {
                 "name": "adjust_conv_projection_2",
-                "type": "Conv2D",
-                "index": 864
+                "type": "Conv2D"
             }
         },
         "375": {
@@ -7132,8 +6721,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left5_2",
-                "type": "BatchNormalization",
-                "index": 815
+                "type": "BatchNormalization"
             }
         },
         "425": {
@@ -7148,8 +6736,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left5_2",
-                "type": "SeparableConv2D",
-                "index": 814
+                "type": "SeparableConv2D"
             }
         },
         "426": {
@@ -7164,8 +6751,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left5_2",
-                "type": "BatchNormalization",
-                "index": 812
+                "type": "BatchNormalization"
             }
         },
         "427": {
@@ -7180,8 +6766,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left5_2",
-                "type": "SeparableConv2D",
-                "index": 811
+                "type": "SeparableConv2D"
             }
         },
         "373": {
@@ -7197,8 +6782,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left1_2",
-                "type": "BatchNormalization",
-                "index": 822
+                "type": "BatchNormalization"
             }
         },
         "428": {
@@ -7213,8 +6797,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left1_2",
-                "type": "SeparableConv2D",
-                "index": 821
+                "type": "SeparableConv2D"
             }
         },
         "429": {
@@ -7229,8 +6812,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left1_2",
-                "type": "BatchNormalization",
-                "index": 819
+                "type": "BatchNormalization"
             }
         },
         "430": {
@@ -7245,8 +6827,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left1_2",
-                "type": "SeparableConv2D",
-                "index": 818
+                "type": "SeparableConv2D"
             }
         },
         "371": {
@@ -7264,8 +6845,7 @@
             ],
             "extras": {
                 "name": "normal_bn_1_2",
-                "type": "BatchNormalization",
-                "index": 39
+                "type": "BatchNormalization"
             }
         },
         "431": {
@@ -7286,8 +6866,7 @@
             ],
             "extras": {
                 "name": "normal_conv_1_2",
-                "type": "Conv2D",
-                "index": 38
+                "type": "Conv2D"
             }
         },
         "392": {
@@ -7303,8 +6882,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left2_3",
-                "type": "BatchNormalization",
-                "index": 841
+                "type": "BatchNormalization"
             }
         },
         "439": {
@@ -7319,8 +6897,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left2_3",
-                "type": "SeparableConv2D",
-                "index": 840
+                "type": "SeparableConv2D"
             }
         },
         "440": {
@@ -7335,8 +6912,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left2_3",
-                "type": "BatchNormalization",
-                "index": 838
+                "type": "BatchNormalization"
             }
         },
         "441": {
@@ -7351,8 +6927,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left2_3",
-                "type": "SeparableConv2D",
-                "index": 837
+                "type": "SeparableConv2D"
             }
         },
         "390": {
@@ -7368,8 +6943,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right2_3",
-                "type": "BatchNormalization",
-                "index": 834
+                "type": "BatchNormalization"
             }
         },
         "442": {
@@ -7384,8 +6958,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right2_3",
-                "type": "SeparableConv2D",
-                "index": 833
+                "type": "SeparableConv2D"
             }
         },
         "443": {
@@ -7400,8 +6973,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right2_3",
-                "type": "BatchNormalization",
-                "index": 831
+                "type": "BatchNormalization"
             }
         },
         "444": {
@@ -7416,8 +6988,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right2_3",
-                "type": "SeparableConv2D",
-                "index": 830
+                "type": "SeparableConv2D"
             }
         },
         "389": {
@@ -7433,8 +7004,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right1_3",
-                "type": "BatchNormalization",
-                "index": 848
+                "type": "BatchNormalization"
             }
         },
         "445": {
@@ -7449,8 +7019,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right1_3",
-                "type": "SeparableConv2D",
-                "index": 847
+                "type": "SeparableConv2D"
             }
         },
         "446": {
@@ -7465,8 +7034,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right1_3",
-                "type": "BatchNormalization",
-                "index": 845
+                "type": "BatchNormalization"
             }
         },
         "447": {
@@ -7481,8 +7049,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right1_3",
-                "type": "SeparableConv2D",
-                "index": 844
+                "type": "SeparableConv2D"
             }
         },
         "391": {
@@ -7501,8 +7068,7 @@
             ],
             "extras": {
                 "name": "adjust_bn_3",
-                "type": "BatchNormalization",
-                "index": 826
+                "type": "BatchNormalization"
             }
         },
         "448": {
@@ -7523,8 +7089,7 @@
             ],
             "extras": {
                 "name": "adjust_conv_projection_3",
-                "type": "Conv2D",
-                "index": 825
+                "type": "Conv2D"
             }
         },
         "433": {
@@ -7540,8 +7105,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left1_1",
-                "type": "BatchNormalization",
-                "index": 855
+                "type": "BatchNormalization"
             }
         },
         "449": {
@@ -7556,8 +7120,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left1_1",
-                "type": "SeparableConv2D",
-                "index": 854
+                "type": "SeparableConv2D"
             }
         },
         "450": {
@@ -7572,8 +7135,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left1_1",
-                "type": "BatchNormalization",
-                "index": 852
+                "type": "BatchNormalization"
             }
         },
         "451": {
@@ -7588,8 +7150,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left1_1",
-                "type": "SeparableConv2D",
-                "index": 851
+                "type": "SeparableConv2D"
             }
         },
         "434": {
@@ -7605,8 +7166,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left5_1",
-                "type": "BatchNormalization",
-                "index": 862
+                "type": "BatchNormalization"
             }
         },
         "452": {
@@ -7621,8 +7181,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left5_1",
-                "type": "SeparableConv2D",
-                "index": 861
+                "type": "SeparableConv2D"
             }
         },
         "453": {
@@ -7637,8 +7196,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left5_1",
-                "type": "BatchNormalization",
-                "index": 859
+                "type": "BatchNormalization"
             }
         },
         "454": {
@@ -7653,8 +7211,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left5_1",
-                "type": "SeparableConv2D",
-                "index": 858
+                "type": "SeparableConv2D"
             }
         },
         "437": {
@@ -7672,8 +7229,7 @@
             ],
             "extras": {
                 "name": "normal_bn_1_1",
-                "type": "BatchNormalization",
-                "index": 33
+                "type": "BatchNormalization"
             }
         },
         "455": {
@@ -7694,8 +7250,7 @@
             ],
             "extras": {
                 "name": "normal_conv_1_1",
-                "type": "Conv2D",
-                "index": 32
+                "type": "Conv2D"
             }
         },
         "422": {
@@ -7711,8 +7266,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left1_0",
-                "type": "BatchNormalization",
-                "index": 895
+                "type": "BatchNormalization"
             }
         },
         "456": {
@@ -7727,8 +7281,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left1_0",
-                "type": "SeparableConv2D",
-                "index": 894
+                "type": "SeparableConv2D"
             }
         },
         "457": {
@@ -7743,8 +7296,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left1_0",
-                "type": "BatchNormalization",
-                "index": 892
+                "type": "BatchNormalization"
             }
         },
         "458": {
@@ -7759,8 +7311,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left1_0",
-                "type": "SeparableConv2D",
-                "index": 891
+                "type": "SeparableConv2D"
             }
         },
         "423": {
@@ -7776,8 +7327,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left5_0",
-                "type": "BatchNormalization",
-                "index": 902
+                "type": "BatchNormalization"
             }
         },
         "459": {
@@ -7792,8 +7342,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left5_0",
-                "type": "SeparableConv2D",
-                "index": 901
+                "type": "SeparableConv2D"
             }
         },
         "460": {
@@ -7808,8 +7357,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left5_0",
-                "type": "BatchNormalization",
-                "index": 899
+                "type": "BatchNormalization"
             }
         },
         "461": {
@@ -7824,8 +7372,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left5_0",
-                "type": "SeparableConv2D",
-                "index": 898
+                "type": "SeparableConv2D"
             }
         },
         "418": {
@@ -7843,8 +7390,7 @@
             ],
             "extras": {
                 "name": "normal_bn_1_0",
-                "type": "BatchNormalization",
-                "index": 28
+                "type": "BatchNormalization"
             }
         },
         "462": {
@@ -7864,8 +7410,7 @@
             ],
             "extras": {
                 "name": "normal_conv_1_0",
-                "type": "Conv2D",
-                "index": 27
+                "type": "Conv2D"
             }
         },
         "432": {
@@ -7881,8 +7426,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right1_1",
-                "type": "BatchNormalization",
-                "index": 918
+                "type": "BatchNormalization"
             }
         },
         "469": {
@@ -7897,8 +7441,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right1_1",
-                "type": "SeparableConv2D",
-                "index": 917
+                "type": "SeparableConv2D"
             }
         },
         "470": {
@@ -7913,8 +7456,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right1_1",
-                "type": "BatchNormalization",
-                "index": 915
+                "type": "BatchNormalization"
             }
         },
         "471": {
@@ -7929,8 +7471,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right1_1",
-                "type": "SeparableConv2D",
-                "index": 914
+                "type": "SeparableConv2D"
             }
         },
         "436": {
@@ -7946,8 +7487,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left2_1",
-                "type": "BatchNormalization",
-                "index": 911
+                "type": "BatchNormalization"
             }
         },
         "472": {
@@ -7962,8 +7502,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left2_1",
-                "type": "SeparableConv2D",
-                "index": 910
+                "type": "SeparableConv2D"
             }
         },
         "473": {
@@ -7978,8 +7517,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left2_1",
-                "type": "BatchNormalization",
-                "index": 908
+                "type": "BatchNormalization"
             }
         },
         "474": {
@@ -7994,8 +7532,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left2_1",
-                "type": "SeparableConv2D",
-                "index": 907
+                "type": "SeparableConv2D"
             }
         },
         "435": {
@@ -8011,8 +7548,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right2_1",
-                "type": "BatchNormalization",
-                "index": 927
+                "type": "BatchNormalization"
             }
         },
         "475": {
@@ -8027,8 +7563,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right2_1",
-                "type": "SeparableConv2D",
-                "index": 926
+                "type": "SeparableConv2D"
             }
         },
         "476": {
@@ -8043,8 +7578,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right2_1",
-                "type": "BatchNormalization",
-                "index": 924
+                "type": "BatchNormalization"
             }
         },
         "477": {
@@ -8059,8 +7593,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right2_1",
-                "type": "SeparableConv2D",
-                "index": 923
+                "type": "SeparableConv2D"
             }
         },
         "438": {
@@ -8079,8 +7612,7 @@
             ],
             "extras": {
                 "name": "adjust_bn_1",
-                "type": "BatchNormalization",
-                "index": 905
+                "type": "BatchNormalization"
             }
         },
         "478": {
@@ -8100,8 +7632,7 @@
             ],
             "extras": {
                 "name": "adjust_conv_projection_1",
-                "type": "Conv2D",
-                "index": 904
+                "type": "Conv2D"
             }
         },
         "467": {
@@ -8117,8 +7648,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_reduction_left4_stem_2",
-                "type": "BatchNormalization",
-                "index": 23
+                "type": "BatchNormalization"
             }
         },
         "479": {
@@ -8133,8 +7663,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_reduction_left4_stem_2",
-                "type": "SeparableConv2D",
-                "index": 22
+                "type": "SeparableConv2D"
             }
         },
         "480": {
@@ -8149,8 +7678,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_reduction_left4_stem_2",
-                "type": "BatchNormalization",
-                "index": 20
+                "type": "BatchNormalization"
             }
         },
         "481": {
@@ -8166,8 +7694,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_reduction_left4_stem_2",
-                "type": "SeparableConv2D",
-                "index": 19
+                "type": "SeparableConv2D"
             }
         },
         "464": {
@@ -8184,8 +7711,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_reduction_left1_stem_2",
-                "type": "BatchNormalization",
-                "index": 973
+                "type": "BatchNormalization"
             }
         },
         "482": {
@@ -8200,8 +7726,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_reduction_left1_stem_2",
-                "type": "SeparableConv2D",
-                "index": 972
+                "type": "SeparableConv2D"
             }
         },
         "483": {
@@ -8216,8 +7741,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_reduction_left1_stem_2",
-                "type": "BatchNormalization",
-                "index": 970
+                "type": "BatchNormalization"
             }
         },
         "484": {
@@ -8232,8 +7756,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_reduction_left1_stem_2",
-                "type": "SeparableConv2D",
-                "index": 969
+                "type": "SeparableConv2D"
             }
         },
         "463": {
@@ -8250,8 +7773,7 @@
             ],
             "extras": {
                 "name": "reduction_bn_1_stem_2",
-                "type": "BatchNormalization",
-                "index": 966
+                "type": "BatchNormalization"
             }
         },
         "485": {
@@ -8271,8 +7793,7 @@
             ],
             "extras": {
                 "name": "reduction_conv_1_stem_2",
-                "type": "Conv2D",
-                "index": 965
+                "type": "Conv2D"
             }
         },
         "424": {
@@ -8288,8 +7809,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right1_0",
-                "type": "BatchNormalization",
-                "index": 995
+                "type": "BatchNormalization"
             }
         },
         "492": {
@@ -8304,8 +7824,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right1_0",
-                "type": "SeparableConv2D",
-                "index": 994
+                "type": "SeparableConv2D"
             }
         },
         "493": {
@@ -8320,8 +7839,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right1_0",
-                "type": "BatchNormalization",
-                "index": 992
+                "type": "BatchNormalization"
             }
         },
         "494": {
@@ -8336,8 +7854,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right1_0",
-                "type": "SeparableConv2D",
-                "index": 991
+                "type": "SeparableConv2D"
             }
         },
         "420": {
@@ -8353,8 +7870,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_left2_0",
-                "type": "BatchNormalization",
-                "index": 988
+                "type": "BatchNormalization"
             }
         },
         "495": {
@@ -8369,8 +7885,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_left2_0",
-                "type": "SeparableConv2D",
-                "index": 987
+                "type": "SeparableConv2D"
             }
         },
         "496": {
@@ -8385,8 +7900,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_left2_0",
-                "type": "BatchNormalization",
-                "index": 985
+                "type": "BatchNormalization"
             }
         },
         "497": {
@@ -8401,8 +7915,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_left2_0",
-                "type": "SeparableConv2D",
-                "index": 984
+                "type": "SeparableConv2D"
             }
         },
         "419": {
@@ -8418,8 +7931,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_normal_right2_0",
-                "type": "BatchNormalization",
-                "index": 1001
+                "type": "BatchNormalization"
             }
         },
         "498": {
@@ -8434,8 +7946,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_normal_right2_0",
-                "type": "SeparableConv2D",
-                "index": 1000
+                "type": "SeparableConv2D"
             }
         },
         "499": {
@@ -8450,8 +7961,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_normal_right2_0",
-                "type": "BatchNormalization",
-                "index": 998
+                "type": "BatchNormalization"
             }
         },
         "500": {
@@ -8466,8 +7976,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_normal_right2_0",
-                "type": "SeparableConv2D",
-                "index": 997
+                "type": "SeparableConv2D"
             }
         },
         "421": {
@@ -8487,8 +7996,7 @@
             ],
             "extras": {
                 "name": "adjust_bn_0",
-                "type": "BatchNormalization",
-                "index": 982
+                "type": "BatchNormalization"
             }
         },
         "501": {
@@ -8508,8 +8016,7 @@
             ],
             "extras": {
                 "name": "adjust_conv_1_0",
-                "type": "Conv2D",
-                "index": 980
+                "type": "Conv2D"
             }
         },
         "502": {
@@ -8529,8 +8036,7 @@
             ],
             "extras": {
                 "name": "adjust_conv_2_0",
-                "type": "Conv2D",
-                "index": 1008
+                "type": "Conv2D"
             }
         },
         "486": {
@@ -8547,8 +8053,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_reduction_right3_stem_1",
-                "type": "BatchNormalization",
-                "index": 1017
+                "type": "BatchNormalization"
             }
         },
         "503": {
@@ -8563,8 +8068,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_reduction_right3_stem_1",
-                "type": "SeparableConv2D",
-                "index": 1016
+                "type": "SeparableConv2D"
             }
         },
         "504": {
@@ -8579,8 +8083,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_reduction_right3_stem_1",
-                "type": "BatchNormalization",
-                "index": 1014
+                "type": "BatchNormalization"
             }
         },
         "505": {
@@ -8595,8 +8098,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_reduction_right3_stem_1",
-                "type": "SeparableConv2D",
-                "index": 1013
+                "type": "SeparableConv2D"
             }
         },
         "466": {
@@ -8612,8 +8114,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_reduction_right3_stem_2",
-                "type": "BatchNormalization",
-                "index": 936
+                "type": "BatchNormalization"
             }
         },
         "507": {
@@ -8628,8 +8129,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_reduction_right3_stem_2",
-                "type": "SeparableConv2D",
-                "index": 935
+                "type": "SeparableConv2D"
             }
         },
         "508": {
@@ -8644,8 +8144,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_reduction_right3_stem_2",
-                "type": "BatchNormalization",
-                "index": 933
+                "type": "BatchNormalization"
             }
         },
         "509": {
@@ -8660,8 +8159,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_reduction_right3_stem_2",
-                "type": "SeparableConv2D",
-                "index": 932
+                "type": "SeparableConv2D"
             }
         },
         "465": {
@@ -8677,8 +8175,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_reduction_right2_stem_2",
-                "type": "BatchNormalization",
-                "index": 944
+                "type": "BatchNormalization"
             }
         },
         "511": {
@@ -8693,8 +8190,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_reduction_right2_stem_2",
-                "type": "SeparableConv2D",
-                "index": 943
+                "type": "SeparableConv2D"
             }
         },
         "512": {
@@ -8709,8 +8205,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_reduction_right2_stem_2",
-                "type": "BatchNormalization",
-                "index": 941
+                "type": "BatchNormalization"
             }
         },
         "513": {
@@ -8725,8 +8220,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_reduction_right2_stem_2",
-                "type": "SeparableConv2D",
-                "index": 940
+                "type": "SeparableConv2D"
             }
         },
         "468": {
@@ -8743,8 +8237,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_reduction_right1_stem_2",
-                "type": "BatchNormalization",
-                "index": 16
+                "type": "BatchNormalization"
             }
         },
         "514": {
@@ -8759,8 +8252,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_reduction_right1_stem_2",
-                "type": "SeparableConv2D",
-                "index": 15
+                "type": "SeparableConv2D"
             }
         },
         "515": {
@@ -8775,8 +8267,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_reduction_right1_stem_2",
-                "type": "BatchNormalization",
-                "index": 13
+                "type": "BatchNormalization"
             }
         },
         "516": {
@@ -8791,8 +8282,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_reduction_right1_stem_2",
-                "type": "SeparableConv2D",
-                "index": 12
+                "type": "SeparableConv2D"
             }
         },
         "510": {
@@ -8810,8 +8300,7 @@
             ],
             "extras": {
                 "name": "adjust_bn_stem_2",
-                "type": "BatchNormalization",
-                "index": 9
+                "type": "BatchNormalization"
             }
         },
         "517": {
@@ -8826,8 +8315,7 @@
             ],
             "extras": {
                 "name": "adjust_conv_1_stem_2",
-                "type": "Conv2D",
-                "index": 947
+                "type": "Conv2D"
             }
         },
         "490": {
@@ -8844,8 +8332,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_reduction_left4_stem_1",
-                "type": "BatchNormalization",
-                "index": 961
+                "type": "BatchNormalization"
             }
         },
         "519": {
@@ -8860,8 +8347,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_reduction_left4_stem_1",
-                "type": "SeparableConv2D",
-                "index": 960
+                "type": "SeparableConv2D"
             }
         },
         "520": {
@@ -8876,8 +8362,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_reduction_left4_stem_1",
-                "type": "BatchNormalization",
-                "index": 958
+                "type": "BatchNormalization"
             }
         },
         "521": {
@@ -8893,8 +8378,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_reduction_left4_stem_1",
-                "type": "SeparableConv2D",
-                "index": 957
+                "type": "SeparableConv2D"
             }
         },
         "487": {
@@ -8912,8 +8396,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_reduction_left1_stem_1",
-                "type": "BatchNormalization",
-                "index": 1040
+                "type": "BatchNormalization"
             }
         },
         "522": {
@@ -8928,8 +8411,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_reduction_left1_stem_1",
-                "type": "SeparableConv2D",
-                "index": 1039
+                "type": "SeparableConv2D"
             }
         },
         "523": {
@@ -8944,8 +8426,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_reduction_left1_stem_1",
-                "type": "BatchNormalization",
-                "index": 1037
+                "type": "BatchNormalization"
             }
         },
         "524": {
@@ -8960,8 +8441,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_reduction_left1_stem_1",
-                "type": "SeparableConv2D",
-                "index": 1036
+                "type": "SeparableConv2D"
             }
         },
         "489": {
@@ -8979,8 +8459,7 @@
             ],
             "extras": {
                 "name": "reduction_bn_1_stem_1",
-                "type": "BatchNormalization",
-                "index": 1029
+                "type": "BatchNormalization"
             }
         },
         "525": {
@@ -8995,8 +8474,7 @@
             ],
             "extras": {
                 "name": "reduction_conv_1_stem_1",
-                "type": "Conv2D",
-                "index": 1028
+                "type": "Conv2D"
             }
         },
         "491": {
@@ -9013,8 +8491,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_reduction_right2_stem_1",
-                "type": "BatchNormalization",
-                "index": 1025
+                "type": "BatchNormalization"
             }
         },
         "526": {
@@ -9029,8 +8506,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_reduction_right2_stem_1",
-                "type": "SeparableConv2D",
-                "index": 1024
+                "type": "SeparableConv2D"
             }
         },
         "527": {
@@ -9045,8 +8521,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_reduction_right2_stem_1",
-                "type": "BatchNormalization",
-                "index": 1022
+                "type": "BatchNormalization"
             }
         },
         "528": {
@@ -9061,8 +8536,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_reduction_right2_stem_1",
-                "type": "SeparableConv2D",
-                "index": 1021
+                "type": "SeparableConv2D"
             }
         },
         "518": {
@@ -9077,8 +8551,7 @@
             ],
             "extras": {
                 "name": "adjust_conv_2_stem_2",
-                "type": "Conv2D",
-                "index": 7
+                "type": "Conv2D"
             }
         },
         "488": {
@@ -9096,8 +8569,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_bn_reduction_right1_stem_1",
-                "type": "BatchNormalization",
-                "index": 954
+                "type": "BatchNormalization"
             }
         },
         "529": {
@@ -9112,8 +8584,7 @@
             ],
             "extras": {
                 "name": "separable_conv_2_reduction_right1_stem_1",
-                "type": "SeparableConv2D",
-                "index": 953
+                "type": "SeparableConv2D"
             }
         },
         "530": {
@@ -9128,8 +8599,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_bn_reduction_right1_stem_1",
-                "type": "BatchNormalization",
-                "index": 951
+                "type": "BatchNormalization"
             }
         },
         "531": {
@@ -9144,8 +8614,7 @@
             ],
             "extras": {
                 "name": "separable_conv_1_reduction_right1_stem_1",
-                "type": "SeparableConv2D",
-                "index": 950
+                "type": "SeparableConv2D"
             }
         },
         "506": {
@@ -9165,8 +8634,7 @@
             ],
             "extras": {
                 "name": "stem_bn1",
-                "type": "BatchNormalization",
-                "index": 2
+                "type": "BatchNormalization"
             }
         },
         "532": {
@@ -9179,8 +8647,7 @@
             ],
             "extras": {
                 "name": "stem_conv1",
-                "type": "Conv2D",
-                "index": 1
+                "type": "Conv2D"
             }
         }
     }

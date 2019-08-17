@@ -20,8 +20,7 @@
             ],
             "extras": {
                 "name": "main_input",
-                "type": "InputLayer",
-                "index": 0
+                "type": "InputLayer"
             }
         },
         "2": {
@@ -34,8 +33,7 @@
             ],
             "extras": {
                 "name": "aux_input",
-                "type": "InputLayer",
-                "index": 9
+                "type": "InputLayer"
             }
         },
         "1": {
@@ -50,8 +48,7 @@
             ],
             "extras": {
                 "name": "embedding",
-                "type": "Embedding",
-                "index": 1
+                "type": "Embedding"
             }
         },
         "3": {
@@ -67,8 +64,7 @@
             ],
             "extras": {
                 "name": "concatenate",
-                "type": "Concatenate",
-                "index": 3
+                "type": "Concatenate"
             }
         },
         "4": {
@@ -84,8 +80,7 @@
             ],
             "extras": {
                 "name": "lstm",
-                "type": "LSTM",
-                "index": 2
+                "type": "LSTM"
             }
         },
         "5": {
@@ -100,8 +95,7 @@
             ],
             "extras": {
                 "name": "dense",
-                "type": "Dense",
-                "index": 4
+                "type": "Dense"
             }
         },
         "6": {
@@ -114,8 +108,7 @@
             "output_layers": [],
             "extras": {
                 "name": "aux_output",
-                "type": "Dense",
-                "index": 8
+                "type": "Dense"
             }
         },
         "7": {
@@ -130,8 +123,7 @@
             ],
             "extras": {
                 "name": "dense_1",
-                "type": "Dense",
-                "index": 5
+                "type": "Dense"
             }
         },
         "8": {
@@ -146,8 +138,7 @@
             ],
             "extras": {
                 "name": "dense_2",
-                "type": "Dense",
-                "index": 6
+                "type": "Dense"
             }
         },
         "9": {
@@ -160,8 +151,7 @@
             "output_layers": [],
             "extras": {
                 "name": "main_output",
-                "type": "Dense",
-                "index": 7
+                "type": "Dense"
             }
         }
     }

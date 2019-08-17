@@ -457,13 +457,13 @@ def get_normalized_gap_durations(unit, gaps, cost_func):
                 if event["ts"] == gap[1]:
                     # We need to make sure that zero cost layers do not interfere
                     gap_dur = gap[1] - gap[0]
-                    norm = gap_dur / cost_func(job.extras["index"])
+                    norm = gap_dur / cost_func(job.extras["topological_order_index"])
                     if found_index is not None:
-                        if job.extras["index"] < found_index:
-                            found_index = job.extras["index"]
+                        if job.extras["topological_order_index"] < found_index:
+                            found_index = job.extras["topological_order_index"]
                             normalized_gap_durations[-1] = norm
                     else:
-                        found_index = job.extras["index"]
+                        found_index = job.extras["topological_order_index"]
                         normalized_gap_durations.append(norm)
     if len(normalized_gap_durations) != len(gaps):
         print("Number of blocked layers: {} Number of gaps: {}".format(len(normalized_gap_durations), len(gaps)))
