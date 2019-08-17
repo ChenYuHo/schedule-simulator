@@ -18,8 +18,8 @@ class Layer:
         :param forward_pass_units: The processing cost of a forward pass.
         :param backward_pass_units: The processing cost of a backward pass.
         :param communication_units: The communication cost of a backward pass.
-        :param input_layers: A list of layers that provide the input to this layer.
-        :param output_layers: A list of layers that will receive the output of this layer.
+        :param input_layers: A set of layers that provide the input to this layer.
+        :param output_layers: A set of layers that will receive the output of this layer.
         :param forward_dependencies: A set of layers that this layer depends on in a forward pass.
         :param backward_dependencies: A set of layers that this layer depends on in a backward pass.
         :param extras: Custom attributes that help identify this layer or its behavior.
@@ -77,7 +77,7 @@ class DAG:
     """
     def __init__(self, dag_input_layers, dag_output_layers=None, **extras):
         self.dag_input_layers = dag_input_layers
-        self.dag_output_layers = list()
+        self.dag_output_layers = set()
         self.extras = extras
         # Extract dag_output_layers
         if dag_output_layers is None:
@@ -91,36 +91,37 @@ class DAG:
     def remove_layer(self, layer):
         for inp in layer.input_layers:
             inp.output_layers.remove(layer)
-            inp.output_layers.extend(layer.output_layers)
+            inp.output_layers.update(layer.output_layers)
         for out in layer.output_layers:
             out.input_layers.remove(layer)
-            out.input_layers.extend(layer.input_layers)
+            out.input_layers.update(layer.input_layers)
         if layer in self.dag_input_layers:
             self.dag_input_layers.remove(layer)
-            self.dag_input_layers.extend(layer.output_layers)
+            self.dag_input_layers.update(layer.output_layers)
         if layer in self.dag_output_layers:
             self.dag_output_layers.remove(layer)
-            self.dag_output_layers.extend(layer.input_layers)
+            self.dag_output_layers.update(layer.input_layers)
 
     def set_output_layers(self):
         def process_node(node):
-            if node.output_layers is None:
-                self.dag_output_layers.append(node)
-        self.traverse_BFS(processing_function=process_node)
+            if len(node.output_layers) == 0:
+                self.dag_output_layers.add(node)
+        self.traverse_DFS(processing_function=process_node)
 
-    def produce_topological_order(self):
+    def produce_topological_order(self, use_sorted_traversal=True):
         self.topological_order = list()
 
         def add_node(node):
             self.topological_order.append(node)
-        self.traverse_DFS(add_node, order="post-order")
+        self.traverse_DFS(add_node, order="post-order", sort=use_sorted_traversal)
         self.topological_order.reverse()
 
-    def traverse_BFS(self, processing_function):
+    def _traverse_BFS(self, processing_function):
         """
         Uses an iterative BFS O(n) to process all nodes in the dag using the processing_function.
         :param processing_function: The function that will be called on each node. should only require one argument
         which is the node being processed.
+        FIXME The traversal fails with NASNetLarge after removing untrained parameters. Invistigate and fix.
         """
         visited = set()
         current = self.dag_input_layers.copy()
@@ -137,12 +138,14 @@ class DAG:
                 current = new
                 new = list()
 
-    def traverse_DFS(self, processing_function, order="post-order"):
+    def traverse_DFS(self, processing_function, order="post-order", sort=False):
         """
         Uses a recursive DFS O(n) to process all nodes in the dag using the processing_function.
         :param processing_function: The function that will be called on each node. should only require one argument
         which is the node being processed.
         :param order: The order of traversal. "pre-order" or "post-order"
+        :param sort: Whether we traverse parallel nodes after they are ordered according to their parameter count.
+        This is simply to ensure consistency in the generation of a topological ordering for comparison purposes.
         """
         if order != "pre-order" and order != "post-order":
             raise Exception("Invalid order '{}' provided.".format(order))
@@ -152,7 +155,10 @@ class DAG:
             if order == "pre-order":
                 processing_function(root)
             if root.output_layers is not None:
-                for child in root.output_layers:
+                ol = list(root.output_layers)
+                if sort:
+                    ol.sort(key=lambda x: x.communication_units)
+                for child in ol:
                     if child not in visited:
                         traverse(root=child, visited=visited)
             if order == "post-order":
@@ -170,7 +176,7 @@ class DAG:
         def process_node(node):
             node._forward_dependencies = set()
             node._backward_dependencies = set()
-        self.traverse_BFS(processing_function=process_node)
+        self.traverse_DFS(processing_function=process_node)
 
         def extract_forward_dependencies(root: Layer, deps: set, visited: set):
             if root in visited:
@@ -257,8 +263,8 @@ class LinearDag(DAG):
         prev = root
         for i in range(n_of_layers):
             new = self.layer_factory.create_layer()
-            new.input_layers = [prev]
-            prev.output_layers = [new]
+            new.input_layers = {prev}
+            prev.output_layers = {new}
             prev = new
         super().__init__([root])
 
@@ -316,7 +322,7 @@ def serialize_dag(dag: DAG, formatted=True):
                 sl["output_layers"].append(temp_ids[output_layer])
         sl["extras"] = layer.extras
         serialized_dag["layers"][temp_ids[layer]] = sl
-    dag.traverse_BFS(add_layer)
+    dag.traverse_DFS(add_layer)
     return json.dumps(serialized_dag, indent=4) if formatted else json.dumps(serialized_dag)
 
 
@@ -324,23 +330,23 @@ def deserialize_dag(serialized_dag):
     import json
     serialized_dag = json.loads(serialized_dag)
     temp_ids = dict()
-    input_layers = list()
+    input_layers = set()
     for i, layer_dict in serialized_dag["layers"].items():
         extras = layer_dict["extras"]
         del(layer_dict["extras"])
         temp_ids[i] = Layer(**layer_dict, **extras)
-    # Translate layer ids to objects in layer lists
+    # Translate layer ids to objects in layer sets
     for layer in temp_ids.values():
-        object_input_layers = list()
-        object_output_layers = list()
+        object_input_layers = set()
+        object_output_layers = set()
         if len(layer.input_layers) == 0:
-            input_layers.append(layer)
+            input_layers.add(layer)
         else:
             for input_layer_i in layer.input_layers:
-                object_input_layers.append(temp_ids[str(input_layer_i)])
+                object_input_layers.add(temp_ids[str(input_layer_i)])
         if len(layer.output_layers) > 0:
             for output_layer_i in layer.output_layers:
-                object_output_layers.append(temp_ids[str(output_layer_i)])
+                object_output_layers.add(temp_ids[str(output_layer_i)])
         layer.input_layers = object_input_layers
         layer.output_layers = object_output_layers
     dag = DAG(input_layers, **serialized_dag["extras"])
