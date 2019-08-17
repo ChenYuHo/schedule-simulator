@@ -26,7 +26,7 @@ def apply_layer_costs_to_dag(dag, extracted_costs):
         if "communication_units" in layer_timing:
             dag.extras["{}comm_unit".format(LOCAL_EXTRA_PREFIX)] = "ns"
             sim_layer.communication_units = layer_timing["communication_units"]
-    dag.traverse_BFS(processing_function=apply_timing)
+    dag.traverse_DFS(processing_function=apply_timing)
 
 
 def remove_untrainable_layers(dag):
@@ -47,18 +47,20 @@ def remove_untrainable_layers(dag):
             if i+1 < len(dag.topological_order):
                 next_layer = dag.topological_order[i+1]
                 next_layer.forward_pass_units += layer.forward_pass_units
-
     # Remove untrainable layers from the linked structure
-    # TODO move remove to DAGs module
-    def remove_untrainable(layer):
+    c = 0
+    for layer in dag.topological_order:
         if layer.communication_units == 0:
+            c += 1
             dag.remove_layer(layer)
-    dag.traverse_DFS(remove_untrainable, order="post-order")
+    print("Removed {} untrainable layers.".format(c))
     dag.produce_topological_order()
     dag.extract_dependencies()
+    dag.extras["{}extraction_info".format(LOCAL_EXTRA_PREFIX)]["remove_untrainable_layers"] = True
 
 
-def produce_dag(model_name, library, profiling_report_path, skip_untrainable_layers=True,
+def produce_dag(model_name, library, profiling_report_path=None, output_file_name=None,
+                skip_untrainable_layers=True,
                 dag_construction_args=None, cost_extraction_args=None):
     import json
     from schedule_simulator_core.DAGs import serialize_dag
@@ -79,37 +81,41 @@ def produce_dag(model_name, library, profiling_report_path, skip_untrainable_lay
         dag = pytorch_model_to_DAG(model, **dag_construction_args)
     else:
         raise Exception("'{}' is an invalid library. Please choose one of the following: 'tensorflow', 'pytorch'.")
-    with open(profiling_report_path) as report_file:
-        report = json.load(report_file)
-    # 2. Extract costs
-    if "method" not in report:
-        raise Exception("No valid method has been supplied in the report")
-    method = report["method"]
-    device = report["args"]["device"]
-    if library not in method:
-        # TODO Allow models and profiling reports to differ. Store profiling data using their topological order index
-        # instead of using names.
-        raise Exception("Profile and model libraries must match. Layer names differ from library to library and we"
-                        "would not be able to find a direct mapping.")
-    if method == "pytorch_module_hooks":
-        from model_extraction.pytorch_model_extractor import extract_costs_from_module_hooks_profile
-        layer_costs = extract_costs_from_module_hooks_profile(report, **cost_extraction_args)
-    elif method == "tensorflow_layer_name_mapping":
-        from model_extraction.tensorflow_model_extractor import extract_costs_from_layer_name_mapping_profile
-        layer_costs = extract_costs_from_layer_name_mapping_profile(report, **cost_extraction_args)
-    elif method == "tensorflow_model_reconstruction":
-        from model_extraction.tensorflow_model_extractor import extract_costs_from_model_reconstruct_profile
-        layer_costs = extract_costs_from_model_reconstruct_profile(report, **cost_extraction_args)
-    else:
-        raise Exception("No valid method has been supplied in the report")
-    # 3. Apply costs to dag
-    apply_layer_costs_to_dag(dag, layer_costs)
+    if profiling_report_path is not None:
+        with open(profiling_report_path) as report_file:
+            report = json.load(report_file)
+        # 2. Extract costs
+        if "method" not in report:
+            raise Exception("No valid method has been supplied in the report")
+        method = report["method"]
+        device = report["args"]["device"]
+        if library not in method:
+            # TODO Allow models and profiling reports to differ. Store profiling data using their topological order index
+            # instead of using names.
+            raise Exception("Profile and model libraries must match. Layer names differ from library to library and we"
+                            "would not be able to find a direct mapping.")
+        if method == "pytorch_module_hooks":
+            from model_extraction.pytorch_model_extractor import extract_costs_from_module_hooks_profile
+            layer_costs = extract_costs_from_module_hooks_profile(report, **cost_extraction_args)
+        elif method == "tensorflow_layer_name_mapping":
+            from model_extraction.tensorflow_model_extractor import extract_costs_from_layer_name_mapping_profile
+            layer_costs = extract_costs_from_layer_name_mapping_profile(report, **cost_extraction_args)
+        elif method == "tensorflow_model_reconstruction":
+            from model_extraction.tensorflow_model_extractor import extract_costs_from_model_reconstruct_profile
+            layer_costs = extract_costs_from_model_reconstruct_profile(report, **cost_extraction_args)
+        else:
+            raise Exception("No valid method has been supplied in the report")
+        # 3. Apply costs to dag
+        apply_layer_costs_to_dag(dag, layer_costs)
     # 4. Remove untrainable layers
     if skip_untrainable_layers:
         remove_untrainable_layers(dag)
     # 5. Write dag to file
-    with open("{}_{}_{}.dag".format(model_name, device, method), "w") as file:
-        file.write(serialize_dag(dag))
+    if output_file_name is None:
+        output_file_name = ("{}.dag".format(model_name) if profiling_report_path is None else
+                            "{}_{}_{}.dag".format(model_name, device, method))
+    with open(output_file_name, "w") as file:
+            file.write(serialize_dag(dag))
 
 
 if __name__ == "__main__":
@@ -121,7 +127,12 @@ if __name__ == "__main__":
                              "pytorch_utils or tensorflow_utils")
     parser.add_argument("library", choices=["tensorflow", "pytorch"],
                         help="The library to use to look for the model and construct a dag.")
-    parser.add_argument("profile",
+    parser.add_argument("-p", "--profile",
                         help="The profiling report path.")
+    parser.add_argument("-o", "--output",
+                        help="The outputted dag file name")
+    parser.add_argument("-ka", "--keep_all", default=False, action="store_true",
+                        help="Whether we should keep all layers, even untrainable ones")
     args = parser.parse_args()
-    produce_dag(args.model, args.library, args.profile)
+    produce_dag(model_name=args.model, library=args.library, profiling_report_path=args.profile,
+                output_file_name=args.output, skip_untrainable_layers=not args.keep_all)

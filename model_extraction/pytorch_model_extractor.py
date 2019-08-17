@@ -1,19 +1,19 @@
-import torch
-import torchvision.models as models
 from schedule_simulator_core.DAGs import Layer, DAG, LOCAL_EXTRA_PREFIX
-from model_extraction.pytorch_utils import *
+from pytorch_utils import *
 import torch.jit as jit
-import torch.onnx as onnx
-import inspect
 
 
-def pytorch_model_to_DAG(model, skip_untrainable_layers=False):
+def pytorch_model_to_DAG(model, skip_untrainable_layers=True):
     """
     This method uses the jit trace to get the graph info of the model.
     :param model: The model to convert
     :param skip_untrainable_layers: Whether we skip layers with no trainable parameters
     :return: a simulator DAG object that represents this network
     """
+    if not skip_untrainable_layers:
+        # FIXME allow construction with untrainable layers and detect all cycles and separate their layers.
+        raise Exception("Cannot construct dag with untrainable layers for pytorch. This is because pytorch can reuse "
+                        "untrainable layers and thus you can end up with cyclic graphs instead of a dag.")
     # Run the Pytorch graph to get a trace and generate a graph from it.
     model_inputs, _ = get_dummy_input_output(model, 2)
     trace = torch.jit.trace(model, tuple(model_inputs), check_trace=False)

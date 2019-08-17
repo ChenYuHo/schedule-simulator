@@ -21,8 +21,7 @@ import contextlib
 import tensorflow as tf
 import time
 import json
-sys.path.append("..")
-from model_extraction.tensorflow_utils import *
+from tensorflow_utils import *
 
 
 def profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8, trials=1, verbosity=1, device="gpu",
@@ -90,7 +89,7 @@ def profile(input_model, loss, optimizer, batch_size=32, num_of_batches=8, trial
     # Initialize timings dictionary
     timings = dict()
     for original_layer in topological_layer_order:
-        if isinstance(original_layer, InputLayer):
+        if isinstance(original_layer, InputLayer) or skip_untrainable_layers and original_layer.count_params() == 0:
             continue
         timings[original_layer.name] = {"Type": type(original_layer).__name__}
         if tf.executing_eagerly():

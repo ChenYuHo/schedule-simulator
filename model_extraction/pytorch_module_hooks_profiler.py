@@ -1,7 +1,5 @@
 import argparse
 from datetime import datetime
-import sys
-import time
 import json
 import socket
 from contextlib import nullcontext
@@ -9,12 +7,16 @@ import torch
 import torchvision.models as models
 import torch.optim as optim
 import torch.nn as nn
-sys.path.append("..")
-from model_extraction.pytorch_utils import *
+from pytorch_utils import *
 
 
 def profile(model, loss_func, optimizer, batch_size, num_of_batches, device=None, enable_autograd_profiler=False,
-            verbosity=1, skip_untrainable_layers=False):
+            verbosity=1, skip_untrainable_layers=True):
+    if not skip_untrainable_layers:
+        # FIXME allow setting this to false and detect multiple calls on a single layer and separate their costs as
+        # different layers.
+        raise Exception("module hooks profiling cannot currently be used to estimate untrainable layers. This is due to"
+                        " pytorch reusing these layers in different points in the computational graph.")
     # Setup and inject timings hooks
     if device is None:
         if torch.cuda.is_available():

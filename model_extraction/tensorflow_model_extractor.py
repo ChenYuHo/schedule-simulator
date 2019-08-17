@@ -4,7 +4,7 @@ import numpy as np
 
 
 def keras_model_to_DAG(model, skip_untrainable_layers=False):
-    input_layers = list()
+    input_layers = set()
     all_layers = dict()
     skipped_layers_connections = dict()  # Needed to forward connections
 
@@ -31,8 +31,8 @@ def keras_model_to_DAG(model, skip_untrainable_layers=False):
         if skip(keras_layer):
             return
         sim_layer = all_layers[keras_layer.name]
-        sim_layer.input_layers = list()
-        sim_layer.output_layers = list()
+        sim_layer.input_layers = set()
+        sim_layer.output_layers = set()
 
         def add_parents_after_skipping(keras_layer, parents_set):
             for parent in get_layer_parents(keras_layer):
@@ -53,11 +53,11 @@ def keras_model_to_DAG(model, skip_untrainable_layers=False):
         keras_children = set()
         add_children_after_skipping(keras_layer, keras_children)
         if len(keras_parents) == 0:
-            input_layers.append(sim_layer)
+            input_layers.add(sim_layer)
         for keras_parent_layer in keras_parents:
-            sim_layer.input_layers.append(all_layers[keras_parent_layer.name])
+            sim_layer.input_layers.add(all_layers[keras_parent_layer.name])
         for keras_child_layer in keras_children:
-            sim_layer.output_layers.append(all_layers[keras_child_layer.name])
+            sim_layer.output_layers.add(all_layers[keras_child_layer.name])
 
     for fun in [add_layer, connect_layer]:
         traverse_keras_DFS(model, processing_function=fun, order="pre-order", top_to_bottom=True)
@@ -85,6 +85,8 @@ def extract_costs_from_model_reconstruct_profile(profiling_report, suppress_nega
     timings = profiling_report["timings"]
     layer_costs = dict()
     accumulative_cost = {"forward_pass_units": 0, "backward_pass_units": 0}
+    fw = 0
+    bw = 0
     for layer_name in timings:
         evaluate = timings[layer_name]["evaluate"]
         fit = timings[layer_name]["fit"]
@@ -103,9 +105,11 @@ def extract_costs_from_model_reconstruct_profile(profiling_report, suppress_nega
             accumulative_cost["backward_pass_units"] += current_cost["backward_pass_units"]
         if suppress_negatives > 0:
             if current_cost["forward_pass_units"] < 0:
+                fw += 1
                 print("Suppressing {:18} forward_pass_units  {}".format(layer_name, current_cost["forward_pass_units"]))
                 current_cost["forward_pass_units"] = 0
             if current_cost["backward_pass_units"] < 0:
+                bw += 1
                 print("Suppressing {:18} backward_pass_units {}".format(layer_name, current_cost["backward_pass_units"]))
                 current_cost["backward_pass_units"] = 0
         if suppress_negatives != 1:
@@ -116,6 +120,9 @@ def extract_costs_from_model_reconstruct_profile(profiling_report, suppress_nega
     for key, value in profiling_report.items():
         if key != "timings":
             profile_info[key] = value
+    if suppress_negatives > 0:
+        print("Suppressed {}/{} forward pass costs".format(fw, len(timings)))
+        print("Suppressed {}/{} backward pass costs".format(bw, len(timings)))
     return dict(profile_info=profile_info, layer_costs=layer_costs)
 
 
