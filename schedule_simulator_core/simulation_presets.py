@@ -85,6 +85,18 @@ class GpuNetworkSim:
                 ev = str(ev)
             summary["{}_{}".format("dag", ek)] = ev
         # General statistics. Add whatever you need here
+        if isinstance(self.network.scheduler, TopologicalPriorityScheduler) and self.network.scheduler.preemptive:
+            summary["net_sch_preemptions"] = self.network.scheduler.num_of_preemptions
+            summary["net_sch_switches"] = self.network.scheduler.num_of_switches
+        else:
+            summary["net_sch_preemptions"] = None
+            summary["net_sch_switches"] = None
+        if isinstance(self.gpu.scheduler, TopologicalPriorityScheduler) and self.network.scheduler.preemptive:
+            summary["gpu_sch_preemptions"] = self.gpu.scheduler.num_of_preemptions
+            summary["gpu_sch_switches"] = self.gpu.scheduler.num_of_switches
+        else:
+            summary["gpu_sch_preemptions"] = None
+            summary["gpu_sch_switches"] = None
         summary["gpu_util"] = self.gpu.get_utilization()
         summary["net_util"] = self.network.get_utilization()
         summary["total_time_steps"] = self.env.now
@@ -102,9 +114,14 @@ class GpuNetworkSim:
             summary["$list$forward_pass_gaps_durations"] = [e-b for b, e in forward_pass_gaps]
             def cost(index):
                 return self.dag.topological_order[index].communication_units / self.network.rate
-            summary["$list$gpu_normalized_gaps_durations"] = get_normalized_gap_durations(self.gpu, gpu_gaps, cost)
-            summary["$list$forward_pass_normalized_gaps_durations"] = get_normalized_gap_durations(
-                self.gpu, forward_pass_gaps, cost)
+            try:
+                summary["$list$gpu_normalized_gaps_durations"] = get_normalized_gap_durations(self.gpu, gpu_gaps, cost)
+                summary["$list$forward_pass_normalized_gaps_durations"] = get_normalized_gap_durations(
+                    self.gpu, forward_pass_gaps, cost)
+            except ZeroDivisionError:
+                print("Cannot normalize gaps by communication cost. Some layers have 0 communication cost")
+                summary["$list$gpu_normalized_gaps_durations"] = None
+                summary["$list$forward_pass_normalized_gaps_durations"] = None
         return summary
 
     @staticmethod
@@ -121,7 +138,7 @@ class GpuNetworkSim:
     def _run_sub_group_process(input_queue, running_queue, output_queue, args, output_trace_file_name, include_gaps,
                                include_util_in_trace=True):
         print("pid[{}] starting process..".format(os.getpid()))
-        while not input_queue.empty():
+        while not input_queue.empty():  # TODO a better check should be implemented
             sim_i, args_combination = input_queue.get()
             try:
                 running_queue.put((os.getpid(), sim_i))
@@ -317,7 +334,7 @@ class GpuNetworkSim:
         failed_simulations = 0
         print_timer = time.time()
         try:
-            while output_counter != len(args_combinations):
+            while output_counter != len(args_combinations):  # TODO create a fail safe mechanism that guarantees exit
                 try:
                     output = output_queue.get(timeout=print_interval)
                 except Empty:

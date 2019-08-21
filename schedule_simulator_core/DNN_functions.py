@@ -124,23 +124,33 @@ if __name__ == "__main__":
     """
     An example usage where different schedulers are compared
     """
-    from schedule_simulator_core.DAGs import HomogeneousLinearDAG
-    from schedule_simulator_core.core import ProcessingUnit
+    from schedule_simulator_core.DAGs import HomogeneousLinearDAG, LinearDag, LayerFactory, serialize_dag, deserialize_dag
+    from schedule_simulator_core.core import ProcessingUnit, Distribution
     from schedule_simulator_core.schedulers import FIFOScheduler, TopologicalPriorityScheduler
     from schedule_simulator_core.utils import SimPrinter, generate_chrome_trace_timeline, join_chrome_traces
+    import numpy as np
+    create_new_dag = True
     schedulers = [FIFOScheduler(), TopologicalPriorityScheduler(preemptive=False),
                   TopologicalPriorityScheduler(preemptive=True)]
     units = list()
     for scheduler in schedulers:
         env = simpy.Environment()
         sim_printer = SimPrinter(verbosity=1).print
-        dag = HomogeneousLinearDAG(n_of_layers=6, fp_units=8, bp_units=8, comm_units=8)
+        if create_new_dag:
+            dist = Distribution(np.random.normal, False, True, 1e4, 1e3)
+            factory = LayerFactory(dist, dist, dist)
+            dag = LinearDag(n_of_layers=8, layer_factory=factory)
+            with open("DNN_functions_example.dag", "w") as file:
+                file.write(serialize_dag(dag))
+        else:
+            with open("DNN_functions_example.dag") as file:
+                dag = deserialize_dag(file.read())
 
-        gpu = ProcessingUnit(env=env, scheduler=FIFOScheduler(), rate=4.3, name="GPU_{}".format(scheduler),
+        gpu = ProcessingUnit(env=env, scheduler=FIFOScheduler(), rate=4, name="GPU_{}".format(scheduler),
                              sim_printer=sim_printer, keep_timeline=True)
         gpu_process = env.process(gpu.main_process())
 
-        network = ProcessingUnit(env=env, scheduler=scheduler, rate=1.1, name="Network_{}".format(scheduler),
+        network = ProcessingUnit(env=env, scheduler=scheduler, rate=0.5, name="Network_{}".format(scheduler),
                                  sim_printer=sim_printer, keep_timeline=True)
         network_process = env.process(network.main_process())
 
@@ -160,6 +170,9 @@ if __name__ == "__main__":
     for unit in units:
         traces.append(generate_chrome_trace_timeline(unit, group_labels=["unit_name"], row_labels=["type"],
                                                      cell_labels=["name"], utilization_bins=500, display_unit="ns"))
+        if isinstance(unit.scheduler, TopologicalPriorityScheduler) and unit.scheduler.preemptive:
+            print(unit, unit.scheduler.num_of_preemptions / 4)
+            print(unit, unit.scheduler.num_of_switches / 4)
     final_trace = join_chrome_traces(traces)
     with open("DNN_functions_example.chrometrace.json", "w") as file:
         file.write(final_trace)

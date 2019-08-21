@@ -455,9 +455,14 @@ def get_normalized_gap_durations(unit, gaps, cost_func):
         for job in unit.timeline:
             for event in unit.timeline[job]:
                 if event["ts"] == gap[1]:
-                    # We need to make sure that zero cost layers do not interfere
+                    # TODO Instead of throwing a zero division error when a layer has 0 communication cost, look for the
+                    #  previous layer.
                     gap_dur = gap[1] - gap[0]
-                    norm = gap_dur / cost_func(job.extras["topological_order_index"])
+                    cost = cost_func(job.extras["topological_order_index"])
+                    if cost == 0:
+                        raise ZeroDivisionError("The matched layer that we are trying to normalize by has 0 "
+                                                "communication cost.")
+                    norm = gap_dur / cost
                     if found_index is not None:
                         if job.extras["topological_order_index"] < found_index:
                             found_index = job.extras["topological_order_index"]

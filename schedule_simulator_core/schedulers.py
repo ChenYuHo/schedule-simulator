@@ -73,6 +73,8 @@ class TopologicalPriorityScheduler(Scheduler):
             self.preemptive = kwargs['preemptive']
         else:
             self.preemptive = False
+        self.num_of_preemptions = 0
+        self.num_of_switches = 0
         self._current_job = None
         self.new_job_received = False
 
@@ -83,7 +85,8 @@ class TopologicalPriorityScheduler(Scheduler):
 
     def queue(self, job, **kwargs):
         with self._lock:
-            priority = len(job.source._forward_dependencies)
+            # priority = len(job.source._forward_dependencies)
+            priority = int(job.extras["topological_order_index"])
             self._queue.append((priority, job))
             self.new_job_received = True
 
@@ -96,6 +99,10 @@ class TopologicalPriorityScheduler(Scheduler):
                     if min_priority is None or priority < min_priority:
                         min_priority = priority
                         min_job = job
+                if self._current_job != min_job:
+                    if self._current_job is not None:  # Are we preempting?
+                        self.num_of_preemptions += 1
+                    self.num_of_switches += 1
                 self._current_job = min_job
                 self.new_job_received = False
         return self._current_job
