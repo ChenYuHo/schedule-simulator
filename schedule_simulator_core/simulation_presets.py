@@ -138,56 +138,59 @@ class GpuNetworkSim:
     def _run_sub_group_process(input_queue, running_queue, output_queue, args, output_trace_file_name, include_gaps,
                                include_util_in_trace=True):
         print("pid[{}] starting process..".format(os.getpid()))
-        while not input_queue.empty():  # TODO a better check should be implemented
-            sim_i, args_combination = input_queue.get()
-            try:
-                running_queue.put((os.getpid(), sim_i))
-                # Map combination to argument names
-                sub_args = dict()
-                for i, key in enumerate(args.keys()):
-                    sub_args[key] = args_combination[i]
-                # Restore locks for schedulers
-                sub_args["gpu_scheduler"]._lock = threading.Lock()
-                sub_args["network_scheduler"]._lock = threading.Lock()
-                if output_trace_file_name is None and not include_gaps:
-                    sub_args["timeline_format"] = None
-                # Compute rates to be used with simulation
-                # Create, run, and append simulation
-                simulation = GpuNetworkSim(**sub_args)
-                sim_time_begin = time.time()
-                simulation.run(verbosity=0)
-                # Update summary --
-                sim_summary = simulation.summarize(include_gaps=include_gaps)
-                final_summary = dict()
-                final_summary["sim_index"] = sim_i
-                final_summary["execution_duration"] = time.time() - sim_time_begin
-                final_summary.update(sim_summary)
-                if output_trace_file_name is not None:
-                    from schedule_simulator_core.utils import generate_chrome_trace_timeline, join_chrome_traces
-                    traces = list()
-                    for unit in [simulation.gpu, simulation.network]:
-                        traces.append(
-                            generate_chrome_trace_timeline(unit, group_labels=["unit_name"], row_labels=["type"],
-                                                           cell_labels=["name"],
-                                                           utilization_bins=500 if include_util_in_trace else None,
-                                                           return_dict=True, multiplier=1e-3))
-                    final_trace = join_chrome_traces(traces, use_trace_dict=True)
-                    trace_metadata = dict()
-                    for key in final_summary:
-                        if "$" not in key:
-                            trace_metadata[key] = final_summary[key]
-                    final_trace.update(trace_metadata)
-                    with open("{}_sim{}_.chrometrace.json".format(output_trace_file_name, sim_i), "w") as f:
-                        json.dump(final_trace, f, indent=4)
-                output_queue.put((os.getpid(), sim_i, final_summary))
-            except Exception as e:
-                traceback.print_exc()
-                print("pid[{}] Simulation {} with args {} failed to run. Skipping it..".format(
-                    os.getpid(), sim_i, args_combination))
-                output_queue.put((os.getpid(), sim_i, None))  # To signify the failure of this simulation
-            except KeyboardInterrupt:
-                print("pid[{}] process closed by user".format(os.getpid()))
-                break
+        try:
+            while True:
+                sim_i, args_combination = input_queue.get(timeout=5)
+                try:
+                    running_queue.put((os.getpid(), sim_i))
+                    # Map combination to argument names
+                    sub_args = dict()
+                    for i, key in enumerate(args.keys()):
+                        sub_args[key] = args_combination[i]
+                    # Restore locks for schedulers
+                    sub_args["gpu_scheduler"]._lock = threading.Lock()
+                    sub_args["network_scheduler"]._lock = threading.Lock()
+                    if output_trace_file_name is None and not include_gaps:
+                        sub_args["timeline_format"] = None
+                    # Compute rates to be used with simulation
+                    # Create, run, and append simulation
+                    simulation = GpuNetworkSim(**sub_args)
+                    sim_time_begin = time.time()
+                    simulation.run(verbosity=0)
+                    # Update summary --
+                    sim_summary = simulation.summarize(include_gaps=include_gaps)
+                    final_summary = dict()
+                    final_summary["sim_index"] = sim_i
+                    final_summary["execution_duration"] = time.time() - sim_time_begin
+                    final_summary.update(sim_summary)
+                    if output_trace_file_name is not None:
+                        from schedule_simulator_core.utils import generate_chrome_trace_timeline, join_chrome_traces
+                        traces = list()
+                        for unit in [simulation.gpu, simulation.network]:
+                            traces.append(
+                                generate_chrome_trace_timeline(unit, group_labels=["unit_name"], row_labels=["type"],
+                                                               cell_labels=["name"],
+                                                               utilization_bins=500 if include_util_in_trace else None,
+                                                               return_dict=True, multiplier=1e-3))
+                        final_trace = join_chrome_traces(traces, use_trace_dict=True)
+                        trace_metadata = dict()
+                        for key in final_summary:
+                            if "$" not in key:
+                                trace_metadata[key] = final_summary[key]
+                        final_trace.update(trace_metadata)
+                        with open("{}_sim{}_.chrometrace.json".format(output_trace_file_name, sim_i), "w") as f:
+                            json.dump(final_trace, f, indent=4)
+                    output_queue.put((os.getpid(), sim_i, final_summary))
+                except Exception as e:
+                    traceback.print_exc()
+                    print("pid[{}] Simulation {} with args {} failed to run. Skipping it..".format(
+                        os.getpid(), sim_i, args_combination))
+                    output_queue.put((os.getpid(), sim_i, None))  # To signify the failure of this simulation
+                except KeyboardInterrupt:
+                    print("pid[{}] process closed by user".format(os.getpid()))
+                    break
+        except Empty:
+            pass
         print("pid[{}] finished process..".format(os.getpid()))
 
     @staticmethod
@@ -334,7 +337,7 @@ class GpuNetworkSim:
         failed_simulations = 0
         print_timer = time.time()
         try:
-            while output_counter != len(args_combinations):  # TODO create a fail safe mechanism that guarantees exit
+            while output_counter != len(args_combinations):  # FIXME create a fail safe mechanism that guarantees exit
                 try:
                     output = output_queue.get(timeout=print_interval)
                 except Empty:
