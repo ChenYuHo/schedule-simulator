@@ -118,6 +118,17 @@ def produce_dag(model_name, library, profiling_report_path=None, output_file_nam
             file.write(serialize_dag(dag))
 
 
+def dag_to_one_iter_csv(dag):
+    out = list()
+    out.append("priority,tensor_name,size,comm_start_time")
+    backward_cost = 0
+    for i, layer in enumerate(dag.topological_order):
+        line = "{},{},{},{}".format(i, layer.extras["name"], layer.communication_units, backward_cost)
+        backward_cost += layer.backward_pass_units
+        out.append(line)
+    return "\n".join(out)
+
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(
