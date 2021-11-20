@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 
 import numpy as np
-from torchsummary import summary
 import torch
 import torch.nn as nn
 import torch.nn.modules.loss as losses
@@ -51,13 +50,17 @@ def traverse_module(module, processing_func, only_process_leafs=True):
     :param only_process_leafs: Whether we should only process the most inner modules (The layers).
     :param processing_func: The function which will be called on the modules. Should only have one required argument in
     which the module will be passed
+
+    :return the number of modules processed by the given function
     """
+    num_modules_processed=0
     is_parent = is_parent_module(module)
     if is_parent:
         for child in module.children():
-            traverse_module(child, processing_func)
+            num_modules_processed += traverse_module(child, processing_func)
     if not (only_process_leafs and is_parent):
-        processing_func(module)
+        num_modules_processed += processing_func(module)
+    return num_modules_processed
 
 
 def count_trainable_params(module):
@@ -170,6 +173,21 @@ class DummyModel(torch.nn.Module, ABC):
     def get_output_size(self):
         pass
 
+
+class Dummy2LayerModel(DummyModel):
+    def get_input_size(self):
+        return [[512]]
+
+    def get_output_size(self):
+        return [[1]]
+
+    def __init__(self):
+        super(Dummy2LayerModel, self).__init__()
+        self.linear1 = nn.Linear(512, 16384)
+        self.linear2 = nn.Linear(16384, 1)
+
+    def forward(self, input):
+        return self.linear2(self.linear1(input))
 
 class DummyMultiModel(DummyModel):
     """
