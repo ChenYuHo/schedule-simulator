@@ -155,7 +155,7 @@ def get_model(model_name):
         else:
             module = __import__("torchvision.models", fromlist=[model_name])
             model = getattr(module, model_name)
-            if model_name == "inception_v3":
+            if model_name == "inception_v3" or model_name == "googlenet":
                 model = model(pretrained=False, aux_logits=False)
             else:
                 model = model(pretrained=False)
