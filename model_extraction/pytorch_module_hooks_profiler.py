@@ -13,7 +13,7 @@ import threading
 lock = threading.Lock()
 
 def profile(model, loss_func, optimizer, batch_size, num_of_batches, device=None, enable_autograd_profiler=False,
-            verbosity=1, skip_untrainable_layers=True, check_exec_order=False, reduce_costs=False):
+            verbosity=1, skip_untrainable_layers=True, check_exec_order=False, reduce_costs=False, data_path=None):
     # Setup and inject timings hooks
     if device is None:
         if torch.cuda.is_available():
@@ -55,8 +55,8 @@ def profile(model, loss_func, optimizer, batch_size, num_of_batches, device=None
     context = torch.autograd.profiler.profile(use_cuda=device == "gpu") if enable_autograd_profiler else nullcontext()
     # Run
     with context:
-        train(model=model, loss_func=loss_func, optimizer=optimizer, batch_size=batch_size,
-              num_of_batches=num_of_batches+1, device=device, verbosity=verbosity)
+        iteration_costs = train(model=model, loss_func=loss_func, optimizer=optimizer, batch_size=batch_size,
+                          num_of_batches=num_of_batches+1, device=device, verbosity=verbosity, data_path=data_path)
 
     # Parse costs from time stamps
     layer_costs = dict()
@@ -96,7 +96,7 @@ def profile(model, loss_func, optimizer, batch_size, num_of_batches, device=None
             print("Different Execution order found.\nOrder0: {}\nOrder{}: {}".format(",".join(execution_order), i, ",".join(execution_order2)))
         else:
             print("Constant Execution order found: {}".format(",".join(execution_order)))
-    return layer_costs, context
+    return layer_costs, iteration_costs, context
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -125,6 +125,8 @@ if __name__ == "__main__":
                         help="Whether we check that the execution order of the different modules is constant across batches")
     parser.add_argument("-rd", "--reduce_costs", default=False, action="store_true",
                         help="Whether we reduce the costs collected across different batches to a single average per layer.")
+    parser.add_argument("-dt", "--data_path", default=None,
+                        help="Set to None to generate synthetic data, otherwise choose the path to imagenet dataset (No other dataset is supported for now).")
     args = parser.parse_args()
 
     def try_import(name, path, raise_exception=True):
@@ -141,13 +143,14 @@ if __name__ == "__main__":
     optimizer = try_import(args.optimizer, "torch.optim")(model.parameters(), lr=0.001)
     script_time_stamp = datetime.now().strftime("%m-%d-%H-%M")
     t = time.time_ns()
-    layer_costs, autograd_profiler = profile(model=model, loss_func=loss, optimizer=optimizer,
-                                             batch_size=args.batch_size, num_of_batches=args.num_of_batches,
-                                             verbosity=args.verbosity, device=args.device,
-                                             enable_autograd_profiler=args.save_trace,
-                                             skip_untrainable_layers=args.skip,
-                                             check_exec_order=args.check_exec,
-                                             reduce_costs=args.reduce_costs)
+    layer_costs, iteration_costs, autograd_profiler = profile(model=model, loss_func=loss, optimizer=optimizer,
+                                                                batch_size=args.batch_size, num_of_batches=args.num_of_batches,
+                                                                verbosity=args.verbosity, device=args.device,
+                                                                enable_autograd_profiler=args.save_trace,
+                                                                skip_untrainable_layers=args.skip,
+                                                                check_exec_order=args.check_exec,
+                                                                reduce_costs=args.reduce_costs,
+                                                                data_path=args.data_path)
     t = time.time_ns()-t
     # Save reports and traces
     if args.out is None:
@@ -163,12 +166,12 @@ if __name__ == "__main__":
         for layer_name, layer_dict in layer_costs.items():
             forward += layer_dict["forward_pass_units"] if args.reduce_costs else sum(layer_dict["forward_pass_units"])
             backward += layer_dict["backward_pass_units"] if args.reduce_costs else sum(layer_dict["backward_pass_units"])
-        print("total costs in profile: {} ms".format((forward+backward)/1e6))
-        print("total forward costs in profile:  {} ms ({:.2f}%)".format(forward / 1e6, forward/(forward+backward)*100))
-        print("total backward costs in profile: {} ms ({:.2f}%)".format(backward / 1e6, backward/(forward+backward)*100))
+        print("total layer costs in profile: {} ms".format((forward+backward)/1e6))
+        print("total layer forward costs in profile:  {} ms ({:.2f}%)".format(forward / 1e6, forward/(forward+backward)*100))
+        print("total layer backward costs in profile: {} ms ({:.2f}%)".format(backward / 1e6, backward/(forward+backward)*100))
     report = {"method": "pytorch_module_hooks", "host": socket.gethostname(),
               "report_date": script_time_stamp, "profiling_time": t, "unit": "ns",
-              "args": args.__dict__, "layer_costs": layer_costs}
+              "args": args.__dict__, "iteration_costs": iteration_costs, "layer_costs": layer_costs}
     json.dump(report, out, indent=4)
     out.close()
     if args.save_trace:

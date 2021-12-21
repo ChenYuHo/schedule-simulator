@@ -6,23 +6,65 @@ import torch.nn as nn
 import torch.nn.modules.loss as losses
 import torch.nn.functional as F
 import torchvision.transforms as transforms
+import torchvision.datasets as datasets
+import torch.utils.data
 import time
+import os
 
 
-def train(model, loss_func, optimizer, batch_size, num_of_batches, device, verbosity=1):
+def train(model, loss_func, optimizer, batch_size, num_of_batches, device, verbosity=1, data_path=None):
     """
     https://pytorch.org/tutorials/beginner/finetuning_torchvision_models_tutorial.html
     """
+    # Prepare data
+    if data_path is not None:
+        traindir = os.path.join(data_path, 'train')
+        train_dataset = datasets.ImageFolder(
+            traindir,
+            transforms.Compose([
+                transforms.RandomResizedCrop(224),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                        std=[0.229, 0.224, 0.225]),
+            ]))
+        train_loader = torch.utils.data.DataLoader(
+            train_dataset, batch_size=batch_size, shuffle=True,
+            num_workers=4, pin_memory=True, sampler=None)
+        
+    
     model.train()
-    transform = transforms.Compose([transforms.ToTensor()])
     timer = time.time()
+
+    iteration_costs = dict()
+    for c in ["data_load", "resetting_optimizer", "forward_pass", "loss_calc", "backward_pass", "weight_update"]:
+        iteration_costs["{}_units".format(c)] = list()
+
     for batch_i in range(num_of_batches):
-        # 0. Generate fake data
-        inputs, labels = get_dummy_input_output(model, batch_size, device)
+        t1 = time.time_ns()
+        # 1. Load data
+        if data_path is not None:
+            inputs, labels = next(iter(train_loader))
+            if device == "gpu":
+                inputs = inputs.cuda(non_blocking=True)
+                labels = labels.cuda(non_blocking=True)
+            inputs = (inputs,)
+            labels = (labels,)
+        else:
+            inputs, labels = get_dummy_input_output(model, batch_size, device)
+        t2 = time.time_ns()
+        iteration_costs["data_load_units"].append(t2-t1)
+        t1 = t2
         # zero the parameter gradients
         optimizer.zero_grad()
+        t2 = time.time_ns()
+        iteration_costs["resetting_optimizer_units"].append(t2-t1)
+        t1 = t2
         # 1. forward
         outputs = model(*inputs)
+        t2 = time.time_ns()
+        iteration_costs["forward_pass_units"].append(t2-t1)
+        t1 = t2
         # if this is a single output just wrap it in a list for consistency
         if isinstance(outputs, torch.Tensor):
             outputs = [outputs]
@@ -33,14 +75,24 @@ def train(model, loss_func, optimizer, batch_size, num_of_batches, device, verbo
                 loss = loss_func(output, labels[i])
             else:
                 loss += loss_func(output, labels[i])
+        t2 = time.time_ns()
+        iteration_costs["loss_calc_units"].append(t2-t1)
+        t1 = t2
         # 3. Backward
         loss.backward()
+        t2 = time.time_ns()
+        iteration_costs["backward_pass_units"].append(t2-t1)
+        t1 = t2
         # 4. Update weights
         optimizer.step()
+        t2 = time.time_ns()
+        iteration_costs["weight_update_units"].append(t2-t1)
+        t1 = t2
         if verbosity >= 1 and time.time() - timer >= 5:
             timer = time.time()
             print("Finished {:.2f}%".format((batch_i+1)/num_of_batches*100))
     print("Finished training")
+    return iteration_costs
 
 
 def traverse_module(module, processing_func, only_process_leafs=True):
