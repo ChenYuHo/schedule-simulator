@@ -31,23 +31,23 @@ def profile(model, loss_func, optimizer, batch_size, num_of_batches, device=None
         with lock:
             layer_time_stamps.append((module, "init", time.time_ns()))
 
-    def get_hook(type):
-        def hook(module, input, output):
-            # Forward pass has a different thread than backward pass
-            # while I did not encounter any problems without the lock since the threads
-            # should not be operating at the same time, I still included the lock to be safe.
+    def fw_hook(module, input, output):
+        with lock:
+            if device == "gpu":
+                torch.cuda.synchronize()
+            layer_time_stamps.append((module, "forward", time.time_ns()))
+        def tensor_hook(grad):
             with lock:
                 if device == "gpu":
                     torch.cuda.synchronize()
-                layer_time_stamps.append((module, type, time.time_ns()))
-        return hook
+                layer_time_stamps.append((module, "backward", time.time_ns()))
+        output.register_hook(tensor_hook)
 
     layer_time_stamps = list()
     def register_hooks(module):
         if skip_untrainable_layers and count_trainable_params(module) == 0:
             return 0
-        module.register_forward_hook(get_hook("forward"))
-        module.register_backward_hook(get_hook("backward"))
+        module.register_forward_hook(fw_hook)
         return 1
 
     model.register_forward_pre_hook(init)
@@ -72,11 +72,11 @@ def profile(model, loss_func, optimizer, batch_size, num_of_batches, device=None
             layer_costs[module_name]["forward_pass_units"].append(ts-layer_time_stamps[i-1][2])
         elif type == "backward":
             layer_costs[module_name]["backward_pass_units"].append(ts - layer_time_stamps[i - 1][2])
-    
+
     for module_name, costs in layer_costs.items():
         costs["forward_pass_units"] = float(np.mean(costs["forward_pass_units"][1:])) if reduce_costs  else costs["forward_pass_units"][1:]
         costs["backward_pass_units"] = float(np.mean(costs["backward_pass_units"][1:])) if reduce_costs  else costs["backward_pass_units"][1:]
-    
+
     # Report if the execution order was constant across batches or not.
     if check_exec_order:
         # FIXME: These assertions enforce that each module is only called once in an iteration.
@@ -138,41 +138,43 @@ if __name__ == "__main__":
                 raise Exception("'{}' is not found in {}.\n".format(name, path))
             return False
 
-    model = get_model(args.model)
-    loss = try_import(args.loss, "torch.nn.modules.loss")()
-    optimizer = try_import(args.optimizer, "torch.optim")(model.parameters(), lr=0.001)
-    script_time_stamp = datetime.now().strftime("%m-%d-%H-%M")
-    t = time.time_ns()
-    layer_costs, iteration_costs, autograd_profiler = profile(model=model, loss_func=loss, optimizer=optimizer,
-                                                                batch_size=args.batch_size, num_of_batches=args.num_of_batches,
-                                                                verbosity=args.verbosity, device=args.device,
-                                                                enable_autograd_profiler=args.save_trace,
-                                                                skip_untrainable_layers=args.skip,
-                                                                check_exec_order=args.check_exec,
-                                                                reduce_costs=args.reduce_costs,
-                                                                data_path=args.data_path)
-    t = time.time_ns()-t
-    # Save reports and traces
-    if args.out is None:
-        file_prefix = "{}_{}".format(args.model, script_time_stamp)
-    else:
-        file_prefix = args.out
-    out = open("{}.profile.json".format(file_prefix), "w")
+    for m in [args.model] if args.model != "all" else models.list_models(models):
+        print("Start profiling {}".format(m))
+        model = get_model(m)
+        loss = try_import(args.loss, "torch.nn.modules.loss")()
+        optimizer = try_import(args.optimizer, "torch.optim")(model.parameters(), lr=0.001)
+        script_time_stamp = datetime.now().strftime("%m-%d-%H-%M")
+        t = time.time_ns()
+        layer_costs, iteration_costs, autograd_profiler = profile(model=model, loss_func=loss, optimizer=optimizer,
+                                                                    batch_size=args.batch_size, num_of_batches=args.num_of_batches,
+                                                                    verbosity=args.verbosity, device=args.device,
+                                                                    enable_autograd_profiler=args.save_trace,
+                                                                    skip_untrainable_layers=args.skip,
+                                                                    check_exec_order=args.check_exec,
+                                                                    reduce_costs=args.reduce_costs,
+                                                                    data_path=args.data_path)
+        t = time.time_ns()-t
+        # Save reports and traces
+        if args.out is None:
+            file_prefix = "{}_{}".format(m, script_time_stamp)
+        else:
+            file_prefix = args.out
+        out = open("{}.profile.json".format(file_prefix), "w")
 
-    if args.verbosity >= 1:
-        print("Finished in {} ms".format(t / 1e6))
-        forward = 0
-        backward = 0
-        for layer_name, layer_dict in layer_costs.items():
-            forward += layer_dict["forward_pass_units"] if args.reduce_costs else sum(layer_dict["forward_pass_units"])
-            backward += layer_dict["backward_pass_units"] if args.reduce_costs else sum(layer_dict["backward_pass_units"])
-        print("total layer costs in profile: {} ms".format((forward+backward)/1e6))
-        print("total layer forward costs in profile:  {} ms ({:.2f}%)".format(forward / 1e6, forward/(forward+backward)*100))
-        print("total layer backward costs in profile: {} ms ({:.2f}%)".format(backward / 1e6, backward/(forward+backward)*100))
-    report = {"method": "pytorch_module_hooks", "host": socket.gethostname(),
-              "report_date": script_time_stamp, "profiling_time": t, "unit": "ns",
-              "args": args.__dict__, "iteration_costs": iteration_costs, "layer_costs": layer_costs}
-    json.dump(report, out, indent=4)
-    out.close()
-    if args.save_trace:
-        autograd_profiler.export_chrome_trace("{}.chrometrace.json".format(file_prefix))
+        if args.verbosity >= 1:
+            forward = 0
+            backward = 0
+            for layer_name, layer_dict in layer_costs.items():
+                forward += layer_dict["forward_pass_units"] if args.reduce_costs else sum(layer_dict["forward_pass_units"])
+                backward += layer_dict["backward_pass_units"] if args.reduce_costs else sum(layer_dict["backward_pass_units"])
+            print("total layer costs in profile: {} ms".format((forward+backward)/1e6))
+            print("total layer forward costs in profile:  {} ms ({:.2f}%)".format(forward / 1e6, forward/(forward+backward)*100))
+            print("total layer backward costs in profile: {} ms ({:.2f}%)".format(backward / 1e6, backward/(forward+backward)*100))
+            print("Finished profiling {} in {} ms".format(m, t / 1e6))
+        report = {"method": "pytorch_module_hooks", "host": socket.gethostname(),
+                  "report_date": script_time_stamp, "profiling_time": t, "unit": "ns",
+                  "args": args.__dict__, "iteration_costs": iteration_costs, "layer_costs": layer_costs}
+        json.dump(report, out, indent=4)
+        out.close()
+        if args.save_trace:
+            autograd_profiler.export_chrome_trace("{}.chrometrace.json".format(file_prefix))

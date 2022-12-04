@@ -31,8 +31,8 @@ def train(model, loss_func, optimizer, batch_size, num_of_batches, device, verbo
         train_loader = torch.utils.data.DataLoader(
             train_dataset, batch_size=batch_size, shuffle=True,
             num_workers=4, pin_memory=True, sampler=None)
-        
-    
+
+
     model.train()
     timer = time.time()
 
@@ -208,9 +208,9 @@ def get_model(model_name):
             module = __import__("torchvision.models", fromlist=[model_name])
             model = getattr(module, model_name)
             if model_name == "inception_v3" or model_name == "googlenet":
-                model = model(pretrained=False, aux_logits=False)
+                model = model(aux_logits=False, init_weights=True)
             else:
-                model = model(pretrained=False)
+                model = model()
     except AttributeError:
         raise Exception("'{}' is not a valid dummy or torchvision model.\n".format(model_name))
     return model
